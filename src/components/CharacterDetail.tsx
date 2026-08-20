@@ -76,6 +76,8 @@ export const CharacterDetail: React.FC<CharacterDetailProps> = ({
   // Auto-fetch on entry + background polling every 20 seconds
   React.useEffect(() => {
     if (activeCategory === 'pm') {
+      setLiveSchedule(null);
+      setIsLiveActive(false);
       syncFromSheets(false); // Initial immediate sync
       const intervalId = setInterval(() => {
         syncFromSheets(true); // Background silent sync every 20s
@@ -107,7 +109,7 @@ export const CharacterDetail: React.FC<CharacterDetailProps> = ({
 
   // Filtered PM documents based on selected year + month
   const filteredPmDocs = pmDocs.filter(d => d.year === pmYear && d.month === pmMonth);
-  const availableYears = getYears(pmDocs);
+  const availableYears = pmDocs.length > 0 ? getYears(pmDocs) : [new Date().getFullYear()];
 
   return (
     <>
@@ -264,14 +266,16 @@ export const CharacterDetail: React.FC<CharacterDetailProps> = ({
                 </div>
 
                 {/* ── PM special view: year/month filter + document viewer ── */}
-                {activeCategory === 'pm' && pmDocs.length > 0 ? (
+                {activeCategory === 'pm' ? (
                   <div className="category-content-body">
-                    <PmProgressChart
-                      pmDocuments={pmDocs}
-                      year={pmYear}
-                      selectedMonth={pmMonth}
-                      onSelectMonth={setPmMonth}
-                    />
+                    {pmDocs.length > 0 && (
+                      <PmProgressChart
+                        pmDocuments={pmDocs}
+                        year={pmYear}
+                        selectedMonth={pmMonth}
+                        onSelectMonth={setPmMonth}
+                      />
+                    )}
 
                     {/* Live Google Sheets Connection Bar */}
                     <div className="pm-live-sync-bar">
@@ -301,13 +305,27 @@ export const CharacterDetail: React.FC<CharacterDetailProps> = ({
                     </div>
 
                     {/* S-Curve cumulative chart for active month */}
-                    {((liveSchedule && liveSchedule.length > 0) || (filteredPmDocs.length > 0 && filteredPmDocs[0].equipmentSchedule && filteredPmDocs[0].equipmentSchedule.length > 0)) && (
+                    {((liveSchedule && liveSchedule.length > 0) || (filteredPmDocs.length > 0 && filteredPmDocs[0].equipmentSchedule && filteredPmDocs[0].equipmentSchedule.length > 0)) ? (
                       <PmSCurveChart
                         schedule={liveSchedule || filteredPmDocs[0].equipmentSchedule!}
                         month={pmMonth}
                         year={pmYear}
                         monthName={MONTHS[pmMonth - 1]}
                       />
+                    ) : (
+                      <div className="ready-notice-box" style={{ margin: '16px 0' }}>
+                        <div className="ready-icon-wrap">
+                          <RefreshCw size={18} className={isLiveSyncing ? 'spin-anim' : ''} />
+                        </div>
+                        <div className="ready-notice-text">
+                          <span className="ready-notice-title">
+                            {isLiveSyncing ? 'Menghubungkan & Memuat Data Live PM...' : `Jadwal PM Live untuk ${character.name}`}
+                          </span>
+                          <span className="ready-notice-sub">
+                            {isLiveSyncing ? 'Mengambil data matrix peralatan dan kanban terkini dari Google Sheets.' : 'Klik tombol FORCE SYNC di atas jika data belum tampil.'}
+                          </span>
+                        </div>
+                      </div>
                     )}
 
                     {/* Filter row */}
