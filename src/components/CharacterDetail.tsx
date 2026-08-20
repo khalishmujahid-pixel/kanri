@@ -40,7 +40,7 @@ export const CharacterDetail: React.FC<CharacterDetailProps> = ({
   character,
   onBackToShowroom,
 }) => {
-  const [activeCategory, setActiveCategory] = useState<CategoryKey>('idea');
+  const [activeCategory, setActiveCategory] = useState<CategoryKey>('pm');
 
   // PM document filter state — default to latest doc's year/month
   const pmDocs = character.categories.pm.pmDocuments ?? [];
