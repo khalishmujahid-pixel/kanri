@@ -2,7 +2,7 @@ import type { PmEquipmentEntry } from '../types/character';
 
 // Google Apps Script Web App Endpoint URL
 export const GOOGLE_APPS_SCRIPT_URL =
-  'https://script.google.com/macros/s/AKfycbws861AHXlirbhirK3XXOBEAiGEVXoVdqjifaYZ5UBKj_u_zdWRNhtkpjoT4xmXfXgR/exec';
+  'https://script.google.com/macros/s/AKfycbzYvd259Z8Cw8g4kBsyTGkvnwaswS6rinGICFW6fWiPP445sw3v2zldOdMf1WqRRJAAtw/exec';
 
 export interface SheetApiResponse {
   success?: boolean;

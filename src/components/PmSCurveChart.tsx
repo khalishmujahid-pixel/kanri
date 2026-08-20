@@ -461,7 +461,7 @@ export const PmSCurveChart: React.FC<PmSCurveChartProps> = ({
                 btn.innerText = "⏳ CLEARING...";
                 try {
                   const token = "8951359806:AAFXsn4VhlXx7_gGNZfohEf3kZ-T-RIoJhk";
-                  const url = "https://script.google.com/macros/s/AKfycbws861AHXlirbhirK3XXOBEAiGEVXoVdqjifaYZ5UBKj_u_zdWRNhtkpjoT4xmXfXgR/exec";
+                  const url = "https://script.google.com/macros/s/AKfycbzYvd259Z8Cw8g4kBsyTGkvnwaswS6rinGICFW6fWiPP445sw3v2zldOdMf1WqRRJAAtw/exec";
                   await fetch(`https://api.telegram.org/bot${token}/deleteWebhook?drop_pending_updates=true`);
                   await fetch(`https://api.telegram.org/bot${token}/setWebhook?url=${url}`);
                   btn.innerText = "✅ CLEARED!";
