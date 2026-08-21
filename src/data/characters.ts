@@ -765,6 +765,99 @@ export const INITIAL_CHARACTERS: Character[] = [
         ]
       }
     }
+  },
+  {
+    id: 'c07',
+    code: '01425601',
+    name: 'ARLI YULIANTO',
+    role: 'Team Member',
+    department: 'Maintenance',
+    unit: 'Shift RED',
+    zone: 'Welding Body#2 / Side Member',
+    status: 'ACTIVE',
+    image: '/assets/characters/arli_yulianto.jpg',
+    portrait: '/assets/characters/arli_yulianto.jpg',
+    summary: 'Maintenance Team Member assigned to Welding Body#2 / Side Member (Shift RED).',
+    specialization: 'Welding Body#2 Side Member Maintenance & Technical Response',
+    categories: {
+      idea: {
+        id: 'idea',
+        label: 'IDEA',
+        code: 'SEC-01',
+        tagline: 'Innovation & Suggestion System',
+        description: 'Repository of ideas and proactive proposals for operational efficiency and equipment reliability.',
+        status: 'READY FOR DATA',
+        recordsCount: 0,
+        lastUpdated: 'Pending Data Input',
+        placeholderItems: [
+          {
+            id: 'IDEA-001',
+            title: 'Idea Proposal System Template',
+            status: 'INITIALIZED',
+            date: 'Phase 2',
+            summary: 'Category ready for standardized proposal submissions and Kaizen suggestions.'
+          }
+        ]
+      },
+      pm: {
+        id: 'pm',
+        label: 'PM',
+        code: 'SEC-02',
+        tagline: 'Preventive Maintenance Execution',
+        description: 'Tracking and scheduling for preventive maintenance tasks, inspection logs, and machine uptime assurance.',
+        status: 'READY FOR DATA',
+        recordsCount: 0,
+        lastUpdated: 'Pending Data Input',
+        placeholderItems: [
+          {
+            id: 'PM-001',
+            title: 'Preventive Maintenance Schedule Structure',
+            status: 'INITIALIZED',
+            date: 'Phase 2',
+            summary: 'Routine maintenance logs and equipment calibration records.'
+          }
+        ]
+      },
+      improvement: {
+        id: 'improvement',
+        label: 'IMPROVEMENT',
+        code: 'SEC-03',
+        tagline: 'Kaizen & Process Optimization',
+        description: 'Implemented improvement projects, breakdown reduction initiatives, and line cycle enhancements.',
+        status: 'READY FOR DATA',
+        recordsCount: 0,
+        lastUpdated: 'Pending Data Input',
+        placeholderItems: [
+          {
+            id: 'IMP-001',
+            title: 'Continuous Improvement Framework',
+            status: 'INITIALIZED',
+            date: 'Phase 2',
+            summary: 'Standardized format for tracking line enhancements and technical modifications.'
+          }
+        ]
+      },
+      safety: {
+        id: 'safety',
+        label: 'SAFETY',
+        code: 'SEC-04',
+        tagline: 'Safety Compliance & Zero Incident Protocol',
+        description: 'Near-miss reporting, safety patrol observations, 5S compliance, and Red Zone risk assessments.',
+        status: 'READY FOR DATA',
+        recordsCount: 0,
+        lastUpdated: 'Pending Data Input',
+        placeholderItems: [
+          {
+            id: 'SAF-001',
+            title: 'Red Zone Safety Verification Standard',
+            status: 'INITIALIZED',
+            date: 'Phase 2',
+            summary: 'Zero incident protocols and workplace safety compliance logs.'
+          }
+        ]
+      }
+    }
   }
 ];
+
 
