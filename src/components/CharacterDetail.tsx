@@ -18,6 +18,7 @@ import {
 import type { Character, CategoryKey, PmDocument, PmEquipmentEntry } from '../types/character';
 import { PmProgressChart } from './PmProgressChart';
 import { PmSCurveChart } from './PmSCurveChart';
+import { ImprovementViewer } from './improvement/ImprovementViewer';
 import { fetchLivePmSchedule } from '../services/googleSheetsService';
 import { RefreshCw, Radio } from 'lucide-react';
 
@@ -492,8 +493,13 @@ export const CharacterDetail: React.FC<CharacterDetailProps> = ({
                       </div>
                     )}
                   </div>
+                ) : activeCategory === 'improvement' ? (
+                  /* ── Dedicated Interactive Improvement Kaizen View ── */
+                  <div className="category-content-body improvement-view">
+                    <ImprovementViewer character={character} />
+                  </div>
                 ) : (
-                  /* Default view for non-PM categories or PM with no docs yet */
+                  /* Default view for non-PM/non-Improvement categories (IDEA, SAFETY) */
                   <div className="category-content-body">
                     {currentCategoryData.placeholderItems.map((item) => (
                       <div key={item.id} className="placeholder-card">
