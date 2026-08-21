@@ -11,7 +11,8 @@ import {
   Play,
   Calendar,
   X,
-  Keyboard
+  Keyboard,
+  CheckCircle2
 } from 'lucide-react';
 import { IMPROVEMENT_PROJECTS } from '../../data/improvementData';
 import { ImprovementBackground } from './ImprovementBackground';
@@ -27,6 +28,18 @@ interface ImprovementViewerProps {
 type StepKey = 'background' | 'before_after' | 'yokoten';
 
 export const ImprovementViewer: React.FC<ImprovementViewerProps> = ({ character }) => {
+  // Filter projects strictly belonging to this character
+  const characterProjects = IMPROVEMENT_PROJECTS.filter(proj => {
+    if (proj.characterId) {
+      return proj.characterId === character.id;
+    }
+    const charName = character.name.toLowerCase();
+    const picName = proj.picName.toLowerCase();
+    return charName === picName ||
+           (charName.includes('dwi') && picName.includes('dwi')) ||
+           (proj.regNumber && character.code && proj.regNumber === character.code);
+  });
+
   // Initially null -> shows only the list of improvement titles
   const [activeProject, setActiveProject] = useState<ImprovementProject | null>(null);
   const [activeStep, setActiveStep] = useState<StepKey>('background');
@@ -81,70 +94,88 @@ export const ImprovementViewer: React.FC<ImprovementViewerProps> = ({ character 
           exit={{ opacity: 0, scale: 0.98 }}
           transition={{ duration: 0.25 }}
         >
-          <div className="imp-list-header-bar">
-            <div>
-              <span className="imp-list-subtitle">KANRI MEETING // {character.zone.toUpperCase()}</span>
-              <h3 className="imp-list-title">DAFTAR MATERI IMPROVEMENT &amp; KAIZEN</h3>
+          {characterProjects.length === 0 ? (
+            <div className="ready-notice-box" style={{ margin: '12px 0 24px' }}>
+              <div className="ready-icon-wrap">
+                <CheckCircle2 size={20} />
+              </div>
+              <div className="ready-notice-text">
+                <span className="ready-notice-title">
+                  Belum ada materi Improvement / Kaizen untuk {character.name}
+                </span>
+                <span className="ready-notice-sub">
+                  Materi Kaizen &amp; Process Optimization untuk PIC ini belum didaftarkan ke sistem Kanri. Dokumen perbaikan akan otomatis ditampilkan setelah proyek Kaizen disetujui.
+                </span>
+              </div>
             </div>
-            <span className="imp-list-count-badge">
-              {IMPROVEMENT_PROJECTS.length} PROYEK TERSEDIA
-            </span>
-          </div>
-
-          <div className="imp-cards-grid">
-            {IMPROVEMENT_PROJECTS.map((proj, idx) => (
-              <motion.div
-                key={proj.id}
-                className="imp-summary-card"
-                whileHover={{ y: -4, transition: { duration: 0.2 } }}
-                onClick={() => {
-                  setActiveProject(proj);
-                  setActiveStep('background');
-                }}
-              >
-                <div className="imp-card-top-row">
-                  <span className="imp-card-num-chip">0{idx + 1}</span>
-                  <div className="imp-card-meta-wrap">
-                    <span className="imp-card-code">{proj.code}</span>
-                    <span className="imp-card-period">
-                      <Calendar size={11} />
-                      {proj.period}
-                    </span>
-                  </div>
-                  <span className={`imp-status-pill ${proj.status.toLowerCase()}`}>
-                    <Award size={12} />
-                    {proj.status}
-                  </span>
+          ) : (
+            <>
+              <div className="imp-list-header-bar">
+                <div>
+                  <span className="imp-list-subtitle">KANRI MEETING // {character.zone.toUpperCase()}</span>
+                  <h3 className="imp-list-title">DAFTAR MATERI IMPROVEMENT &amp; KAIZEN</h3>
                 </div>
+                <span className="imp-list-count-badge">
+                  {characterProjects.length} PROYEK TERSEDIA
+                </span>
+              </div>
 
-                <h4 className="imp-card-main-title">{proj.title}</h4>
-
-                <p className="imp-card-snippet">
-                  {proj.background.problemDescription}
-                </p>
-
-                <div className="imp-card-footer-row">
-                  <div className="imp-card-target-box">
-                    <span className="target-lbl">TARGET AREA:</span>
-                    <span className="target-val">{proj.background.layoutTitle}</span>
-                  </div>
-
-                  <button
-                    type="button"
-                    className="imp-open-presentation-btn"
-                    onClick={(e) => {
-                      e.stopPropagation();
+              <div className="imp-cards-grid">
+                {characterProjects.map((proj, idx) => (
+                  <motion.div
+                    key={proj.id}
+                    className="imp-summary-card"
+                    whileHover={{ y: -4, transition: { duration: 0.2 } }}
+                    onClick={() => {
                       setActiveProject(proj);
                       setActiveStep('background');
                     }}
                   >
-                    <Play size={14} className="play-icon" />
-                    <span>BUKA PRESENTASI</span>
-                  </button>
-                </div>
-              </motion.div>
-            ))}
-          </div>
+                    <div className="imp-card-top-row">
+                      <span className="imp-card-num-chip">0{idx + 1}</span>
+                      <div className="imp-card-meta-wrap">
+                        <span className="imp-card-code">{proj.code}</span>
+                        <span className="imp-card-period">
+                          <Calendar size={11} />
+                          {proj.period}
+                        </span>
+                      </div>
+                      <span className={`imp-status-pill ${proj.status.toLowerCase()}`}>
+                        <Award size={12} />
+                        {proj.status}
+                      </span>
+                    </div>
+
+                    <h4 className="imp-card-main-title">{proj.title}</h4>
+
+                    <p className="imp-card-snippet">
+                      {proj.background.problemDescription}
+                    </p>
+
+                    <div className="imp-card-footer-row">
+                      <div className="imp-card-target-box">
+                        <span className="target-lbl">TARGET AREA:</span>
+                        <span className="target-val">{proj.background.layoutTitle}</span>
+                      </div>
+
+                      <button
+                        type="button"
+                        className="imp-open-presentation-btn"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setActiveProject(proj);
+                          setActiveStep('background');
+                        }}
+                      >
+                        <Play size={14} className="play-icon" />
+                        <span>BUKA PRESENTASI</span>
+                      </button>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            </>
+          )}
         </motion.div>
       )}
 

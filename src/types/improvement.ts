@@ -106,6 +106,7 @@ export interface YokotenData {
 
 export interface ImprovementProject {
   id: string;
+  characterId?: string;
   title: string;
   code: string;
   picName: string;

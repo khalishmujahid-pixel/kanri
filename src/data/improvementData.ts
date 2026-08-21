@@ -3,6 +3,7 @@ import type { ImprovementProject } from '../types/improvement';
 export const IMPROVEMENT_PROJECTS: ImprovementProject[] = [
   {
     id: 'IMP-DWI-01',
+    characterId: 'c01',
     code: 'KAIZEN-UBF-01',
     title: 'ELIMINASI POTENSI NOT-RUN SIKLUS MODEL CHANGE LOKATOR NC MESIN GBL ST#5 UBF',
     picName: 'DWI PURNOMO',
