@@ -8,12 +8,12 @@ export const INITIAL_CHARACTERS: Character[] = [
     role: 'Team Member',
     department: 'Maintenance',
     unit: 'Shift RED',
-    zone: 'Welding Body#2',
+    zone: 'Welding Body#2 / Under Body',
     status: 'ACTIVE',
     image: '/assets/characters/dwi_purnomo.jpg',
     portrait: '/assets/characters/dwi_purnomo.jpg',
-    summary: 'Maintenance Team Member specializing in Welding Body#2 equipment reliability and technical response.',
-    specialization: 'Welding Body#2 Maintenance & Operations',
+    summary: 'Maintenance Team Member assigned to Welding Body#2 / Under Body (Shift RED).',
+    specialization: 'Welding Body#2 Under Body Maintenance & Technical Response',
     categories: {
       idea: {
         id: 'idea',
