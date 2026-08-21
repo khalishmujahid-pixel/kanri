@@ -6,14 +6,19 @@ import {
   Share2,
   ChevronLeft,
   ChevronRight,
-  TrendingUp,
-  Award
+  Award,
+  ArrowLeft,
+  Play,
+  Calendar,
+  X,
+  Keyboard
 } from 'lucide-react';
 import { IMPROVEMENT_PROJECTS } from '../../data/improvementData';
 import { ImprovementBackground } from './ImprovementBackground';
 import { ImprovementBeforeAfter } from './ImprovementBeforeAfter';
 import { ImprovementYokoten } from './ImprovementYokoten';
 import type { Character } from '../../types/character';
+import type { ImprovementProject } from '../../types/improvement';
 
 interface ImprovementViewerProps {
   character: Character;
@@ -22,21 +27,14 @@ interface ImprovementViewerProps {
 type StepKey = 'background' | 'before_after' | 'yokoten';
 
 export const ImprovementViewer: React.FC<ImprovementViewerProps> = ({ character }) => {
-  // Find project that may relate to character or default to first project
-  const initialProjectId =
-    IMPROVEMENT_PROJECTS.find(p => p.picName.toLowerCase().includes(character.name.toLowerCase().split(' ')[0]))?.id ??
-    IMPROVEMENT_PROJECTS[0].id;
-
-  const [selectedProjectId, setSelectedProjectId] = useState<string>(initialProjectId);
+  // Initially null -> shows only the list of improvement titles
+  const [activeProject, setActiveProject] = useState<ImprovementProject | null>(null);
   const [activeStep, setActiveStep] = useState<StepKey>('background');
 
-  const currentProject =
-    IMPROVEMENT_PROJECTS.find(p => p.id === selectedProjectId) ?? IMPROVEMENT_PROJECTS[0];
-
   const stepsConfig: Array<{ key: StepKey; num: string; label: string; icon: React.ReactNode }> = [
-    { key: 'background', num: '01', label: 'BACKGROUND & ROOT CAUSES', icon: <Layers size={15} /> },
-    { key: 'before_after', num: '02', label: 'IMPROVEMENT (BEFORE / AFTER)', icon: <Sparkles size={15} /> },
-    { key: 'yokoten', num: '03', label: 'YOKOTEN ACTIVITY', icon: <Share2 size={15} /> }
+    { key: 'background', num: '01', label: 'BACKGROUND & ROOT CAUSES', icon: <Layers size={16} /> },
+    { key: 'before_after', num: '02', label: 'IMPROVEMENT (BEFORE / AFTER)', icon: <Sparkles size={16} /> },
+    { key: 'yokoten', num: '03', label: 'YOKOTEN ACTIVITY', icon: <Share2 size={16} /> }
   ];
 
   const currentStepIdx = stepsConfig.findIndex(s => s.key === activeStep);
@@ -53,137 +51,243 @@ export const ImprovementViewer: React.FC<ImprovementViewerProps> = ({ character 
     }
   };
 
-  // Keyboard shortcut listener for arrow keys
+  // Keyboard navigation when in presentation view
   useEffect(() => {
+    if (!activeProject) return;
+
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'ArrowRight') {
         goToNextStep();
       } else if (e.key === 'ArrowLeft') {
         goToPrevStep();
+      } else if (e.key === 'Escape') {
+        setActiveProject(null);
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [currentStepIdx]);
+  }, [activeProject, currentStepIdx]);
 
   return (
-    <div className="improvement-viewer-container">
-      {/* ── Project Switcher Bar ── */}
-      <div className="imp-project-selector-bar">
-        <span className="project-selector-label">SELECT IMPROVEMENT PROJECT:</span>
-        <div className="project-chips-list">
-          {IMPROVEMENT_PROJECTS.map((proj) => (
-            <button
-              key={proj.id}
-              type="button"
-              className={`project-chip-btn ${proj.id === selectedProjectId ? 'active' : ''}`}
-              onClick={() => {
-                setSelectedProjectId(proj.id);
-                setActiveStep('background');
-              }}
-            >
-              <TrendingUp size={13} className="project-chip-icon" />
-              <span className="project-chip-title">{proj.title}</span>
-              <span className="project-chip-pic">({proj.picName.split(' ')[0]})</span>
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* ── Active Project Banner Card ── */}
-      <div className="imp-active-project-card">
-        <div className="imp-proj-header-top">
-          <div className="imp-proj-meta">
-            <span className="imp-code-badge">{currentProject.code}</span>
-            <span className="imp-period-tag">{currentProject.period} // {currentProject.unitShift}</span>
+    <div className="improvement-main-wrapper">
+      {/* ══════════════════════════════════════════════════════════════════
+          1. INITIAL VIEW: LIST OF IMPROVEMENT TITLES ONLY
+         ══════════════════════════════════════════════════════════════════ */}
+      {!activeProject && (
+        <motion.div
+          className="imp-list-container"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, scale: 0.98 }}
+          transition={{ duration: 0.25 }}
+        >
+          <div className="imp-list-header-bar">
+            <div>
+              <span className="imp-list-subtitle">KANRI MEETING // {character.zone.toUpperCase()}</span>
+              <h3 className="imp-list-title">DAFTAR MATERI IMPROVEMENT &amp; KAIZEN</h3>
+            </div>
+            <span className="imp-list-count-badge">
+              {IMPROVEMENT_PROJECTS.length} PROYEK TERSEDIA
+            </span>
           </div>
-          <div className="imp-status-badge">
-            <Award size={13} />
-            <span>{currentProject.status}</span>
+
+          <div className="imp-cards-grid">
+            {IMPROVEMENT_PROJECTS.map((proj, idx) => (
+              <motion.div
+                key={proj.id}
+                className="imp-summary-card"
+                whileHover={{ y: -4, transition: { duration: 0.2 } }}
+                onClick={() => {
+                  setActiveProject(proj);
+                  setActiveStep('background');
+                }}
+              >
+                <div className="imp-card-top-row">
+                  <span className="imp-card-num-chip">0{idx + 1}</span>
+                  <div className="imp-card-meta-wrap">
+                    <span className="imp-card-code">{proj.code}</span>
+                    <span className="imp-card-period">
+                      <Calendar size={11} />
+                      {proj.period}
+                    </span>
+                  </div>
+                  <span className={`imp-status-pill ${proj.status.toLowerCase()}`}>
+                    <Award size={12} />
+                    {proj.status}
+                  </span>
+                </div>
+
+                <h4 className="imp-card-main-title">{proj.title}</h4>
+
+                <p className="imp-card-snippet">
+                  {proj.background.problemDescription}
+                </p>
+
+                <div className="imp-card-footer-row">
+                  <div className="imp-card-target-box">
+                    <span className="target-lbl">TARGET AREA:</span>
+                    <span className="target-val">{proj.background.layoutTitle}</span>
+                  </div>
+
+                  <button
+                    type="button"
+                    className="imp-open-presentation-btn"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setActiveProject(proj);
+                      setActiveStep('background');
+                    }}
+                  >
+                    <Play size={14} className="play-icon" />
+                    <span>BUKA PRESENTASI</span>
+                  </button>
+                </div>
+              </motion.div>
+            ))}
           </div>
-        </div>
-        <h2 className="imp-proj-main-title">{currentProject.title}</h2>
-      </div>
+        </motion.div>
+      )}
 
-      {/* ── 3-Step Animated Stepper Navigation ── */}
-      <nav className="imp-stepper-bar" aria-label="Improvement Steps">
-        {stepsConfig.map((st, idx) => {
-          const isActive = activeStep === st.key;
-          const isPassed = currentStepIdx > idx;
+      {/* ══════════════════════════════════════════════════════════════════
+          2. DEDICATED FULLSCREEN PRESENTATION STAGE (SUASANA BARU)
+         ══════════════════════════════════════════════════════════════════ */}
+      <AnimatePresence>
+        {activeProject && (
+          <motion.div
+            className="imp-presentation-stage-overlay"
+            initial={{ opacity: 0, scale: 0.97 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.97 }}
+            transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+          >
+            {/* Top Navigation & Status Bar */}
+            <div className="stage-top-bar">
+              <button
+                type="button"
+                className="stage-back-btn"
+                onClick={() => setActiveProject(null)}
+                title="Kembali ke daftar improvement (Esc)"
+              >
+                <ArrowLeft size={15} />
+                <span>KEMBALI KE DAFTAR</span>
+              </button>
 
-          return (
-            <button
-              key={st.key}
-              type="button"
-              className={`imp-step-tab ${isActive ? 'active' : ''} ${isPassed ? 'passed' : ''}`}
-              onClick={() => setActiveStep(st.key)}
-            >
-              <div className="step-tab-top">
-                <span className="step-tab-num">{st.num}</span>
-                <span className="step-tab-icon">{st.icon}</span>
+              <div className="stage-meeting-branding">
+                <span className="branding-cup">NASRI CUP // BODY 2 WHITE SHIFT</span>
+                <span className="branding-sep">|</span>
+                <span className="branding-title">KANRI MEETING {activeProject.period.toUpperCase()}</span>
               </div>
-              <span className="step-tab-label">{st.label}</span>
-              {isActive && (
-                <motion.div
-                  className="step-tab-indicator"
-                  layoutId="impActiveIndicator"
-                  transition={{ type: 'spring', stiffness: 350, damping: 30 }}
-                />
-              )}
-            </button>
-          );
-        })}
-      </nav>
 
-      {/* ── Step Content Body with Animated Transitions ── */}
-      <div className="imp-step-content-viewport">
-        <AnimatePresence mode="wait">
-          {activeStep === 'background' && (
-            <ImprovementBackground key={`bg-${currentProject.id}`} data={currentProject.background} />
-          )}
+              <div className="stage-top-right">
+                <span className="stage-code-chip">{activeProject.code}</span>
+                <button
+                  type="button"
+                  className="stage-close-icon-btn"
+                  onClick={() => setActiveProject(null)}
+                >
+                  <X size={18} />
+                </button>
+              </div>
+            </div>
 
-          {activeStep === 'before_after' && (
-            <ImprovementBeforeAfter key={`ba-${currentProject.id}`} aspects={currentProject.aspects} />
-          )}
+            {/* Main Stage Presentation Header */}
+            <div className="stage-hero-header">
+              <div className="stage-hero-meta">
+                <span className="stage-division-badge">{activeProject.unitShift}</span>
+                <span className="stage-target-badge">{activeProject.background.layoutTitle}</span>
+              </div>
+              <h1 className="stage-main-title">{activeProject.title}</h1>
+            </div>
 
-          {activeStep === 'yokoten' && currentProject.yokoten && (
-            <ImprovementYokoten key={`yoko-${currentProject.id}`} data={currentProject.yokoten} />
-          )}
-        </AnimatePresence>
-      </div>
+            {/* 3-Step Animated Stepper Bar */}
+            <nav className="stage-stepper-bar" aria-label="Presentation Steps">
+              {stepsConfig.map((st, idx) => {
+                const isActive = activeStep === st.key;
+                const isPassed = currentStepIdx > idx;
 
-      {/* ── Presentation Stepper Footer Controls ── */}
-      <div className="imp-footer-controls">
-        <button
-          type="button"
-          className="imp-nav-btn prev"
-          onClick={goToPrevStep}
-          disabled={currentStepIdx === 0}
-        >
-          <ChevronLeft size={16} />
-          <span>PREVIOUS STAGE</span>
-        </button>
+                return (
+                  <button
+                    key={st.key}
+                    type="button"
+                    className={`stage-step-btn ${isActive ? 'active' : ''} ${isPassed ? 'passed' : ''}`}
+                    onClick={() => setActiveStep(st.key)}
+                  >
+                    <div className="step-btn-top">
+                      <span className="step-btn-num">{st.num}</span>
+                      <span className="step-btn-icon">{st.icon}</span>
+                    </div>
+                    <span className="step-btn-label">{st.label}</span>
+                    {isActive && (
+                      <motion.div
+                        className="stage-active-indicator"
+                        layoutId="stageActiveTab"
+                        transition={{ type: 'spring', stiffness: 350, damping: 30 }}
+                      />
+                    )}
+                  </button>
+                );
+              })}
+            </nav>
 
-        <div className="imp-stepper-dots">
-          {stepsConfig.map((st, i) => (
-            <span
-              key={st.key}
-              className={`stepper-dot ${i === currentStepIdx ? 'active' : ''}`}
-              onClick={() => setActiveStep(st.key)}
-            />
-          ))}
-        </div>
+            {/* Slide Body Viewport */}
+            <div className="stage-slide-viewport">
+              <AnimatePresence mode="wait">
+                {activeStep === 'background' && (
+                  <ImprovementBackground key={`bg-${activeProject.id}`} data={activeProject.background} />
+                )}
 
-        <button
-          type="button"
-          className="imp-nav-btn next"
-          onClick={goToNextStep}
-          disabled={currentStepIdx === stepsConfig.length - 1}
-        >
-          <span>NEXT STAGE</span>
-          <ChevronRight size={16} />
-        </button>
-      </div>
+                {activeStep === 'before_after' && (
+                  <ImprovementBeforeAfter key={`ba-${activeProject.id}`} aspects={activeProject.aspects} />
+                )}
+
+                {activeStep === 'yokoten' && activeProject.yokoten && (
+                  <ImprovementYokoten key={`yoko-${activeProject.id}`} data={activeProject.yokoten} />
+                )}
+              </AnimatePresence>
+            </div>
+
+            {/* Presentation Stage Footer Controls */}
+            <div className="stage-footer-bar">
+              <button
+                type="button"
+                className="stage-nav-btn prev"
+                onClick={goToPrevStep}
+                disabled={currentStepIdx === 0}
+              >
+                <ChevronLeft size={16} />
+                <span>PREV SLIDE</span>
+              </button>
+
+              <div className="stage-progress-indicator">
+                <div className="stage-dots-group">
+                  {stepsConfig.map((st, i) => (
+                    <span
+                      key={st.key}
+                      className={`stage-dot ${i === currentStepIdx ? 'active' : ''}`}
+                      onClick={() => setActiveStep(st.key)}
+                      title={st.label}
+                    />
+                  ))}
+                </div>
+                <div className="stage-keyboard-hint">
+                  <Keyboard size={12} />
+                  <span>Tekan tombol ← / → keyboard</span>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                className="stage-nav-btn next"
+                onClick={goToNextStep}
+                disabled={currentStepIdx === stepsConfig.length - 1}
+              >
+                <span>NEXT SLIDE</span>
+                <ChevronRight size={16} />
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
