@@ -38,6 +38,13 @@ export interface BackgroundData {
   challenge: string;
 }
 
+export interface ImprovementImageItem {
+  url: string;
+  title?: string;
+  caption?: string;
+  typeBadge?: string;
+}
+
 export interface BeforeAfterAspect {
   id: string;
   aspectTitle: string;
@@ -46,14 +53,20 @@ export interface BeforeAfterAspect {
     title: string;
     description: string;
     bulletPoints: string[];
-    illustrationType: 'robot_position' | 'ergonomics' | 'inverter_alarm';
+    illustrationType?: 'robot_position' | 'ergonomics' | 'inverter_alarm';
+    imageUrl?: string;
+    imageCaption?: string;
+    galleryImages?: ImprovementImageItem[];
     warningTag: string;
   };
   after: {
     title: string;
     description: string;
     bulletPoints: string[];
-    illustrationType: 'robot_position' | 'ergonomics' | 'inverter_alarm';
+    illustrationType?: 'robot_position' | 'ergonomics' | 'inverter_alarm';
+    imageUrl?: string;
+    imageCaption?: string;
+    galleryImages?: ImprovementImageItem[];
     solutionTag: string;
   };
   results: Array<{

@@ -97,21 +97,47 @@ export const IMPROVEMENT_PROJECTS: ImprovementProject[] = [
           description: 'PLC mengunci siklus lokator tanpa memunculkan peringatan error, sehingga teknisi harus melacak sinyal secara manual saat line stop terjadi.',
           bulletPoints: [
             'Saat sensor part detect ON terus, PLC hanya menahan perintah switching lokator secara pasif',
-            'Tidak ada sinyal error maupun notifikasi alarm pada layar sentuh HMI',
+            'Tidak ada sinyal error maupun notifikasi alarm pada layar sentuh HMI (Kotak merah kolom B baris 1 & 2 kosong)',
             'Waktu henti (line stop) bertambah lama karena pelacakan sinyal harus dilakukan manual'
           ],
           illustrationType: 'inverter_alarm',
+          imageUrl: '/assets/improvements/hmi_locator_alarm.jpg',
+          imageCaption: 'HMI Sebelum Kaizen: Kolom B Baris 1 & 2 Kosong (Zero Alarm saat NC Locator Freeze)',
+          galleryImages: [
+            {
+              url: '/assets/improvements/hmi_locator_alarm.jpg',
+              title: 'HMI Display Sebelum Kaizen (Zero Alarm)',
+              caption: 'Slot Kolom B Baris 1 & 2 Masih Kosong — Tidak Ada Indikasi Alarm Saat NC Locator Freeze',
+              typeBadge: 'BEFORE: HMI SCREEN'
+            }
+          ],
           warningTag: 'ZERO ALARM / SILENT LINE STOP'
         },
         after: {
           title: 'Penambahan Logika Timer Adding Error & Auto Alarm HMI',
-          description: 'Modifikasi program PLC dengan logika timeout: jika dalam waktu tertentu lokator NC tidak run setelah instruksi model change, alarm otomatis aktif.',
+          description: 'Modifikasi program PLC dengan logika timeout dan penambahan alarm "POKAYOKE FAULT NC" pada HMI: jika dalam waktu tertentu lokator NC tidak run setelah instruksi model change, alarm otomatis aktif.',
           bulletPoints: [
-            'Menambahkan Timer Interlock Error pada ladder program PLC (Logic Timeout Validation)',
-            'Jika lokator NC tidak RUN dalam batas waktu toleransi saat model change, alarm langsung berbunyi',
-            'Visualisasi popup error pada layar HMI mendeteksi sensor freeze secara presisi dan seketika'
+            'Modifikasi Ladder PLC (Rung 000057 & 000058): Output Coil M01D (POKAYOKE FAUL NC) & M01C (POKAYOKE FAULT)',
+            'Penambahan tombol/indikator alarm baru "POKAYOKE FAULT NC" pada slot Kolom B Baris 1 Layar HMI',
+            'Deteksi dini otomatis dalam batas toleransi waktu: alarm berbunyi seketika jika lokator NC freeze saat model change'
           ],
           illustrationType: 'inverter_alarm',
+          imageUrl: '/assets/improvements/hmi_after_pokayoke_nc.jpg',
+          imageCaption: 'HMI Sesudah Kaizen: Alarm "POKAYOKE FAULT NC" Aktif pada Kolom B Baris 1',
+          galleryImages: [
+            {
+              url: '/assets/improvements/hmi_after_pokayoke_nc.jpg',
+              title: '1. Modifikasi Layar HMI (After Kaizen)',
+              caption: 'Penambahan Indikator Alarm "POKAYOKE FAULT NC" pada Slot Kolom B Baris 1 Layar HMI',
+              typeBadge: '1. HMI SCREEN AFTER'
+            },
+            {
+              url: '/assets/improvements/plc_ladder_pokayoke_nc.jpg',
+              title: '2. Modifikasi Program PLC Ladder (After Kaizen)',
+              caption: 'Program1 Rung 000057 & 000058: Penambahan Output Coil M01D (POKAYOKE FAUL NC) & M01C (POKAYOKE FAULT)',
+              typeBadge: '2. PLC LADDER LOGIC'
+            }
+          ],
           solutionTag: 'AUTO ALARM TIMER INTERLOCK (< 5s)'
         },
         results: [
