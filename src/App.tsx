@@ -3,6 +3,7 @@ import { AnimatePresence } from 'framer-motion';
 import { INITIAL_CHARACTERS } from './data/characters';
 import type { Character } from './types/character';
 import { CharacterDetail } from './components/CharacterDetail';
+import { F1GarageHeader } from './components/F1GarageHeader';
 
 function PinIcon() {
   return (
@@ -244,69 +245,16 @@ export default function App() {
         }}
       >
 
-      {/* 4. Top Header & Identity Tag */}
+      {/* 4. Top Header & Identity Tag with F1 Garage Pit Wall Visuals & Special Animation */}
+      <F1GarageHeader isMobile={isMobile} />
+
+      {/* 5. Main 3D Card Carousel (Responsive & Centered: Portrait on Mobile, 4:3 on Tablet, 16:9 on Desktop) */}
       <div
         style={{
           position: 'absolute',
-          top: isMobile ? 14 : isTablet ? 20 : 24,
+          top: isMobile ? 'calc(50% - 10px)' : 'calc(50% - 8px)',
           left: '50%',
-          transform: 'translateX(-50%)',
-          display: 'flex',
-          alignItems: 'center',
-          gap: isMobile ? 6 : 10,
-          background: 'rgba(12, 17, 29, 0.78)',
-          backdropFilter: 'blur(20px)',
-          WebkitBackdropFilter: 'blur(20px)',
-          border: '1px solid rgba(255, 255, 255, 0.14)',
-          borderRadius: 999,
-          padding: isMobile ? '6px 14px' : '8px 22px',
-          zIndex: 20,
-          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.35)',
-          maxWidth: '92vw',
-          whiteSpace: 'nowrap',
-        }}
-      >
-        <span
-          style={{
-            display: 'inline-block',
-            width: isMobile ? 6 : 7,
-            height: isMobile ? 6 : 7,
-            borderRadius: '50%',
-            background: '#ff5500',
-            boxShadow: '0 0 10px #ff5500',
-          }}
-        />
-        <span
-          style={{
-            fontFamily: 'var(--font-mono)',
-            fontSize: isMobile ? 10.5 : 12.5,
-            fontWeight: 800,
-            color: '#ffffff',
-            letterSpacing: '0.12em',
-            textTransform: 'uppercase',
-          }}
-        >
-          {isMobile ? 'PW GARAGE // BODY#2' : 'PW GARAGE RED ZONE BODY#2'}
-        </span>
-        <span style={{ width: 1, height: 14, background: 'rgba(255,255,255,0.18)', margin: isMobile ? '0 2px' : '0 4px' }} />
-        <span
-          style={{
-            fontFamily: 'var(--font-mono)',
-            fontSize: isMobile ? 9.5 : 11,
-            fontWeight: 700,
-            color: '#ff6a1a',
-            letterSpacing: '0.08em',
-            textTransform: 'uppercase',
-          }}
-        >
-          {isMobile ? 'RED ZONE' : 'SHIFT RED TEAM'}
-        </span>
-      </div>
-
-      {/* 5. Main 3D Card Carousel (Responsive: Portrait on Mobile, 4:3 on Tablet, 16:9 on Desktop) */}
-      <div
-        style={{
-          position: 'relative',
+          transform: 'translate(-50%, -50%)',
           width: '100%',
           height: isMobile ? 'clamp(410px, 64vh, 520px)' : isTablet ? 'clamp(380px, 60vh, 540px)' : 'clamp(360px, 58vh, 520px)',
           display: 'flex',

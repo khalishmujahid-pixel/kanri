@@ -1,0 +1,235 @@
+/* ═══════════════════════════════════════════════════════════════════
+   F1 GARAGE RACING & PIT WALL HEADER STYLES (PW MAINT BODY#2 RED ZONE)
+   ═══════════════════════════════════════════════════════════════════ */
+
+.f1-garage-header-container {
+  position: absolute;
+  top: clamp(12px, 2.5vh, 26px);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 25;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  pointer-events: auto;
+  user-select: none;
+}
+
+/* ── Main Aerodynamic F1 Badge ── */
+.f1-garage-badge {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 8px 24px 7px 24px;
+  background: radial-gradient(circle at 50% 0%, rgba(255, 30, 0, 0.18) 0%, rgba(12, 17, 30, 0.88) 85%);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1.5px solid rgba(255, 85, 0, 0.45);
+  border-radius: 999px;
+  box-shadow: 
+    0 10px 35px rgba(0, 0, 0, 0.65),
+    0 0 20px rgba(255, 30, 0, 0.25),
+    inset 0 1px 1px rgba(255, 255, 255, 0.25);
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.f1-garage-badge:hover {
+  border-color: rgba(255, 85, 0, 0.8);
+  box-shadow: 
+    0 14px 45px rgba(0, 0, 0, 0.75),
+    0 0 35px rgba(255, 69, 0, 0.45),
+    inset 0 1px 2px rgba(255, 255, 255, 0.4);
+  transform: scale(1.02);
+}
+
+/* ── Glowing Racing Border Pulse & Neon Sweep ── */
+.f1-badge-glow-border {
+  position: absolute;
+  inset: -2px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, transparent, #ff1e00, #ff9f1c, transparent);
+  background-size: 200% 100%;
+  animation: f1BorderSweep 4s linear infinite;
+  opacity: 0.5;
+  pointer-events: none;
+  z-index: 0;
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  padding: 1.5px;
+}
+
+@keyframes f1BorderSweep {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* ── Top Pit Telemetry Sub-Row ── */
+.f1-telemetry-top-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 2px;
+  z-index: 2;
+}
+
+.f1-beacon-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 10px;
+  height: 10px;
+}
+
+.f1-beacon-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #ff1e00;
+  box-shadow: 0 0 10px #ff1e00, 0 0 18px #ff5500;
+  z-index: 2;
+}
+
+.f1-beacon-ring {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 1.5px solid #ff1e00;
+  animation: f1BeaconPulse 1.8s ease-out infinite;
+  opacity: 0;
+}
+
+@keyframes f1BeaconPulse {
+  0% {
+    transform: scale(0.5);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(2.2);
+    opacity: 0;
+  }
+}
+
+.f1-pit-status-tag {
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  font-weight: 800;
+  color: #ff6a1a;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  text-shadow: 0 0 10px rgba(255, 85, 0, 0.4);
+}
+
+.f1-telemetry-sep {
+  width: 1px;
+  height: 10px;
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.f1-pit-shift-tag {
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  font-weight: 700;
+  color: #94a3b8;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+/* ── Main Special Animated Racing Title ── */
+.f1-main-title-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  z-index: 2;
+}
+
+.f1-chevrons {
+  display: flex;
+  gap: 3px;
+  color: #ff5500;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 900;
+  opacity: 0.7;
+  letter-spacing: -2px;
+  animation: f1ChevronsPulse 2s ease-in-out infinite alternate;
+}
+
+.f1-chevrons.right {
+  animation-delay: 1s;
+}
+
+@keyframes f1ChevronsPulse {
+  0% { opacity: 0.4; transform: translateX(0); }
+  100% { opacity: 1; transform: translateX(2px); color: #ffd080; }
+}
+
+.f1-racing-text {
+  font-family: var(--font-mono);
+  font-size: clamp(14px, 2.2vw, 19px);
+  font-weight: 900;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  background: linear-gradient(
+    110deg,
+    #ffffff 0%,
+    #ffffff 20%,
+    #ff6a1a 35%,
+    #ffd080 50%,
+    #ff1e00 65%,
+    #ffffff 80%,
+    #ffffff 100%
+  );
+  background-size: 250% 100%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: f1TextRacingShimmer 4s linear infinite;
+  filter: drop-shadow(0 0 16px rgba(255, 69, 0, 0.45));
+  white-space: nowrap;
+}
+
+@keyframes f1TextRacingShimmer {
+  0% { background-position: 250% 0; }
+  100% { background-position: -250% 0; }
+}
+
+/* ── Laser Scanline Effect Across the Header ── */
+.f1-header-laser {
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.15), rgba(255, 85, 0, 0.3), transparent);
+  transform: skewX(-25deg);
+  animation: f1LaserSweep 5s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 1;
+}
+
+@keyframes f1LaserSweep {
+  0%, 30% { left: -100%; }
+  60%, 100% { left: 200%; }
+}
+
+/* ── Mobile & Responsive Tuning ── */
+@media (max-width: 768px) {
+  .f1-garage-badge {
+    padding: 6px 16px 5px 16px;
+  }
+  .f1-racing-text {
+    font-size: 13px;
+    letter-spacing: 0.12em;
+  }
+  .f1-chevrons {
+    font-size: 10px;
+  }
+  .f1-pit-status-tag, .f1-pit-shift-tag {
+    font-size: 8.5px;
+  }
+}
