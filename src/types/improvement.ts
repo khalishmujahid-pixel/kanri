@@ -23,6 +23,8 @@ export interface FlowchartNode {
 
 export interface BackgroundData {
   layoutTitle: string;
+  layoutImageUrl?: string;
+  layoutImageCaption?: string;
   stations: StationLayoutItem[];
   problemTitle: string;
   problemDescription: string;

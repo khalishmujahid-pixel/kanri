@@ -13,6 +13,8 @@ export const IMPROVEMENT_PROJECTS: ImprovementProject[] = [
     status: 'COMPLETED',
     background: {
       layoutTitle: 'LAYOUT UBF (UNDER BODY FINAL) // GLOBAL BODY LINE (GBL)',
+      layoutImageUrl: '/assets/improvements/ubf_st5_real_mapping.png',
+      layoutImageCaption: 'Real CAD Engineering Layout UBF Line — Menyorot Titik Masalah ST#5 GBL (Occurrence) & Titik Yokoten ST#2 Robot NC',
       problemTitle: 'LOKATOR NC NOT CAR-TYPE CHANGE COMPLETE (ZERO ALARM ERROR)',
       problemDescription: 'Saat proses pergantian tipe model (D26A/D03B ke model 230B atau sebaliknya), lokator NC tidak berpindah posisi. Sistem tidak memunculkan indikasi alarm error sehingga stasiun tertahan pada status Waiting NC Start dan mengakibatkan ST#5 UBF Not RUN (Line Stop).',
       activeEquipmentName: 'Mesin GBL ST#5 UBF (Global Body Line)',
