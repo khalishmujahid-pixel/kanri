@@ -10,6 +10,8 @@ import {
   Maximize2,
   X,
   Zap,
+  Radio,
+  RefreshCw,
 } from 'lucide-react';
 import type { PmEquipmentEntry } from '../types/character';
 
@@ -18,6 +20,10 @@ interface PmSCurveChartProps {
   month: number;
   year: number;
   monthName: string;
+  isLiveActive?: boolean;
+  isLiveSyncing?: boolean;
+  lastSyncedTime?: string | null;
+  onForceSync?: () => void;
 }
 
 export const PmSCurveChart: React.FC<PmSCurveChartProps> = ({
@@ -25,6 +31,10 @@ export const PmSCurveChart: React.FC<PmSCurveChartProps> = ({
   month,
   year,
   monthName,
+  isLiveActive = false,
+  isLiveSyncing = false,
+  lastSyncedTime = null,
+  onForceSync,
 }) => {
   const [hoveredDay, setHoveredDay] = useState<number | null>(null);
   const [showTable, setShowTable] = useState<boolean>(false);
@@ -453,6 +463,33 @@ export const PmSCurveChart: React.FC<PmSCurveChartProps> = ({
           </div>
 
           <div className="pm-header-action-group">
+            {/* Live Sync Status Pill inside Header */}
+            {onForceSync && (
+              <div className={`pm-header-live-pill ${isLiveActive ? 'is-active' : ''}`}>
+                <Radio size={11} className={isLiveActive ? 'live-pulsing' : ''} />
+                <span className="live-status-txt">
+                  {isLiveActive ? 'LIVE AUTO-SYNC (20s)' : 'READY TO SYNC'}
+                </span>
+                {lastSyncedTime && (
+                  <span className="live-time-chip">{lastSyncedTime}</span>
+                )}
+              </div>
+            )}
+
+            {/* FORCE SYNC Button */}
+            {onForceSync && (
+              <button
+                type="button"
+                className={`pm-header-sync-btn ${isLiveSyncing ? 'is-spinning' : ''}`}
+                onClick={onForceSync}
+                disabled={isLiveSyncing}
+                title="Tarik data terbaru dari Google Sheets sekarang"
+              >
+                <RefreshCw size={11} className={isLiveSyncing ? 'spin-anim' : ''} />
+                <span>{isLiveSyncing ? 'SYNCING...' : 'FORCE SYNC'}</span>
+              </button>
+            )}
+
             {/* Clear Telegram Cache Button */}
             <button
               type="button"
@@ -476,7 +513,7 @@ export const PmSCurveChart: React.FC<PmSCurveChartProps> = ({
               }}
               title="Bersihkan Antrian Error Bot Telegram"
             >
-              <span>🧹 CLEAR TELEGRAM CACHE</span>
+              <span>CLEAR CACHE</span>
             </button>
 
             {/* Zoom / Maximize Button */}
@@ -549,14 +586,12 @@ export const PmSCurveChart: React.FC<PmSCurveChartProps> = ({
               {kanbanADone} / {kanbanA.length} Done
             </span>
           </div>
-          {kanbanB.length > 0 && (
-            <div className="kanban-chip kanban-b">
-              <span className="kanban-badge b">KANBAN B (PERIODIC)</span>
-              <span className="kanban-count">
-                {kanbanBDone} / {kanbanB.length} Done
-              </span>
-            </div>
-          )}
+          <div className="kanban-chip kanban-b">
+            <span className="kanban-badge b">KANBAN B (PERIODIC)</span>
+            <span className="kanban-count">
+              {kanbanBDone} / {kanbanB.length} Done
+            </span>
+          </div>
           {kanbanC.length > 0 && (
             <div className="kanban-chip kanban-c">
               <span className="kanban-badge c">KANBAN C</span>
@@ -575,7 +610,7 @@ export const PmSCurveChart: React.FC<PmSCurveChartProps> = ({
           )}
         </div>
 
-        {/* Clickable SVG S-Curve Chart Area */}
+        {/* Clickable SVG S-Curve Chart Area (Wide Horizontal Ratio) */}
         <div
           className="pm-scurve-chart-box"
           onClick={() => {
@@ -583,7 +618,7 @@ export const PmSCurveChart: React.FC<PmSCurveChartProps> = ({
           }}
           title="Klik untuk membuka tampilan layar penuh (80%)"
         >
-          {renderSvgChart(800, 260, false)}
+          {renderSvgChart(1050, 260, false)}
 
           {/* Hover Telemetry Card */}
           {activeHoverData && (

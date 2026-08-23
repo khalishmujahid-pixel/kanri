@@ -20,7 +20,7 @@ import { PmProgressChart } from './PmProgressChart';
 import { PmSCurveChart } from './PmSCurveChart';
 import { ImprovementViewer } from './improvement/ImprovementViewer';
 import { fetchLivePmSchedule } from '../services/googleSheetsService';
-import { RefreshCw, Radio } from 'lucide-react';
+import { RefreshCw } from 'lucide-react';
 
 interface CharacterDetailProps {
   character: Character;
@@ -292,33 +292,6 @@ export const CharacterDetail: React.FC<CharacterDetailProps> = ({
                       />
                     )}
 
-                    {/* Live Google Sheets Connection Bar */}
-                    <div className="pm-live-sync-bar">
-                      <div className={`pm-live-status-pill ${isLiveActive ? 'is-active' : ''}`}>
-                        <Radio size={12} className={isLiveActive ? 'live-pulsing' : ''} />
-                        <span>
-                          {isLiveActive
-                            ? 'LIVE AUTO-SYNC (20s): GOOGLE SHEETS ACTIVE'
-                            : 'DATABASE: READY TO SYNC'}
-                        </span>
-                        {lastSyncedTime && (
-                          <span className="pm-live-time-chip">
-                            UPDATED: {lastSyncedTime}
-                          </span>
-                        )}
-                      </div>
-                      <button
-                        type="button"
-                        className={`pm-sync-refresh-btn ${isLiveSyncing ? 'is-spinning' : ''}`}
-                        onClick={() => syncFromSheets(false)}
-                        disabled={isLiveSyncing}
-                        title="Tarik data terbaru dari Google Sheets sekarang"
-                      >
-                        <RefreshCw size={12} className={isLiveSyncing ? 'spin-anim' : ''} />
-                        <span>{isLiveSyncing ? 'SYNCING DATA...' : 'FORCE SYNC'}</span>
-                      </button>
-                    </div>
-
                     {/* S-Curve cumulative chart for active month */}
                     {((liveSchedule && liveSchedule.length > 0) || (filteredPmDocs.length > 0 && filteredPmDocs[0].equipmentSchedule && filteredPmDocs[0].equipmentSchedule.length > 0)) ? (
                       <PmSCurveChart
@@ -326,6 +299,10 @@ export const CharacterDetail: React.FC<CharacterDetailProps> = ({
                         month={pmMonth}
                         year={pmYear}
                         monthName={MONTHS[pmMonth - 1]}
+                        isLiveActive={isLiveActive}
+                        isLiveSyncing={isLiveSyncing}
+                        lastSyncedTime={lastSyncedTime}
+                        onForceSync={() => syncFromSheets(false)}
                       />
                     ) : (
                       <div className="ready-notice-box" style={{ margin: '16px 0' }}>
