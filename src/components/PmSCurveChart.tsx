@@ -32,14 +32,17 @@ export const PmSCurveChart: React.FC<PmSCurveChartProps> = ({
 
   // Close zoom modal on ESC key
   useEffect(() => {
+    if (!isZoomed) return;
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
+        e.stopPropagation();
+        e.stopImmediatePropagation();
         setIsZoomed(false);
       }
     };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
+    window.addEventListener('keydown', handleKeyDown, true);
+    return () => window.removeEventListener('keydown', handleKeyDown, true);
+  }, [isZoomed]);
 
   const daysInMonth = new Date(year, month, 0).getDate(); // e.g. 31 for August
 

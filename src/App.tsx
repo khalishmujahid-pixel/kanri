@@ -139,7 +139,7 @@ export default function App() {
     if (selectedCharacter) {
       if (e.key === 'Escape') {
         const hasOpenModal = document.querySelector(
-          '.pm-lightbox-backdrop, .imp-image-lightbox-backdrop, .imp-presentation-stage-overlay, .pm-s-curve-modal, .lightbox-modal-wrap, [role="dialog"]'
+          '.pm-zoom-modal-backdrop, .pm-lightbox-backdrop, .imp-image-lightbox-backdrop, .imp-presentation-stage-overlay, .pm-s-curve-modal, .lightbox-modal-wrap, [role="dialog"]'
         );
         if (hasOpenModal) {
           // A zoom/lightbox or presentation modal is open; do not return to showroom/homepage
