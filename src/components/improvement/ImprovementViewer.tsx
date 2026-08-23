@@ -64,15 +64,50 @@ export const ImprovementViewer: React.FC<ImprovementViewerProps> = ({ character 
     }
   };
 
-  // Keyboard navigation when in presentation view
+  // Keyboard navigation & vertical scrolling when in presentation view
   useEffect(() => {
     if (!activeProject) return;
 
     const handleKeyDown = (e: KeyboardEvent) => {
+      // Don't intercept if user is typing in an input
+      if (['INPUT', 'TEXTAREA', 'SELECT'].includes((e.target as HTMLElement)?.tagName)) return;
+
+      const viewport = document.querySelector('.stage-slide-viewport') as HTMLElement | null;
+
       if (e.key === 'ArrowRight') {
         goToNextStep();
       } else if (e.key === 'ArrowLeft') {
         goToPrevStep();
+      } else if (e.key === 'ArrowDown') {
+        if (viewport) {
+          viewport.scrollBy({ top: 120, behavior: 'smooth' });
+          e.preventDefault();
+        }
+      } else if (e.key === 'ArrowUp') {
+        if (viewport) {
+          viewport.scrollBy({ top: -120, behavior: 'smooth' });
+          e.preventDefault();
+        }
+      } else if (e.key === 'PageDown' || (e.key === ' ' && !e.shiftKey)) {
+        if (viewport) {
+          viewport.scrollBy({ top: 380, behavior: 'smooth' });
+          e.preventDefault();
+        }
+      } else if (e.key === 'PageUp' || (e.key === ' ' && e.shiftKey)) {
+        if (viewport) {
+          viewport.scrollBy({ top: -380, behavior: 'smooth' });
+          e.preventDefault();
+        }
+      } else if (e.key === 'Home') {
+        if (viewport) {
+          viewport.scrollTo({ top: 0, behavior: 'smooth' });
+          e.preventDefault();
+        }
+      } else if (e.key === 'End') {
+        if (viewport) {
+          viewport.scrollTo({ top: viewport.scrollHeight, behavior: 'smooth' });
+          e.preventDefault();
+        }
       } else if (e.key === 'Escape') {
         // If an inner image lightbox is open, let the image lightbox handle Escape!
         const hasOpenLightbox = document.querySelector('.imp-image-lightbox-backdrop');
@@ -305,7 +340,7 @@ export const ImprovementViewer: React.FC<ImprovementViewerProps> = ({ character 
                 </div>
                 <div className="stage-keyboard-hint">
                   <Keyboard size={12} />
-                  <span>Tekan tombol ← / → keyboard</span>
+                  <span>Navigasi: ← / → Slide | ↑ / ↓ Scroll Layar</span>
                 </div>
               </div>
 

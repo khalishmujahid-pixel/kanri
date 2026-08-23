@@ -105,6 +105,43 @@ export const CharacterDetail: React.FC<CharacterDetailProps> = ({
     return () => window.removeEventListener('keydown', handleKeyDown, true);
   }, [lightboxDoc]);
 
+  // Global keyboard scrolling for detail view
+  React.useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (['INPUT', 'TEXTAREA', 'SELECT'].includes((e.target as HTMLElement)?.tagName)) return;
+
+      // If a presentation overlay or lightbox is active, let it handle its own scrolling
+      const isPresentationActive = document.querySelector('.imp-presentation-stage-overlay, .pm-zoom-modal-backdrop, .pm-lightbox-backdrop, .imp-image-lightbox-backdrop');
+      if (isPresentationActive) return;
+
+      const mainContent = document.querySelector('.detail-main-content') as HTMLElement | null;
+      if (!mainContent) return;
+
+      if (e.key === 'ArrowDown') {
+        mainContent.scrollBy({ top: 100, behavior: 'smooth' });
+        e.preventDefault();
+      } else if (e.key === 'ArrowUp') {
+        mainContent.scrollBy({ top: -100, behavior: 'smooth' });
+        e.preventDefault();
+      } else if (e.key === 'PageDown' || (e.key === ' ' && !e.shiftKey)) {
+        mainContent.scrollBy({ top: 350, behavior: 'smooth' });
+        e.preventDefault();
+      } else if (e.key === 'PageUp' || (e.key === ' ' && e.shiftKey)) {
+        mainContent.scrollBy({ top: -350, behavior: 'smooth' });
+        e.preventDefault();
+      } else if (e.key === 'Home') {
+        mainContent.scrollTo({ top: 0, behavior: 'smooth' });
+        e.preventDefault();
+      } else if (e.key === 'End') {
+        mainContent.scrollTo({ top: mainContent.scrollHeight, behavior: 'smooth' });
+        e.preventDefault();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
   // Spotlight video playback state for expand menu
   const [spotlightVideoReady, setSpotlightVideoReady] = useState(false);
 
