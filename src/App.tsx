@@ -137,16 +137,7 @@ export default function App() {
   // Keyboard navigation
   const onKeyDown = useCallback((e: KeyboardEvent) => {
     if (selectedCharacter) {
-      if (e.key === 'Escape') {
-        const hasOpenModal = document.querySelector(
-          '.pm-zoom-modal-backdrop, .pm-lightbox-backdrop, .imp-image-lightbox-backdrop, .imp-presentation-stage-overlay, .pm-s-curve-modal, .lightbox-modal-wrap, [role="dialog"]'
-        );
-        if (hasOpenModal) {
-          // A zoom/lightbox or presentation modal is open; do not return to showroom/homepage
-          return;
-        }
-        setSelectedCharacter(null);
-      }
+      // While in Character Detail view, all keyboard events are managed by child modals (zoom/lightbox)
       return;
     }
     if (e.key === 'ArrowLeft') prev();
