@@ -204,9 +204,7 @@ export const ImprovementViewer: React.FC<ImprovementViewerProps> = ({ character 
               </button>
 
               <div className="stage-meeting-branding">
-                <span className="branding-cup">NASRI CUP // BODY 2 WHITE SHIFT</span>
-                <span className="branding-sep">|</span>
-                <span className="branding-title">KANRI MEETING {activeProject.period.toUpperCase()}</span>
+                <span className="branding-title">KANRI MEETING</span>
               </div>
 
               <div className="stage-top-right">
