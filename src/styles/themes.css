@@ -1,0 +1,773 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   KANRI — MULTI-THEME SYSTEM
+   Three themes: midnight (default), presentation, aurora
+   Applied via [data-theme] attribute on <html> element
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ──────────────────────────────────────────────────────────────────────────
+   1. MIDNIGHT (DEFAULT — F1 Racing Dark)
+   All existing styles already target this look. We just define CSS vars
+   so ThemeSelector can read them. No visual changes to the default theme.
+   ────────────────────────────────────────────────────────────────────────── */
+:root,
+[data-theme="midnight"] {
+  --theme-bg-primary: #070911;
+  --theme-bg-secondary: rgba(10, 14, 23, 0.85);
+  --theme-bg-card: rgba(13, 18, 30, 0.85);
+  --theme-bg-glass: rgba(12, 17, 29, 0.82);
+  --theme-bg-overlay: radial-gradient(ellipse 85% 65% at 50% 50%, rgba(7,9,17,0.3) 0%, rgba(7,9,17,0.72) 75%, rgba(4,6,12,0.92) 100%), linear-gradient(to top, rgba(7,9,17,0.85) 0%, transparent 35%);
+
+  --theme-text-primary: #ffffff;
+  --theme-text-secondary: rgba(255,255,255,0.7);
+  --theme-text-muted: #94a3b8;
+
+  --theme-accent: #ff5500;
+  --theme-accent-bright: #ff6a1a;
+  --theme-accent-glow: rgba(255,85,0,0.35);
+  --theme-accent-amber: #ffd080;
+
+  --theme-border: rgba(255,255,255,0.14);
+  --theme-border-accent: rgba(255,85,0,0.45);
+
+  --theme-card-shadow: 0 35px 80px rgba(0,0,0,0.75), 0 0 0 1.5px rgba(255,85,0,0.45), 0 0 35px rgba(255,85,0,0.25);
+  --theme-card-shadow-side: 0 20px 40px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.08);
+
+  --theme-bottom-bar-bg: rgba(12,17,29,0.82);
+  --theme-center-glow: radial-gradient(circle, rgba(255,85,0,0.14) 0%, rgba(255,85,0,0.03) 45%, transparent 70%);
+
+  --theme-dot-active: #ff5500;
+  --theme-dot-inactive: rgba(255,255,255,0.25);
+  --theme-dot-glow: rgba(255,85,0,0.6);
+
+  --theme-pagination-bg: rgba(255,85,0,0.15);
+  --theme-status-active: #10b981;
+  --theme-status-active-bg: rgba(16,185,129,0.2);
+  --theme-status-active-border: rgba(16,185,129,0.45);
+
+  --theme-transition-speed: 0.6s;
+}
+
+/* ──────────────────────────────────────────────────────────────────────────
+   2. PRESENTATION — Boardroom Clarity (Light High-Contrast)
+   Clean white/light-gray background, navy accents, strong readability.
+   ────────────────────────────────────────────────────────────────────────── */
+[data-theme="presentation"] {
+  --theme-bg-primary: #eef2f7;
+  --theme-bg-secondary: rgba(255,255,255,0.96);
+  --theme-bg-card: rgba(255,255,255,0.98);
+  --theme-bg-glass: rgba(255,255,255,0.94);
+  --theme-bg-overlay: linear-gradient(160deg, rgba(236,240,248,0.55) 0%, rgba(220,228,240,0.8) 100%);
+
+  --theme-text-primary: #0f172a;
+  --theme-text-secondary: rgba(15,23,42,0.78);
+  --theme-text-muted: #475569;
+
+  --theme-accent: #1d4ed8;
+  --theme-accent-bright: #2563eb;
+  --theme-accent-glow: rgba(37,99,235,0.25);
+  --theme-accent-amber: #0f172a;
+
+  --theme-border: rgba(15,23,42,0.14);
+  --theme-border-accent: rgba(37,99,235,0.5);
+
+  --theme-card-shadow: 0 20px 50px rgba(15,23,42,0.18), 0 0 0 1.5px rgba(37,99,235,0.5), 0 0 20px rgba(37,99,235,0.15);
+  --theme-card-shadow-side: 0 10px 30px rgba(15,23,42,0.12), 0 0 0 1px rgba(15,23,42,0.1);
+
+  --theme-bottom-bar-bg: rgba(255,255,255,0.92);
+  --theme-center-glow: radial-gradient(circle, rgba(37,99,235,0.08) 0%, transparent 70%);
+
+  --theme-dot-active: #1d4ed8;
+  --theme-dot-inactive: rgba(15,23,42,0.2);
+  --theme-dot-glow: rgba(37,99,235,0.5);
+
+  --theme-pagination-bg: rgba(37,99,235,0.12);
+  --theme-status-active: #059669;
+  --theme-status-active-bg: rgba(5,150,105,0.12);
+  --theme-status-active-border: rgba(5,150,105,0.4);
+
+  --theme-transition-speed: 0.5s;
+}
+
+/* ──────────────────────────────────────────────────────────────────────────
+   3. AURORA — Elegant Animated Dark (Violet + Teal)
+   Ultra-dark base with animated aurora gradient, glowing violet/teal accents.
+   ────────────────────────────────────────────────────────────────────────── */
+[data-theme="aurora"] {
+  --theme-bg-primary: #050812;
+  --theme-bg-secondary: rgba(15,10,35,0.88);
+  --theme-bg-card: rgba(18,12,40,0.92);
+  --theme-bg-glass: rgba(12,8,28,0.85);
+  --theme-bg-overlay: radial-gradient(ellipse 90% 70% at 50% 50%, rgba(5,8,18,0.15) 0%, rgba(5,8,18,0.65) 70%, rgba(3,5,14,0.95) 100%), linear-gradient(to top, rgba(5,8,18,0.9) 0%, transparent 40%);
+
+  --theme-text-primary: #f0eeff;
+  --theme-text-secondary: rgba(240,238,255,0.75);
+  --theme-text-muted: #a78bfa;
+
+  --theme-accent: #8b5cf6;
+  --theme-accent-bright: #a78bfa;
+  --theme-accent-glow: rgba(139,92,246,0.4);
+  --theme-accent-amber: #2dd4bf;
+
+  --theme-border: rgba(139,92,246,0.2);
+  --theme-border-accent: rgba(139,92,246,0.55);
+
+  --theme-card-shadow: 0 35px 80px rgba(0,0,0,0.85), 0 0 0 1.5px rgba(139,92,246,0.5), 0 0 40px rgba(139,92,246,0.25);
+  --theme-card-shadow-side: 0 20px 40px rgba(0,0,0,0.6), 0 0 0 1px rgba(139,92,246,0.15);
+
+  --theme-bottom-bar-bg: rgba(12,8,28,0.88);
+  --theme-center-glow: radial-gradient(circle, rgba(139,92,246,0.18) 0%, rgba(45,212,191,0.06) 50%, transparent 70%);
+
+  --theme-dot-active: #8b5cf6;
+  --theme-dot-inactive: rgba(139,92,246,0.25);
+  --theme-dot-glow: rgba(139,92,246,0.65);
+
+  --theme-pagination-bg: rgba(139,92,246,0.15);
+  --theme-status-active: #2dd4bf;
+  --theme-status-active-bg: rgba(45,212,191,0.15);
+  --theme-status-active-border: rgba(45,212,191,0.4);
+
+  --theme-transition-speed: 0.7s;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   GLOBAL THEME TRANSITIONS
+   Smooth color morphing when switching themes
+   ═══════════════════════════════════════════════════════════════════════════ */
+html {
+  transition:
+    background-color 0.6s cubic-bezier(0.4, 0, 0.2, 1),
+    color 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   PRESENTATION THEME — GLOBAL OVERRIDES
+   Override key structural elements for the light theme
+   ═══════════════════════════════════════════════════════════════════════════ */
+[data-theme="presentation"] body {
+  background: #eef2f7;
+  color: #0f172a;
+}
+
+/* Presentation: Detail View */
+[data-theme="presentation"] .detail-view-container {
+  background: radial-gradient(circle at 50% 30%, #dce6f5 0%, #eef2f7 100%);
+}
+
+[data-theme="presentation"] .detail-header-bar {
+  background: rgba(255,255,255,0.95);
+  border-bottom-color: rgba(15,23,42,0.12);
+}
+
+[data-theme="presentation"] .return-button {
+  background: rgba(15,23,42,0.06);
+  border-color: rgba(15,23,42,0.2);
+  color: #0f172a;
+}
+
+[data-theme="presentation"] .return-button:hover {
+  background: rgba(37,99,235,0.1);
+  border-color: rgba(37,99,235,0.5);
+  color: #1d4ed8;
+  box-shadow: 0 0 12px rgba(37,99,235,0.18);
+}
+
+[data-theme="presentation"] .detail-code-badge {
+  background: rgba(37,99,235,0.12);
+  border-color: rgba(37,99,235,0.4);
+  color: #1d4ed8;
+}
+
+[data-theme="presentation"] .detail-header-sep {
+  color: #1d4ed8;
+}
+
+[data-theme="presentation"] .detail-header-title {
+  color: #0f172a;
+}
+
+[data-theme="presentation"] .detail-character-spotlight {
+  background: rgba(255,255,255,0.6);
+  border-right-color: rgba(15,23,42,0.1);
+}
+
+[data-theme="presentation"] .spotlight-card {
+  background: #ffffff;
+  border-color: rgba(37,99,235,0.2);
+  box-shadow: 0 8px 24px rgba(15,23,42,0.12);
+}
+
+[data-theme="presentation"] .spotlight-name {
+  color: #0f172a;
+}
+
+[data-theme="presentation"] .spotlight-division {
+  color: #1d4ed8;
+}
+
+[data-theme="presentation"] .spotlight-meta-block {
+  background: rgba(255,255,255,0.9);
+  border-color: rgba(15,23,42,0.1);
+}
+
+[data-theme="presentation"] .meta-key {
+  color: #64748b;
+}
+
+[data-theme="presentation"] .meta-val {
+  color: #0f172a;
+}
+
+[data-theme="presentation"] .detail-main-content {
+  background: transparent;
+}
+
+[data-theme="presentation"] .category-tab-btn {
+  background: rgba(255,255,255,0.85);
+  border-color: rgba(15,23,42,0.12);
+}
+
+[data-theme="presentation"] .category-tab-btn:hover {
+  border-color: rgba(37,99,235,0.45);
+  background: rgba(37,99,235,0.06);
+}
+
+[data-theme="presentation"] .category-tab-btn.active {
+  background: rgba(37,99,235,0.1);
+  border-color: #1d4ed8;
+  box-shadow: 0 0 16px rgba(37,99,235,0.2);
+}
+
+[data-theme="presentation"] .tab-code {
+  color: #94a3b8;
+}
+
+[data-theme="presentation"] .category-tab-btn.active .tab-code {
+  color: #1d4ed8;
+}
+
+[data-theme="presentation"] .tab-icon-wrap {
+  color: #94a3b8;
+}
+
+[data-theme="presentation"] .category-tab-btn.active .tab-icon-wrap {
+  color: #1d4ed8;
+}
+
+[data-theme="presentation"] .tab-label {
+  color: #334155;
+}
+
+[data-theme="presentation"] .category-tab-btn.active .tab-label {
+  color: #0f172a;
+}
+
+[data-theme="presentation"] .panel-header-card {
+  background: rgba(255,255,255,0.9);
+  border-color: rgba(15,23,42,0.1);
+}
+
+[data-theme="presentation"] .panel-tagline {
+  color: #1d4ed8;
+}
+
+[data-theme="presentation"] .panel-title {
+  color: #0f172a;
+}
+
+[data-theme="presentation"] .panel-desc {
+  color: #475569;
+}
+
+[data-theme="presentation"] .panel-status-badge {
+  background: rgba(37,99,235,0.1);
+  border-color: rgba(37,99,235,0.3);
+  color: #1d4ed8;
+}
+
+[data-theme="presentation"] .placeholder-card {
+  background: rgba(255,255,255,0.75);
+  border-color: rgba(15,23,42,0.12);
+}
+
+[data-theme="presentation"] .card-id-tag {
+  color: #1d4ed8;
+}
+
+[data-theme="presentation"] .card-item-title {
+  color: #0f172a;
+}
+
+[data-theme="presentation"] .card-item-summary {
+  color: #475569;
+}
+
+[data-theme="presentation"] .pm-doc-card {
+  background: rgba(255,255,255,0.92);
+  border-color: rgba(37,99,235,0.25);
+  box-shadow: 0 8px 24px rgba(15,23,42,0.1);
+}
+
+[data-theme="presentation"] .pm-doc-card:hover {
+  border-color: rgba(37,99,235,0.5);
+  box-shadow: 0 12px 32px rgba(15,23,42,0.15), 0 0 20px rgba(37,99,235,0.12);
+}
+
+[data-theme="presentation"] .pm-doc-card-title {
+  color: #0f172a;
+}
+
+[data-theme="presentation"] .pm-select {
+  background: rgba(255,255,255,0.95);
+  border-color: rgba(37,99,235,0.4);
+  color: #0f172a;
+}
+
+[data-theme="presentation"] .pm-select option {
+  background: #ffffff;
+  color: #0f172a;
+}
+
+[data-theme="presentation"] .pm-lightbox-backdrop {
+  background: rgba(15,23,42,0.75);
+}
+
+[data-theme="presentation"] .pm-lightbox-inner {
+  background: #ffffff;
+  border-color: rgba(37,99,235,0.3);
+}
+
+[data-theme="presentation"] .pm-lightbox-title {
+  color: #0f172a;
+}
+
+[data-theme="presentation"] .pm-lightbox-period {
+  color: #1d4ed8;
+}
+
+[data-theme="presentation"] .pm-lightbox-close {
+  background: rgba(37,99,235,0.1);
+  border-color: rgba(37,99,235,0.35);
+  color: #1d4ed8;
+}
+
+/* Presentation: Card animations override — subtler */
+[data-theme="presentation"] .card-center-active {
+  animation: presentationPulseAura 5s ease-in-out infinite;
+}
+
+@keyframes presentationPulseAura {
+  0%, 100% {
+    box-shadow: 0 20px 50px rgba(15,23,42,0.18), 0 0 0 1.5px rgba(37,99,235,0.5), 0 0 20px rgba(37,99,235,0.15);
+  }
+  50% {
+    box-shadow: 0 25px 60px rgba(15,23,42,0.22), 0 0 0 2px rgba(37,99,235,0.75), 0 0 35px rgba(37,99,235,0.25);
+  }
+}
+
+/* Presentation: Laser scanner — blue */
+[data-theme="presentation"] .character-laser-scanner {
+  background: linear-gradient(90deg, transparent 0%, rgba(37,99,235,0.3) 15%, #2563eb 50%, rgba(37,99,235,0.3) 85%, transparent 100%);
+  box-shadow: 0 0 14px #1d4ed8, 0 0 28px rgba(37,99,235,0.5);
+}
+
+/* Presentation: F1 Header */
+[data-theme="presentation"] .f1-garage-badge {
+  background: radial-gradient(circle at 50% 0%, rgba(37,99,235,0.15) 0%, rgba(255,255,255,0.95) 85%);
+  border-color: rgba(37,99,235,0.5);
+  box-shadow: 0 8px 28px rgba(15,23,42,0.14), 0 0 16px rgba(37,99,235,0.18), inset 0 1px 1px rgba(255,255,255,0.9);
+}
+
+[data-theme="presentation"] .f1-garage-badge:hover {
+  border-color: rgba(37,99,235,0.8);
+  box-shadow: 0 12px 36px rgba(15,23,42,0.18), 0 0 28px rgba(37,99,235,0.3);
+}
+
+[data-theme="presentation"] .f1-badge-glow-border {
+  background: linear-gradient(90deg, transparent, #1d4ed8, #60a5fa, transparent);
+  opacity: 0.45;
+}
+
+[data-theme="presentation"] .f1-beacon-dot {
+  background: #1d4ed8;
+  box-shadow: 0 0 8px #1d4ed8, 0 0 16px #3b82f6;
+}
+
+[data-theme="presentation"] .f1-beacon-ring {
+  border-color: #1d4ed8;
+}
+
+[data-theme="presentation"] .f1-pit-status-tag {
+  color: #1d4ed8;
+  text-shadow: 0 0 8px rgba(37,99,235,0.3);
+}
+
+[data-theme="presentation"] .f1-racing-text {
+  background: linear-gradient(110deg, #0f172a 0%, #0f172a 20%, #1d4ed8 35%, #60a5fa 50%, #0f172a 65%, #0f172a 100%);
+  background-size: 250% 100%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 0 12px rgba(37,99,235,0.3));
+  animation: f1TextRacingShimmer 5s linear infinite;
+}
+
+[data-theme="presentation"] .f1-chevrons {
+  color: #1d4ed8;
+}
+
+[data-theme="presentation"] .f1-pit-shift-tag {
+  color: #475569;
+}
+
+[data-theme="presentation"] .f1-header-laser {
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.25), rgba(37,99,235,0.35), transparent);
+}
+
+/* Presentation: Improvement module */
+[data-theme="presentation"] .imp-list-header-bar {
+  background: radial-gradient(circle at 10% 20%, rgba(37,99,235,0.1) 0%, rgba(255,255,255,0.92) 100%);
+  border-color: rgba(37,99,235,0.3);
+}
+
+[data-theme="presentation"] .imp-list-subtitle { color: #1d4ed8; }
+[data-theme="presentation"] .imp-list-title { color: #0f172a; }
+[data-theme="presentation"] .imp-list-count-badge {
+  background: rgba(37,99,235,0.1);
+  color: #1d4ed8;
+  border-color: rgba(37,99,235,0.35);
+}
+
+[data-theme="presentation"] .imp-summary-card {
+  background: radial-gradient(circle at 90% 10%, rgba(37,99,235,0.05) 0%, rgba(255,255,255,0.9) 100%);
+  border-color: rgba(15,23,42,0.12);
+}
+
+[data-theme="presentation"] .imp-summary-card::before {
+  background: linear-gradient(to bottom, #1d4ed8, #60a5fa);
+}
+
+[data-theme="presentation"] .imp-summary-card:hover {
+  border-color: rgba(37,99,235,0.45);
+  box-shadow: 0 8px 24px rgba(37,99,235,0.12);
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   AURORA THEME — GLOBAL OVERRIDES
+   Ultra-dark with animated aurora background and violet/teal accents
+   ═══════════════════════════════════════════════════════════════════════════ */
+[data-theme="aurora"] body {
+  background: #050812;
+  color: #f0eeff;
+}
+
+/* Aurora animated background gradient */
+[data-theme="aurora"] body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 80% 50% at 20% 10%, rgba(139,92,246,0.18) 0%, transparent 60%),
+    radial-gradient(ellipse 70% 60% at 80% 90%, rgba(45,212,191,0.12) 0%, transparent 55%),
+    radial-gradient(ellipse 60% 40% at 50% 50%, rgba(236,72,153,0.06) 0%, transparent 50%);
+  animation: auroraShift 12s ease-in-out infinite alternate;
+}
+
+@keyframes auroraShift {
+  0% {
+    background:
+      radial-gradient(ellipse 80% 50% at 20% 10%, rgba(139,92,246,0.18) 0%, transparent 60%),
+      radial-gradient(ellipse 70% 60% at 80% 90%, rgba(45,212,191,0.12) 0%, transparent 55%),
+      radial-gradient(ellipse 60% 40% at 50% 50%, rgba(236,72,153,0.06) 0%, transparent 50%);
+  }
+  33% {
+    background:
+      radial-gradient(ellipse 90% 55% at 75% 20%, rgba(139,92,246,0.2) 0%, transparent 60%),
+      radial-gradient(ellipse 65% 70% at 15% 80%, rgba(45,212,191,0.14) 0%, transparent 55%),
+      radial-gradient(ellipse 70% 45% at 60% 40%, rgba(236,72,153,0.08) 0%, transparent 50%);
+  }
+  66% {
+    background:
+      radial-gradient(ellipse 75% 60% at 40% 70%, rgba(139,92,246,0.15) 0%, transparent 60%),
+      radial-gradient(ellipse 80% 50% at 90% 20%, rgba(45,212,191,0.16) 0%, transparent 55%),
+      radial-gradient(ellipse 55% 55% at 30% 30%, rgba(236,72,153,0.07) 0%, transparent 50%);
+  }
+  100% {
+    background:
+      radial-gradient(ellipse 85% 45% at 10% 60%, rgba(139,92,246,0.2) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 65% at 70% 10%, rgba(45,212,191,0.12) 0%, transparent 55%),
+      radial-gradient(ellipse 65% 50% at 80% 70%, rgba(236,72,153,0.09) 0%, transparent 50%);
+  }
+}
+
+/* Aurora: Detail view */
+[data-theme="aurora"] .detail-view-container {
+  background: radial-gradient(circle at 50% 30%, #0d0a24 0%, #050812 100%);
+}
+
+[data-theme="aurora"] .detail-header-bar {
+  background: rgba(15,10,35,0.9);
+  border-bottom-color: rgba(139,92,246,0.2);
+}
+
+[data-theme="aurora"] .return-button {
+  background: rgba(139,92,246,0.1);
+  border-color: rgba(139,92,246,0.3);
+  color: #f0eeff;
+}
+
+[data-theme="aurora"] .return-button:hover {
+  background: rgba(139,92,246,0.2);
+  border-color: rgba(139,92,246,0.65);
+  color: #a78bfa;
+  box-shadow: 0 0 16px rgba(139,92,246,0.25);
+}
+
+[data-theme="aurora"] .detail-code-badge {
+  background: rgba(139,92,246,0.18);
+  border-color: rgba(139,92,246,0.45);
+  color: #a78bfa;
+}
+
+[data-theme="aurora"] .detail-header-sep { color: #8b5cf6; }
+[data-theme="aurora"] .detail-header-title { color: #f0eeff; }
+
+[data-theme="aurora"] .detail-character-spotlight {
+  background: rgba(15,10,35,0.6);
+  border-right-color: rgba(139,92,246,0.18);
+}
+
+[data-theme="aurora"] .spotlight-card {
+  background: #0d0a24;
+  border-color: rgba(139,92,246,0.25);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.6), 0 0 20px rgba(139,92,246,0.1);
+}
+
+[data-theme="aurora"] .spotlight-name { color: #f0eeff; }
+[data-theme="aurora"] .spotlight-division { color: #a78bfa; }
+
+[data-theme="aurora"] .spotlight-meta-block {
+  background: rgba(18,12,40,0.9);
+  border-color: rgba(139,92,246,0.15);
+}
+
+[data-theme="aurora"] .meta-key { color: #7c3aed; }
+[data-theme="aurora"] .meta-val { color: #e9e4ff; }
+
+[data-theme="aurora"] .category-tab-btn {
+  background: rgba(18,12,40,0.85);
+  border-color: rgba(139,92,246,0.15);
+}
+
+[data-theme="aurora"] .category-tab-btn:hover {
+  border-color: rgba(139,92,246,0.5);
+  background: rgba(139,92,246,0.1);
+}
+
+[data-theme="aurora"] .category-tab-btn.active {
+  background: rgba(139,92,246,0.18);
+  border-color: #8b5cf6;
+  box-shadow: 0 0 24px rgba(139,92,246,0.3);
+}
+
+[data-theme="aurora"] .tab-code { color: #6d28d9; }
+[data-theme="aurora"] .category-tab-btn.active .tab-code { color: #a78bfa; }
+[data-theme="aurora"] .tab-icon-wrap { color: #6d28d9; }
+[data-theme="aurora"] .category-tab-btn.active .tab-icon-wrap { color: #8b5cf6; }
+[data-theme="aurora"] .tab-label { color: #c4b8ff; }
+[data-theme="aurora"] .category-tab-btn.active .tab-label { color: #f0eeff; }
+
+[data-theme="aurora"] .panel-header-card {
+  background: rgba(18,12,40,0.88);
+  border-color: rgba(139,92,246,0.18);
+}
+
+[data-theme="aurora"] .panel-tagline { color: #a78bfa; }
+[data-theme="aurora"] .panel-title { color: #f0eeff; }
+[data-theme="aurora"] .panel-desc { color: #a78bfa; }
+
+[data-theme="aurora"] .panel-status-badge {
+  background: rgba(139,92,246,0.15);
+  border-color: rgba(139,92,246,0.35);
+  color: #a78bfa;
+}
+
+[data-theme="aurora"] .placeholder-card {
+  background: rgba(18,12,40,0.7);
+  border-color: rgba(139,92,246,0.2);
+}
+
+[data-theme="aurora"] .card-id-tag { color: #a78bfa; }
+[data-theme="aurora"] .card-item-title { color: #f0eeff; }
+[data-theme="aurora"] .card-item-summary { color: #a78bfa; }
+
+[data-theme="aurora"] .pm-doc-card {
+  background: rgba(18,12,40,0.85);
+  border-color: rgba(139,92,246,0.3);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5), 0 0 20px rgba(139,92,246,0.08);
+}
+
+[data-theme="aurora"] .pm-doc-card:hover {
+  border-color: rgba(139,92,246,0.6);
+  box-shadow: 0 12px 36px rgba(0,0,0,0.6), 0 0 35px rgba(139,92,246,0.2);
+}
+
+[data-theme="aurora"] .pm-doc-card-title { color: #f0eeff; }
+
+[data-theme="aurora"] .pm-select {
+  background: rgba(18,12,40,0.9);
+  border-color: rgba(139,92,246,0.45);
+  color: #f0eeff;
+}
+
+[data-theme="aurora"] .pm-select option {
+  background: #0d0a24;
+  color: #f0eeff;
+}
+
+[data-theme="aurora"] .pm-select:focus {
+  border-color: rgba(139,92,246,0.85);
+  box-shadow: 0 0 0 2px rgba(139,92,246,0.2);
+}
+
+[data-theme="aurora"] .pm-lightbox-inner {
+  background: #0d0a24;
+  border-color: rgba(139,92,246,0.35);
+  box-shadow: 0 40px 80px rgba(0,0,0,0.9), 0 0 50px rgba(139,92,246,0.2);
+}
+
+[data-theme="aurora"] .pm-lightbox-title { color: #f0eeff; }
+[data-theme="aurora"] .pm-lightbox-period { color: #a78bfa; }
+
+[data-theme="aurora"] .pm-lightbox-close {
+  background: rgba(139,92,246,0.15);
+  border-color: rgba(139,92,246,0.4);
+  color: #a78bfa;
+}
+
+/* Aurora: Card glow animation — violet pulsing */
+[data-theme="aurora"] .card-center-active {
+  animation: auroraPulseAura 4.5s ease-in-out infinite;
+}
+
+@keyframes auroraPulseAura {
+  0%, 100% {
+    box-shadow: 0 35px 80px rgba(0,0,0,0.85), 0 0 0 1.5px rgba(139,92,246,0.45), 0 0 35px rgba(139,92,246,0.2);
+  }
+  33% {
+    box-shadow: 0 40px 90px rgba(0,0,0,0.9), 0 0 0 2px rgba(139,92,246,0.75), 0 0 55px rgba(139,92,246,0.35), 0 0 80px rgba(45,212,191,0.12);
+  }
+  66% {
+    box-shadow: 0 38px 85px rgba(0,0,0,0.88), 0 0 0 1.8px rgba(45,212,191,0.6), 0 0 45px rgba(45,212,191,0.25), 0 0 70px rgba(139,92,246,0.15);
+  }
+}
+
+/* Aurora: Laser scanner — violet/teal cycling */
+[data-theme="aurora"] .character-laser-scanner {
+  background: linear-gradient(90deg, transparent 0%, rgba(139,92,246,0.4) 15%, #a78bfa 40%, #2dd4bf 60%, rgba(45,212,191,0.4) 85%, transparent 100%);
+  box-shadow: 0 0 18px #8b5cf6, 0 0 36px rgba(139,92,246,0.55);
+  animation: laserScanSweep 3.2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+/* Aurora: Shimmer beam — violet tinted */
+[data-theme="aurora"] .character-shimmer-beam {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(139,92,246,0.03) 45%,
+    rgba(167,139,250,0.12) 50%,
+    rgba(139,92,246,0.03) 55%,
+    transparent 100%
+  );
+}
+
+/* Aurora: F1 Header */
+[data-theme="aurora"] .f1-garage-badge {
+  background: radial-gradient(circle at 50% 0%, rgba(139,92,246,0.22) 0%, rgba(12,8,28,0.92) 85%);
+  border-color: rgba(139,92,246,0.5);
+  box-shadow: 0 10px 35px rgba(0,0,0,0.75), 0 0 24px rgba(139,92,246,0.3), inset 0 1px 1px rgba(167,139,250,0.2);
+}
+
+[data-theme="aurora"] .f1-garage-badge:hover {
+  border-color: rgba(139,92,246,0.85);
+  box-shadow: 0 14px 45px rgba(0,0,0,0.85), 0 0 40px rgba(139,92,246,0.5);
+}
+
+[data-theme="aurora"] .f1-badge-glow-border {
+  background: linear-gradient(90deg, transparent, #8b5cf6, #2dd4bf, #ec4899, transparent);
+  opacity: 0.65;
+  animation: f1BorderSweep 3.5s linear infinite;
+}
+
+[data-theme="aurora"] .f1-beacon-dot {
+  background: #8b5cf6;
+  box-shadow: 0 0 10px #8b5cf6, 0 0 20px #a78bfa;
+}
+
+[data-theme="aurora"] .f1-beacon-ring {
+  border-color: #8b5cf6;
+}
+
+[data-theme="aurora"] .f1-pit-status-tag {
+  color: #a78bfa;
+  text-shadow: 0 0 10px rgba(139,92,246,0.5);
+}
+
+[data-theme="aurora"] .f1-racing-text {
+  background: linear-gradient(110deg, #f0eeff 0%, #f0eeff 15%, #a78bfa 30%, #2dd4bf 50%, #ec4899 65%, #f0eeff 80%, #f0eeff 100%);
+  background-size: 250% 100%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 0 18px rgba(139,92,246,0.55));
+  animation: f1TextRacingShimmer 3.5s linear infinite;
+}
+
+[data-theme="aurora"] .f1-chevrons {
+  color: #8b5cf6;
+  animation: auroraChevronPulse 2s ease-in-out infinite alternate;
+}
+
+@keyframes auroraChevronPulse {
+  0% { opacity: 0.4; transform: translateX(0); color: #8b5cf6; }
+  100% { opacity: 1; transform: translateX(2px); color: #2dd4bf; }
+}
+
+[data-theme="aurora"] .f1-pit-shift-tag { color: #7c3aed; }
+
+[data-theme="aurora"] .f1-header-laser {
+  background: linear-gradient(90deg, transparent, rgba(167,139,250,0.2), rgba(139,92,246,0.4), transparent);
+}
+
+/* Aurora: Improvement module */
+[data-theme="aurora"] .imp-list-header-bar {
+  background: radial-gradient(circle at 10% 20%, rgba(139,92,246,0.15) 0%, rgba(18,12,40,0.85) 100%);
+  border-color: rgba(139,92,246,0.35);
+}
+
+[data-theme="aurora"] .imp-list-subtitle { color: #a78bfa; }
+[data-theme="aurora"] .imp-list-title { color: #f0eeff; }
+[data-theme="aurora"] .imp-list-count-badge {
+  background: rgba(139,92,246,0.18);
+  color: #a78bfa;
+  border-color: rgba(139,92,246,0.4);
+}
+
+[data-theme="aurora"] .imp-summary-card {
+  background: radial-gradient(circle at 90% 10%, rgba(139,92,246,0.08) 0%, rgba(18,12,40,0.9) 100%);
+  border-color: rgba(139,92,246,0.2);
+}
+
+[data-theme="aurora"] .imp-summary-card::before {
+  background: linear-gradient(to bottom, #8b5cf6, #2dd4bf);
+}
+
+[data-theme="aurora"] .imp-summary-card:hover {
+  border-color: rgba(139,92,246,0.55);
+  box-shadow: 0 8px 24px rgba(139,92,246,0.2);
+}
+
+[data-theme="aurora"] .imp-card-num-chip {
+  color: #a78bfa;
+  background: rgba(139,92,246,0.18);
+}

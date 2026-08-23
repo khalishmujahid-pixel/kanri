@@ -618,7 +618,7 @@ export const PmSCurveChart: React.FC<PmSCurveChartProps> = ({
           }}
           title="Klik untuk membuka tampilan layar penuh (80%)"
         >
-          {renderSvgChart(1050, 260, false)}
+          {renderSvgChart(1050, 200, false)}
 
           {/* Hover Telemetry Card */}
           {activeHoverData && (

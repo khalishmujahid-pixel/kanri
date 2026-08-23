@@ -4,6 +4,8 @@ import { INITIAL_CHARACTERS } from './data/characters';
 import type { Character } from './types/character';
 import { CharacterDetail } from './components/CharacterDetail';
 import { F1GarageHeader } from './components/F1GarageHeader';
+import { ThemeProvider, useTheme } from './contexts/ThemeContext';
+import { ThemeSelector } from './components/ThemeSelector';
 
 function PinIcon() {
   return (
@@ -47,9 +49,12 @@ function ExpandIcon() {
 }
 
 
-export default function App() {
+function AppInner() {
+  const { theme } = useTheme();
+
   const characters = INITIAL_CHARACTERS;
   const total = characters.length;
+
 
   const [active, setActive] = useState(0);
   const [liked, setLiked] = useState<Set<number>>(new Set());
@@ -167,12 +172,15 @@ export default function App() {
 
   const current = characters[active];
 
+  // Theme-aware inline style helpers
+  const isPresentation = theme === 'presentation';
+
   return (
     <div
       style={{
         width: '100vw',
         height: '100vh',
-        background: '#070911',
+        background: 'var(--theme-bg-primary)',
         position: 'relative',
         display: 'flex',
         flexDirection: 'column',
@@ -180,9 +188,10 @@ export default function App() {
         justifyContent: 'center',
         overflow: 'hidden',
         userSelect: 'none',
+        transition: 'background 0.6s cubic-bezier(0.4,0,0.2,1)',
       }}
     >
-      {/* 1. Dynamic Background Video with 83% Opacity as requested */}
+      {/* 1. Dynamic Background Video — hidden on presentation (light) theme */}
       <video
         autoPlay
         loop
@@ -196,7 +205,7 @@ export default function App() {
           height: '100%',
           objectFit: 'cover',
           objectPosition: 'center',
-          opacity: videoLoaded ? 0.83 : 0,
+          opacity: isPresentation ? 0 : videoLoaded ? 0.83 : 0,
           transition: 'opacity 1s ease-in-out',
           zIndex: 1,
           pointerEvents: 'none',
@@ -205,18 +214,32 @@ export default function App() {
         <source src="/assets/videos/background.mp4" type="video/mp4" />
       </video>
 
-      {/* 2. Frosted/Vignette Tint Overlay to guarantee high contrast & readability */}
+      {/* 2. Frosted/Vignette Tint Overlay — theme-aware */}
       <div
         style={{
           position: 'absolute',
           inset: 0,
-          background: 'radial-gradient(ellipse 85% 65% at 50% 50%, rgba(7,9,17,0.3) 0%, rgba(7,9,17,0.72) 75%, rgba(4,6,12,0.92) 100%), linear-gradient(to top, rgba(7,9,17,0.85) 0%, transparent 35%)',
+          background: 'var(--theme-bg-overlay)',
           zIndex: 2,
           pointerEvents: 'none',
+          transition: 'background 0.6s cubic-bezier(0.4,0,0.2,1)',
         }}
       />
 
-      {/* 3. Subtle center soft glow */}
+      {/* Presentation: soft linen texture overlay */}
+      {isPresentation && (
+        <div
+          style={{
+            position: 'absolute',
+            inset: 0,
+            background: 'linear-gradient(135deg, rgba(255,255,255,0.4) 0%, rgba(220,232,255,0.5) 50%, rgba(255,255,255,0.35) 100%)',
+            zIndex: 2,
+            pointerEvents: 'none',
+          }}
+        />
+      )}
+
+      {/* 3. Subtle center soft glow — theme-aware color */}
       <div
         style={{
           position: 'absolute',
@@ -225,10 +248,11 @@ export default function App() {
           transform: 'translate(-50%, -50%)',
           width: '65vw',
           height: '45vh',
-          background: 'radial-gradient(circle, rgba(255,85,0,0.14) 0%, rgba(255,85,0,0.03) 45%, transparent 70%)',
+          background: 'var(--theme-center-glow)',
           filter: 'blur(50px)',
           zIndex: 2,
           pointerEvents: 'none',
+          transition: 'background 0.6s cubic-bezier(0.4,0,0.2,1)',
         }}
       />
 
@@ -245,8 +269,12 @@ export default function App() {
         }}
       >
 
+      {/* Theme Selector — floating pill top right */}
+      <ThemeSelector />
+
       {/* 4. Top Header & Identity Tag with F1 Garage Pit Wall Visuals & Special Animation */}
       <F1GarageHeader isMobile={isMobile} />
+
 
       {/* 5. Main 3D Card Carousel (Responsive & Centered: Portrait on Mobile, 4:3 on Tablet, 16:9 on Desktop) */}
       <div
@@ -331,9 +359,9 @@ export default function App() {
                 transition: dragging ? 'none' : isCenter && (tilt.x !== 0 || tilt.y !== 0) ? 'transform 0.1s ease-out' : 'all 0.55s cubic-bezier(0.34,1.1,0.64,1)',
                 cursor: isCenter ? 'default' : 'pointer',
                 boxShadow: isCenter
-                  ? '0 35px 80px rgba(0,0,0,0.75), 0 0 0 1.5px rgba(255,85,0,0.45), 0 0 35px rgba(255,85,0,0.25)'
-                  : '0 20px 40px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.08)',
-                background: '#0e1422',
+                  ? 'var(--theme-card-shadow)'
+                  : 'var(--theme-card-shadow-side)',
+                background: 'var(--theme-bg-card)',
               }}
             >
               {/* Character Video — auto-plays only on the active center card.
@@ -680,15 +708,16 @@ export default function App() {
           display: 'flex',
           alignItems: 'center',
           gap: isMobile ? 8 : 12,
-          background: 'rgba(12, 17, 29, 0.82)',
+          background: 'var(--theme-bottom-bar-bg)',
           backdropFilter: 'blur(24px)',
           WebkitBackdropFilter: 'blur(24px)',
-          border: '1px solid rgba(255, 255, 255, 0.14)',
+          border: '1px solid var(--theme-border)',
           borderRadius: 999,
           padding: isMobile ? '6px 8px 6px 10px' : '10px 12px 10px 16px',
           zIndex: 20,
           width: isMobile ? 'min(92vw, 360px)' : isTablet ? 'clamp(340px, 55vw, 440px)' : 'clamp(290px, 42vw, 420px)',
           boxShadow: '0 12px 40px rgba(0,0,0,0.5)',
+          transition: 'background 0.5s ease, border-color 0.5s ease',
         }}
       >
         <button
@@ -739,12 +768,13 @@ export default function App() {
               fontFamily: 'var(--font-body)',
               fontSize: isMobile ? 12 : 13.5,
               fontWeight: 800,
-              color: '#ffffff',
+              color: 'var(--theme-text-primary)',
               whiteSpace: 'nowrap',
               overflow: 'hidden',
               textOverflow: 'ellipsis',
               textTransform: 'uppercase',
               letterSpacing: '0.02em',
+              transition: 'color 0.5s ease',
             }}
           >
             {current.name}
@@ -753,16 +783,18 @@ export default function App() {
             style={{
               fontFamily: 'var(--font-mono)',
               fontSize: isMobile ? 9 : 10,
-              color: 'rgba(255,255,255,0.55)',
+              color: 'var(--theme-text-secondary)',
               marginTop: 1,
               whiteSpace: 'nowrap',
               overflow: 'hidden',
               textOverflow: 'ellipsis',
+              transition: 'color 0.5s ease',
             }}
           >
             {current.department} // {current.zone}
           </div>
         </div>
+
 
         {/* Like Button */}
         <button
@@ -827,10 +859,10 @@ export default function App() {
               width: i === active ? 22 : 6,
               height: 6,
               borderRadius: 999,
-              background: i === active ? '#ff5500' : 'rgba(255,255,255,0.25)',
+              background: i === active ? 'var(--theme-dot-active)' : 'var(--theme-dot-inactive)',
               border: 'none',
               cursor: 'pointer',
-              boxShadow: i === active ? '0 0 10px rgba(255,85,0,0.6)' : 'none',
+              boxShadow: i === active ? `0 0 10px var(--theme-dot-glow)` : 'none',
               transition: 'all 0.3s cubic-bezier(0.34,1.2,0.64,1)',
               padding: 0,
             }}
@@ -852,5 +884,13 @@ export default function App() {
         )}
       </AnimatePresence>
     </div>
+  );
+}
+
+export default function App() {
+  return (
+    <ThemeProvider>
+      <AppInner />
+    </ThemeProvider>
   );
 }

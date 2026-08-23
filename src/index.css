@@ -1,6 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,600;1,9..144,300&display=swap');
 @import './styles/improvement.css';
 @import './styles/f1GarageHeader.css';
+@import './styles/themes.css';
 
 :root {
   --font-display: 'Fraunces', serif;
@@ -1430,18 +1431,27 @@ html, body {
 /* ─────────────────────────────────────────────────────────────────────────────
    PM S-CURVE CUMULATIVE PLAN VS ACTUAL CHART (Tactical KANRI Theme)
    ───────────────────────────────────────────────────────────────────────────── */
-.pm-scurve-container {
-  margin-bottom: 22px;
-  padding: 18px 20px;
-  background: rgba(11, 16, 26, 0.85);
-  border: 1px solid rgba(255, 255, 255, 0.09);
-  border-radius: 14px;
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.45);
+.category-content-body.pm-dashboard-flow {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 12px;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   PM S-CURVE CUMULATIVE PLAN VS ACTUAL CHART (Tactical KANRI Theme)
+   ───────────────────────────────────────────────────────────────────────────── */
+.pm-scurve-container {
+  margin-bottom: 10px;
+  padding: 10px 14px;
+  background: rgba(11, 16, 26, 0.88);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 12px;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.45);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
   position: relative;
   overflow: hidden;
 }
@@ -1450,34 +1460,34 @@ html, body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 14px;
+  gap: 10px;
   flex-wrap: wrap;
 }
 
 .pm-scurve-title-group {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
 }
 
 .pm-scurve-icon-box {
-  width: 32px;
-  height: 32px;
+  width: 28px;
+  height: 28px;
   display: flex;
   align-items: center;
   justify-content: center;
   background: rgba(255, 85, 0, 0.15);
   border: 1px solid rgba(255, 85, 0, 0.35);
-  border-radius: 9px;
+  border-radius: 7px;
   color: #ff6a1a;
-  box-shadow: 0 0 12px rgba(255, 85, 0, 0.2);
+  box-shadow: 0 0 10px rgba(255, 85, 0, 0.2);
 }
 
 .pm-scurve-sub-tag {
   font-family: var(--font-mono);
-  font-size: 9.5px;
+  font-size: 8.5px;
   font-weight: 700;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.1em;
   color: #ff6a1a;
   text-transform: uppercase;
 }
@@ -1485,25 +1495,25 @@ html, body {
 .pm-scurve-title {
   margin: 0;
   font-family: var(--font-mono);
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 700;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.03em;
   color: #ffffff;
 }
 
 .pm-toggle-table-btn {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 6px 12px;
+  gap: 5px;
+  padding: 4px 9px;
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 8px;
+  border-radius: 6px;
   color: #e2e8f0;
   font-family: var(--font-mono);
-  font-size: 10px;
+  font-size: 9px;
   font-weight: 600;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.05em;
   cursor: pointer;
   transition: all 0.2s ease;
 }
@@ -1514,43 +1524,50 @@ html, body {
   color: #ff6a1a;
 }
 
-/* Metrics Bar */
+/* Metrics Bar - 5 Columns Compact */
 .pm-scurve-metrics-bar {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
-  gap: 8px;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 5px;
 }
 
 .pm-metric-chip {
-  padding: 8px 12px;
+  padding: 4px 7px;
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.07);
-  border-radius: 9px;
+  border-radius: 6px;
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 1px;
   font-family: var(--font-mono);
 }
 
 .pm-metric-chip .metric-label {
-  font-size: 8.5px;
+  font-size: 7.5px;
   font-weight: 600;
-  color: rgba(255, 255, 255, 0.4);
-  letter-spacing: 0.06em;
+  color: rgba(255, 255, 255, 0.45);
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .pm-metric-chip .metric-val {
-  font-size: 15px;
+  font-size: 13px;
   font-weight: 800;
   color: #ffffff;
   letter-spacing: 0.02em;
+  line-height: 1.2;
 }
 
 .pm-metric-chip .metric-sub {
-  font-size: 7.5px;
+  font-size: 7px;
   font-weight: 600;
   color: rgba(255, 255, 255, 0.3);
-  letter-spacing: 0.05em;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .pm-metric-chip.success {
@@ -1581,27 +1598,28 @@ html, body {
 .pm-kanban-breakdown-row {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 5px;
   flex-wrap: wrap;
+  margin-top: 0;
 }
 
 .kanban-chip {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 3px 8px;
-  border-radius: 6px;
+  gap: 5px;
+  padding: 2px 7px;
+  border-radius: 4px;
   font-family: var(--font-mono);
-  font-size: 9.5px;
+  font-size: 8.5px;
   font-weight: 600;
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .kanban-badge {
-  font-size: 8.5px;
+  font-size: 8px;
   font-weight: 700;
-  padding: 1px 5px;
+  padding: 1px 4px;
   border-radius: 3px;
 }
 
@@ -1614,19 +1632,19 @@ html, body {
   color: rgba(255, 255, 255, 0.7);
 }
 
-/* Chart Container & SVG */
+/* Chart Container & SVG (Streamlined for immediate visibility on 100% display) */
 .pm-scurve-chart-box {
   width: 100%;
   position: relative;
   background: rgba(0, 0, 0, 0.25);
   border: 1px solid rgba(255, 255, 255, 0.05);
-  border-radius: 10px;
-  padding: 8px 4px;
+  border-radius: 8px;
+  padding: 2px;
 }
 
 .pm-scurve-svg {
   width: 100%;
-  height: 240px;
+  height: clamp(140px, 18.5vh, 180px);
   display: block;
 }
 

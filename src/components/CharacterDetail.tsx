@@ -280,19 +280,10 @@ export const CharacterDetail: React.FC<CharacterDetailProps> = ({
                   </div>
                 </div>
 
-                {/* ── PM special view: year/month filter + document viewer ── */}
+                {/* ── PM special view: S-Curve Live Hero + Annual Execution Tracker + Filter ── */}
                 {activeCategory === 'pm' ? (
-                  <div className="category-content-body">
-                    {pmDocs.length > 0 && (
-                      <PmProgressChart
-                        pmDocuments={pmDocs}
-                        year={pmYear}
-                        selectedMonth={pmMonth}
-                        onSelectMonth={setPmMonth}
-                      />
-                    )}
-
-                    {/* S-Curve cumulative chart for active month */}
+                  <div className="category-content-body pm-dashboard-flow">
+                    {/* S-Curve cumulative chart for active month (Primary Hero Top) */}
                     {((liveSchedule && liveSchedule.length > 0) || (filteredPmDocs.length > 0 && filteredPmDocs[0].equipmentSchedule && filteredPmDocs[0].equipmentSchedule.length > 0)) ? (
                       <PmSCurveChart
                         schedule={liveSchedule || filteredPmDocs[0].equipmentSchedule!}
@@ -305,7 +296,7 @@ export const CharacterDetail: React.FC<CharacterDetailProps> = ({
                         onForceSync={() => syncFromSheets(false)}
                       />
                     ) : (
-                      <div className="ready-notice-box" style={{ margin: '16px 0' }}>
+                      <div className="ready-notice-box" style={{ margin: '8px 0 14px' }}>
                         <div className="ready-icon-wrap">
                           <RefreshCw size={18} className={isLiveSyncing ? 'spin-anim' : ''} />
                         </div>
@@ -318,6 +309,16 @@ export const CharacterDetail: React.FC<CharacterDetailProps> = ({
                           </span>
                         </div>
                       </div>
+                    )}
+
+                    {/* Annual Tracker Grid (Secondary Overview) */}
+                    {pmDocs.length > 0 && (
+                      <PmProgressChart
+                        pmDocuments={pmDocs}
+                        year={pmYear}
+                        selectedMonth={pmMonth}
+                        onSelectMonth={setPmMonth}
+                      />
                     )}
 
                     {/* Filter row */}
