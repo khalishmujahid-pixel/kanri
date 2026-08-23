@@ -137,7 +137,16 @@ export default function App() {
   // Keyboard navigation
   const onKeyDown = useCallback((e: KeyboardEvent) => {
     if (selectedCharacter) {
-      if (e.key === 'Escape') setSelectedCharacter(null);
+      if (e.key === 'Escape') {
+        const hasOpenModal = document.querySelector(
+          '.pm-lightbox-backdrop, .imp-image-lightbox-backdrop, .imp-presentation-stage-overlay, .pm-s-curve-modal, .lightbox-modal-wrap, [role="dialog"]'
+        );
+        if (hasOpenModal) {
+          // A zoom/lightbox or presentation modal is open; do not return to showroom/homepage
+          return;
+        }
+        setSelectedCharacter(null);
+      }
       return;
     }
     if (e.key === 'ArrowLeft') prev();

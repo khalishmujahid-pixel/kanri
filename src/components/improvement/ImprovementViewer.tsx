@@ -74,6 +74,11 @@ export const ImprovementViewer: React.FC<ImprovementViewerProps> = ({ character 
       } else if (e.key === 'ArrowLeft') {
         goToPrevStep();
       } else if (e.key === 'Escape') {
+        // If an inner image lightbox is open, let the image lightbox handle Escape!
+        const hasOpenLightbox = document.querySelector('.imp-image-lightbox-backdrop');
+        if (hasOpenLightbox) {
+          return;
+        }
         setActiveProject(null);
       }
     };

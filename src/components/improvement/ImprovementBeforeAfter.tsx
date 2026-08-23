@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Lightbulb,
@@ -25,6 +25,20 @@ export const ImprovementBeforeAfter: React.FC<ImprovementBeforeAfterProps> = ({ 
   const [beforeImageIdx, setBeforeImageIdx] = useState<number>(0);
   const [afterImageIdx, setAfterImageIdx] = useState<number>(0);
   const [lightboxData, setLightboxData] = useState<{ url: string; title: string; caption?: string } | null>(null);
+
+  // Escape key handler specifically for Before/After lightbox
+  useEffect(() => {
+    if (!lightboxData) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.stopPropagation();
+        e.stopImmediatePropagation();
+        setLightboxData(null);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown, true);
+    return () => window.removeEventListener('keydown', handleKeyDown, true);
+  }, [lightboxData]);
 
   const currentAspect = aspects[selectedAspectIdx] ?? aspects[0];
 

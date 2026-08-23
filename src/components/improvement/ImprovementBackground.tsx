@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   AlertTriangle,
@@ -27,6 +27,20 @@ export const ImprovementBackground: React.FC<ImprovementBackgroundProps> = ({ da
   const [isBlueprintMode, setIsBlueprintMode] = useState<boolean>(true);
   const [isLightboxOpen, setIsLightboxOpen] = useState<boolean>(false);
   const [selectedStation, setSelectedStation] = useState<string>('st5');
+
+  // Escape key handler specifically for CAD lightbox
+  useEffect(() => {
+    if (!isLightboxOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.stopPropagation();
+        e.stopImmediatePropagation();
+        setIsLightboxOpen(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown, true);
+    return () => window.removeEventListener('keydown', handleKeyDown, true);
+  }, [isLightboxOpen]);
 
   return (
     <>

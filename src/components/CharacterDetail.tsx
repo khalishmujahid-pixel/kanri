@@ -91,6 +91,20 @@ export const CharacterDetail: React.FC<CharacterDetailProps> = ({
   const [lightboxDoc, setLightboxDoc] = useState<PmDocument | null>(null);
   const [viewMode, setViewMode] = useState<'pdf' | 'image'>('pdf');
 
+  // Escape key handler specifically for PM lightbox modal
+  React.useEffect(() => {
+    if (!lightboxDoc) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.stopPropagation();
+        e.stopImmediatePropagation();
+        setLightboxDoc(null);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown, true);
+    return () => window.removeEventListener('keydown', handleKeyDown, true);
+  }, [lightboxDoc]);
+
   // Spotlight video playback state for expand menu
   const [spotlightVideoReady, setSpotlightVideoReady] = useState(false);
 
