@@ -161,7 +161,7 @@ export const IMPROVEMENT_PROJECTS: ImprovementProject[] = [
             'Serbuk besi (gram) dan spatter pengelasan mudah menempel pada sensing face',
             'Menimbulkan kontak elektromagnetik palsu (False Detection Continuous ON)'
           ],
-          illustrationType: 'robot_position',
+          illustrationType: 'cover_deflector',
           warningTag: 'RAWAN AKUMULASI GRAM SPATTER'
         },
         after: {
@@ -172,7 +172,7 @@ export const IMPROVEMENT_PROJECTS: ImprovementProject[] = [
             'Mencegah partikel gram besi menempel pada area sensing zone',
             'Memastikan sensor hanya aktif saat komponen benda kerja riil terpasang di fixture'
           ],
-          illustrationType: 'robot_position',
+          illustrationType: 'cover_deflector',
           solutionTag: 'PROTEKSI COVER DEFLECTOR ANTI-STICK'
         },
         results: [

@@ -55,7 +55,7 @@ export interface BeforeAfterAspect {
     title: string;
     description: string;
     bulletPoints: string[];
-    illustrationType?: 'robot_position' | 'ergonomics' | 'inverter_alarm';
+    illustrationType?: 'robot_position' | 'ergonomics' | 'inverter_alarm' | 'cover_deflector';
     imageUrl?: string;
     imageCaption?: string;
     galleryImages?: ImprovementImageItem[];
@@ -65,7 +65,7 @@ export interface BeforeAfterAspect {
     title: string;
     description: string;
     bulletPoints: string[];
-    illustrationType?: 'robot_position' | 'ergonomics' | 'inverter_alarm';
+    illustrationType?: 'robot_position' | 'ergonomics' | 'inverter_alarm' | 'cover_deflector';
     imageUrl?: string;
     imageCaption?: string;
     galleryImages?: ImprovementImageItem[];

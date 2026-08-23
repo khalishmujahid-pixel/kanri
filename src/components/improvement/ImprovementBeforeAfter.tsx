@@ -201,6 +201,27 @@ export const ImprovementBeforeAfter: React.FC<ImprovementBeforeAfterProps> = ({ 
                 </div>
               ) : (
                 <div className="ba-schematic-wrap before">
+                  {currentAspect.before.illustrationType === 'cover_deflector' && (
+                    <div className="ba-schematic-proximity before">
+                      <div className="prox-head-diagram unshielded">
+                        <div className="prox-sensor-barrel">
+                          <span className="barrel-label">PROXIMITY SENSOR M12/M18</span>
+                          <div className="prox-sensing-face dirty">
+                            <span className="face-tag">SENSING FACE TERBUKA</span>
+                            <span className="spatter-badge">TERTUTUP GRAM SPATTER</span>
+                          </div>
+                        </div>
+                        <div className="spatter-fall-zone">
+                          <span className="fall-line">PERCIKAN SPATTER LAS</span>
+                        </div>
+                      </div>
+                      <div className="prox-status-banner danger">
+                        <span className="status-indicator-dot red" />
+                        <span>FALSE INDUCTION: SENSOR AKTIF TERUS (FREEZE CONTINUOUS ON)</span>
+                      </div>
+                    </div>
+                  )}
+
                   {currentAspect.before.illustrationType === 'robot_position' && (
                     <div className="ba-schematic-robot before">
                       <div className="schematic-bordesk-line">
@@ -317,6 +338,27 @@ export const ImprovementBeforeAfter: React.FC<ImprovementBeforeAfterProps> = ({ 
                 </div>
               ) : (
                 <div className="ba-schematic-wrap after">
+                  {currentAspect.after.illustrationType === 'cover_deflector' && (
+                    <div className="ba-schematic-proximity after">
+                      <div className="prox-head-diagram shielded">
+                        <div className="prox-deflector-cover">
+                          <span className="roof-label">COVER DEFLECTOR SUDUT ANTI-STICK</span>
+                          <span className="deflect-badge">SPATTER TERPANTUL 100%</span>
+                        </div>
+                        <div className="prox-sensor-barrel protected">
+                          <span className="barrel-label">PROXIMITY SENSOR</span>
+                          <div className="prox-sensing-face clean">
+                            <span className="face-tag">SENSING FACE BERSIH</span>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="prox-status-banner success">
+                        <span className="status-indicator-dot green" />
+                        <span>100% RELIABLE: HANYA AKTIF SAAT BENDA KERJA MASUK // ZERO FALSE SIGNAL</span>
+                      </div>
+                    </div>
+                  )}
+
                   {currentAspect.after.illustrationType === 'robot_position' && (
                     <div className="ba-schematic-robot after">
                       <div className="schematic-robot-gun above">
