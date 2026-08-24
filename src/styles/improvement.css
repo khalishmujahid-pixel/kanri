@@ -2168,17 +2168,17 @@
   align-items: center;
 }
 
-/* ST#5 Occurrence Marker Pin Positioning */
+/* ST#5 Occurrence Marker Pin Positioning (Calibrated to ST5 CAD Box) */
 .cad-hud-station-marker.st5-marker {
-  left: 28%;
-  top: 48%;
+  left: 30.0%;
+  top: 50%;
   transform: translate(-50%, -100%);
 }
 
-/* ST#2 Yokoten Marker Pin Positioning */
+/* ST#2 Yokoten Marker Pin Positioning (Calibrated to ST2 CAD Box) */
 .cad-hud-station-marker.st2-marker {
-  left: 48.5%;
-  top: 48%;
+  left: 49.8%;
+  top: 50%;
   transform: translate(-50%, -100%);
 }
 
@@ -2215,6 +2215,7 @@
 }
 
 .hud-marker-badge {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -2228,12 +2229,29 @@
   -webkit-backdrop-filter: blur(8px);
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.8);
   border: 1px solid;
+  margin-bottom: 6px;
+}
+
+.hud-marker-badge::after {
+  content: '';
+  position: absolute;
+  bottom: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
 }
 
 .hud-marker-badge.occurrence {
   background: rgba(239, 68, 68, 0.9);
   border-color: #fca5a5;
   color: #ffffff;
+}
+
+.hud-marker-badge.occurrence::after {
+  border-top: 6px solid #ef4444;
 }
 
 .hud-marker-badge.occurrence small {
@@ -2248,6 +2266,10 @@
   background: rgba(16, 185, 129, 0.9);
   border-color: #86efac;
   color: #ffffff;
+}
+
+.hud-marker-badge.yokoten::after {
+  border-top: 6px solid #10b981;
 }
 
 .hud-marker-badge.yokoten small {
