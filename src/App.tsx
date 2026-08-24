@@ -123,6 +123,8 @@ function AppInner() {
   const [hasStarted, setHasStarted] = useState(false);
   // Controls the fade-in of the showroom UI after user clicks START
   const [showUI, setShowUI] = useState(false);
+  // Controls card dealing animation (pembagian kartu remi)
+  const [cardsDealt, setCardsDealt] = useState(false);
   // Tracks whether the active card's character video has loaded and is ready to play
   const [activeVideoReady, setActiveVideoReady] = useState(false);
   const activeVideoRef = useRef<HTMLVideoElement>(null);
@@ -185,11 +187,27 @@ function AppInner() {
     setActiveVideoReady(false);
   }, [active]);
 
-  // Trigger Showroom UI fade-in once user clicks START
+  // Trigger Cinematic Flow:
+  // 1. User clicks START: Intro exits, Full background video plays pure for 2.0s
+  // 2. At 2.0s: UI fades in & Card Dealing animation begins (1 per 1 like dealing playing cards)
+  // 3. At 3.6s: Card dealing finishes, full 3D interactive physics are unlocked
   useEffect(() => {
     if (hasStarted) {
-      const timer = setTimeout(() => setShowUI(true), 150);
-      return () => clearTimeout(timer);
+      const uiTimer = setTimeout(() => {
+        setShowUI(true);
+      }, 2000);
+
+      const dealTimer = setTimeout(() => {
+        setCardsDealt(true);
+      }, 3600);
+
+      return () => {
+        clearTimeout(uiTimer);
+        clearTimeout(dealTimer);
+      };
+    } else {
+      setShowUI(false);
+      setCardsDealt(false);
     }
   }, [hasStarted]);
 
@@ -328,6 +346,7 @@ function AppInner() {
       <BackToIntroButton
         onClick={() => {
           setShowUI(false);
+          setCardsDealt(false);
           setHasStarted(false);
         }}
         isMobile={isMobile}
@@ -397,6 +416,24 @@ function AppInner() {
           const cardW = isMobile ? 'clamp(270px, 80vw, 340px)' : isTablet ? 'clamp(380px, 54vw, 520px)' : 'clamp(420px, 46vw, 640px)';
           const cardAspect = isMobile ? '3 / 4' : isTablet ? '4 / 3' : '16 / 9';
 
+          // Card Dealing Animation (Pembagian Kartu Remi)
+          // Cards deal out sequentially 1 per 1 from center deck into their carousel slot
+          const dealOrder = offset === -2 ? 0 : offset === -1 ? 1 : offset === 0 ? 2 : offset === 1 ? 3 : 4;
+          const dealDelay = `${dealOrder * 0.18}s`;
+          const initialDealTransform = `translate(0, 180px) scale(0.25) rotate(${offset * 14}deg)`;
+          const finalTransform = `translateX(${xPct}%) scale(${scale}) rotateX(${rotX}deg) rotateY(${rotY}deg)`;
+
+          const cardTransform = !cardsDealt && !showUI ? initialDealTransform : finalTransform;
+          const cardOpacity = !cardsDealt && !showUI ? 0 : opacity;
+
+          const cardTransition = !cardsDealt
+            ? `transform 0.85s cubic-bezier(0.16, 1, 0.3, 1) ${dealDelay}, opacity 0.65s ease ${dealDelay}, filter 0.65s ease ${dealDelay}, box-shadow 0.65s ease ${dealDelay}`
+            : dragging
+            ? 'none'
+            : isCenter && (tilt.x !== 0 || tilt.y !== 0)
+            ? 'transform 0.1s ease-out'
+            : 'all 0.55s cubic-bezier(0.34,1.1,0.64,1)';
+
           return (
             <div
               key={char.id}
@@ -412,13 +449,13 @@ function AppInner() {
                 aspectRatio: cardAspect,
                 borderRadius: isMobile ? 18 : 22,
                 overflow: 'hidden',
-                transform: `translateX(${xPct}%) scale(${scale}) rotateX(${rotX}deg) rotateY(${rotY}deg)`,
+                transform: cardTransform,
                 transformOrigin: 'center center',
                 transformStyle: 'preserve-3d',
                 zIndex: zIdx,
-                opacity,
+                opacity: cardOpacity,
                 filter: blur > 0 ? `blur(${blur}px)` : 'none',
-                transition: dragging ? 'none' : isCenter && (tilt.x !== 0 || tilt.y !== 0) ? 'transform 0.1s ease-out' : 'all 0.55s cubic-bezier(0.34,1.1,0.64,1)',
+                transition: cardTransition,
                 cursor: isCenter ? 'default' : 'pointer',
                 boxShadow: isCenter
                   ? 'var(--theme-card-shadow)'
