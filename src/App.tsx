@@ -49,6 +49,64 @@ function ExpandIcon() {
   );
 }
 
+function BackToIntroButton({ onClick, isMobile }: { onClick: () => void; isMobile?: boolean }) {
+  const [hovered, setHovered] = useState(false);
+
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      title="Kembali ke halaman intro video"
+      style={{
+        position: 'fixed',
+        top: 'clamp(12px, 2.5vh, 24px)',
+        left: 'clamp(12px, 2.5vw, 28px)',
+        zIndex: 100,
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: 7,
+        padding: isMobile ? '6px 12px' : '7px 14px',
+        borderRadius: 999,
+        background: hovered ? 'rgba(255, 85, 0, 0.22)' : 'var(--theme-bottom-bar-bg)',
+        border: `1px solid ${hovered ? '#ff8c42' : 'var(--theme-border)'}`,
+        backdropFilter: 'blur(20px)',
+        WebkitBackdropFilter: 'blur(20px)',
+        color: hovered ? '#ffffff' : 'var(--theme-text-primary)',
+        fontFamily: 'var(--font-mono, monospace)',
+        fontSize: isMobile ? 10 : 11,
+        fontWeight: 800,
+        letterSpacing: '0.12em',
+        textTransform: 'uppercase',
+        cursor: 'pointer',
+        boxShadow: hovered ? '0 0 20px rgba(255, 85, 0, 0.45)' : '0 4px 16px rgba(0,0,0,0.3)',
+        transition: 'all 0.25s cubic-bezier(0.16, 1, 0.3, 1)',
+        transform: hovered ? 'scale(1.04)' : 'scale(1)',
+      }}
+    >
+      <svg
+        width="13"
+        height="13"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2.2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        style={{
+          color: hovered ? '#ff8c42' : 'var(--theme-accent)',
+          transition: 'transform 0.25s ease',
+          transform: hovered ? 'translateX(-2px)' : 'none',
+        }}
+      >
+        <path d="m15 18-6-6 6-6" />
+      </svg>
+      <span>INTRO</span>
+    </button>
+  );
+}
+
 
 function AppInner() {
   const { theme } = useTheme();
@@ -266,7 +324,14 @@ function AppInner() {
         }}
       >
 
-      {/* Theme Selector — floating pill top right */}
+      {/* Floating Header Controls: Back to Intro (Top Left) & Theme Selector (Top Right) */}
+      <BackToIntroButton
+        onClick={() => {
+          setShowUI(false);
+          setHasStarted(false);
+        }}
+        isMobile={isMobile}
+      />
       <ThemeSelector />
 
       {/* 4. Top Header & Identity Tag with F1 Garage Pit Wall Visuals & Special Animation */}
