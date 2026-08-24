@@ -108,6 +108,66 @@ function BackToIntroButton({ onClick, isMobile }: { onClick: () => void; isMobil
 }
 
 
+function SkipVideoButton({ onSkip, isMobile }: { onSkip: () => void; isMobile?: boolean }) {
+  const [hovered, setHovered] = useState(false);
+
+  return (
+    <button
+      type="button"
+      onClick={onSkip}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      title="Lewati video intro (Space / Click)"
+      style={{
+        position: 'fixed',
+        bottom: 'clamp(20px, 4vh, 36px)',
+        right: 'clamp(20px, 4vw, 36px)',
+        zIndex: 150,
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: 8,
+        padding: isMobile ? '7px 14px' : '9px 20px',
+        borderRadius: 999,
+        background: hovered ? 'rgba(255, 85, 0, 0.35)' : 'rgba(8, 12, 22, 0.68)',
+        border: `1.5px solid ${hovered ? '#ff8c42' : 'rgba(255, 140, 50, 0.55)'}`,
+        backdropFilter: 'blur(16px)',
+        WebkitBackdropFilter: 'blur(16px)',
+        color: '#ffffff',
+        fontFamily: 'var(--font-mono, monospace)',
+        fontSize: isMobile ? 10.5 : 11.5,
+        fontWeight: 800,
+        letterSpacing: '0.14em',
+        textTransform: 'uppercase',
+        cursor: 'pointer',
+        boxShadow: hovered ? '0 0 28px rgba(255, 85, 0, 0.65)' : '0 8px 24px rgba(0,0,0,0.55)',
+        transition: 'all 0.25s cubic-bezier(0.16, 1, 0.3, 1)',
+        transform: hovered ? 'scale(1.05)' : 'scale(1)',
+      }}
+    >
+      <span>SKIP VIDEO</span>
+      <svg
+        width="13"
+        height="13"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        style={{
+          color: '#ff8c42',
+          transition: 'transform 0.25s ease',
+          transform: hovered ? 'translateX(2px)' : 'none',
+        }}
+      >
+        <path d="m6 17 5-5-5-5" />
+        <path d="m13 17 5-5-5-5" />
+      </svg>
+    </button>
+  );
+}
+
+
 function AppInner() {
   const { theme } = useTheme();
 
@@ -121,13 +181,16 @@ function AppInner() {
   const [videoLoaded, setVideoLoaded] = useState(false);
   // Controls whether user has clicked START on the intro page
   const [hasStarted, setHasStarted] = useState(false);
-  // Controls the fade-in of the showroom UI after user clicks START
+  // Controls full background video playback state before dealing cards
+  const [isPlayingFullVideo, setIsPlayingFullVideo] = useState(false);
+  // Controls the fade-in of the showroom UI after video ends or user clicks SKIP
   const [showUI, setShowUI] = useState(false);
   // Controls card dealing animation (pembagian kartu remi)
   const [cardsDealt, setCardsDealt] = useState(false);
   // Tracks whether the active card's character video has loaded and is ready to play
   const [activeVideoReady, setActiveVideoReady] = useState(false);
   const activeVideoRef = useRef<HTMLVideoElement>(null);
+  const bgVideoRef = useRef<HTMLVideoElement>(null);
 
   // Responsive device detection
   const [viewportWidth, setViewportWidth] = useState<number>(
@@ -187,32 +250,58 @@ function AppInner() {
     setActiveVideoReady(false);
   }, [active]);
 
-  // Trigger Cinematic Flow:
-  // 1. User clicks START: Intro exits, Full background video plays pure for 2.0s
-  // 2. At 2.0s: UI fades in & Card Dealing animation begins (1 per 1 like dealing playing cards)
-  // 3. At 3.6s: Card dealing finishes, full 3D interactive physics are unlocked
-  useEffect(() => {
-    if (hasStarted) {
-      const uiTimer = setTimeout(() => {
-        setShowUI(true);
-      }, 2000);
+  // Handler: When user clicks "START OPERATION" on Intro Screen
+  const handleStartIntro = useCallback(() => {
+    setHasStarted(true);
+    setIsPlayingFullVideo(true);
+    setShowUI(false);
+    setCardsDealt(false);
 
-      const dealTimer = setTimeout(() => {
-        setCardsDealt(true);
-      }, 3600);
-
-      return () => {
-        clearTimeout(uiTimer);
-        clearTimeout(dealTimer);
-      };
-    } else {
-      setShowUI(false);
-      setCardsDealt(false);
+    if (bgVideoRef.current) {
+      bgVideoRef.current.currentTime = 0;
+      bgVideoRef.current.loop = false;
+      bgVideoRef.current.play().catch(() => {});
     }
-  }, [hasStarted]);
+  }, []);
 
-  // Keyboard navigation
+  // Handler: When full video finishes playing OR user clicks "SKIP VIDEO"
+  const handleFinishVideo = useCallback(() => {
+    setIsPlayingFullVideo(false);
+    setShowUI(true);
+
+    if (bgVideoRef.current) {
+      bgVideoRef.current.loop = true;
+      bgVideoRef.current.play().catch(() => {});
+    }
+
+    // Trigger card dealing sequence completion after ~1.6s
+    setTimeout(() => {
+      setCardsDealt(true);
+    }, 1600);
+  }, []);
+
+  // Handler: When user clicks "INTRO" to return to landing screen
+  const handleBackToIntro = useCallback(() => {
+    setShowUI(false);
+    setCardsDealt(false);
+    setIsPlayingFullVideo(false);
+    setHasStarted(false);
+
+    if (bgVideoRef.current) {
+      bgVideoRef.current.loop = true;
+      bgVideoRef.current.play().catch(() => {});
+    }
+  }, []);
+
+  // Keyboard navigation & Skip video shortcut
   const onKeyDown = useCallback((e: KeyboardEvent) => {
+    if (isPlayingFullVideo) {
+      if (e.key === ' ' || e.key === 'Escape' || e.key === 'Enter') {
+        e.preventDefault();
+        handleFinishVideo();
+      }
+      return;
+    }
     if (!hasStarted) return;
     if (selectedCharacter) {
       // While in Character Detail view, all keyboard events are managed by child modals (zoom/lightbox)
@@ -221,7 +310,7 @@ function AppInner() {
     if (e.key === 'ArrowLeft') prev();
     if (e.key === 'ArrowRight') next();
     if (e.key === 'Enter') setSelectedCharacter(characters[active]);
-  }, [hasStarted, prev, next, selectedCharacter, characters, active]);
+  }, [isPlayingFullVideo, hasStarted, handleFinishVideo, selectedCharacter, prev, next, characters, active]);
 
   useEffect(() => {
     window.addEventListener('keydown', onKeyDown);
@@ -266,10 +355,16 @@ function AppInner() {
     >
       {/* 1. Dynamic Background Video — hidden on presentation (light) theme */}
       <video
+        ref={bgVideoRef}
         autoPlay
-        loop
+        loop={!isPlayingFullVideo}
         muted
         playsInline
+        onEnded={() => {
+          if (isPlayingFullVideo) {
+            handleFinishVideo();
+          }
+        }}
         onLoadedData={() => setVideoLoaded(true)}
         style={{
           position: 'absolute',
@@ -284,6 +379,7 @@ function AppInner() {
           pointerEvents: 'none',
         }}
       >
+        <source src="/assets/videos/intro.mp4" type="video/mp4" />
         <source src="/assets/videos/background.mp4" type="video/mp4" />
       </video>
 
@@ -344,11 +440,7 @@ function AppInner() {
 
       {/* Floating Header Controls: Back to Intro (Top Left) & Theme Selector (Top Right) */}
       <BackToIntroButton
-        onClick={() => {
-          setShowUI(false);
-          setCardsDealt(false);
-          setHasStarted(false);
-        }}
+        onClick={handleBackToIntro}
         isMobile={isMobile}
       />
       <ThemeSelector />
@@ -976,7 +1068,14 @@ function AppInner() {
       {/* ─── Cinematic Intro / Landing Screen (Before Entering Showroom) ─── */}
       <AnimatePresence>
         {!hasStarted && (
-          <IntroScreen onStart={() => setHasStarted(true)} />
+          <IntroScreen onStart={handleStartIntro} />
+        )}
+      </AnimatePresence>
+
+      {/* ─── Skip Video Button (Active during Full Video Playback) ─── */}
+      <AnimatePresence>
+        {isPlayingFullVideo && (
+          <SkipVideoButton onSkip={handleFinishVideo} isMobile={isMobile} />
         )}
       </AnimatePresence>
 

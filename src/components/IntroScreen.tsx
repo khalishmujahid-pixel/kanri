@@ -28,18 +28,6 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({ onStart }) => {
       exit={{ opacity: 0, scale: 1.04, filter: 'blur(8px)' }}
       transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
     >
-      {/* Dedicated Intro Video Background (prioritizes intro.mp4, fallbacks to background.mp4) */}
-      <video
-        autoPlay
-        loop
-        muted
-        playsInline
-        className="intro-video-bg"
-      >
-        <source src="/assets/videos/intro.mp4" type="video/mp4" />
-        <source src="/assets/videos/background.mp4" type="video/mp4" />
-      </video>
-
       {/* Cinematic Vignette Overlay */}
       <div className="intro-vignette" aria-hidden="true" />
 
