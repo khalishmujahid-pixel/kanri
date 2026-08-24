@@ -2110,7 +2110,8 @@
 .imp-cad-image-container {
   position: relative;
   width: 100%;
-  height: clamp(240px, 32vw, 380px);
+  aspect-ratio: 1024 / 468;
+  height: auto;
   background: #020617;
   border: 1.5px solid rgba(255, 159, 28, 0.35);
   border-radius: 10px;
@@ -2136,7 +2137,7 @@
 .imp-cad-real-image {
   width: 100%;
   height: 100%;
-  object-fit: contain;
+  object-fit: cover;
   object-position: center;
   transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), filter 0.3s ease;
 }
@@ -2168,17 +2169,17 @@
   align-items: center;
 }
 
-/* ST#5 Occurrence Marker Pin Positioning (Calibrated to ST5 CAD Box) */
+/* ST#5 Occurrence Marker Pin Positioning (Calibrated mathematically to ST5 box at X: 285px / 1024px) */
 .cad-hud-station-marker.st5-marker {
-  left: 30.0%;
-  top: 50%;
+  left: 27.8%;
+  top: 47.2%;
   transform: translate(-50%, -100%);
 }
 
-/* ST#2 Yokoten Marker Pin Positioning (Calibrated to ST2 CAD Box) */
+/* ST#2 Yokoten Marker Pin Positioning (Calibrated mathematically to ST2 box at X: 496px / 1024px) */
 .cad-hud-station-marker.st2-marker {
-  left: 49.8%;
-  top: 50%;
+  left: 48.4%;
+  top: 47.2%;
   transform: translate(-50%, -100%);
 }
 
