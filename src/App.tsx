@@ -4,6 +4,7 @@ import { INITIAL_CHARACTERS } from './data/characters';
 import type { Character } from './types/character';
 import { CharacterDetail } from './components/CharacterDetail';
 import { F1GarageHeader } from './components/F1GarageHeader';
+import { IntroScreen } from './components/IntroScreen';
 import { ThemeProvider, useTheme } from './contexts/ThemeContext';
 import { ThemeSelector } from './components/ThemeSelector';
 
@@ -60,7 +61,9 @@ function AppInner() {
   const [liked, setLiked] = useState<Set<number>>(new Set());
   const [selectedCharacter, setSelectedCharacter] = useState<Character | null>(null);
   const [videoLoaded, setVideoLoaded] = useState(false);
-  // Controls the staggered fade-in of the entire UI after background video loads
+  // Controls whether user has clicked START on the intro page
+  const [hasStarted, setHasStarted] = useState(false);
+  // Controls the fade-in of the showroom UI after user clicks START
   const [showUI, setShowUI] = useState(false);
   // Tracks whether the active card's character video has loaded and is ready to play
   const [activeVideoReady, setActiveVideoReady] = useState(false);
@@ -120,27 +123,21 @@ function AppInner() {
   }, [characters]);
 
   // Reset video-ready state each time the active card changes
-  // This ensures the photo is shown first, then video cross-fades in once loaded
   useEffect(() => {
     setActiveVideoReady(false);
   }, [active]);
 
-  // Trigger UI fade-in after background video loads.
-  // Give it 1.8s of pure video playback first so the user sees the atmosphere.
-  // Falls back after 4s in case the video is slow to load on mobile.
+  // Trigger Showroom UI fade-in once user clicks START
   useEffect(() => {
-    let timer: ReturnType<typeof setTimeout>;
-    if (videoLoaded) {
-      timer = setTimeout(() => setShowUI(true), 1800);
-    } else {
-      // Fallback: show UI after 4s regardless, so users are never stuck
-      timer = setTimeout(() => setShowUI(true), 4000);
+    if (hasStarted) {
+      const timer = setTimeout(() => setShowUI(true), 150);
+      return () => clearTimeout(timer);
     }
-    return () => clearTimeout(timer);
-  }, [videoLoaded]);
+  }, [hasStarted]);
 
   // Keyboard navigation
   const onKeyDown = useCallback((e: KeyboardEvent) => {
+    if (!hasStarted) return;
     if (selectedCharacter) {
       // While in Character Detail view, all keyboard events are managed by child modals (zoom/lightbox)
       return;
@@ -148,7 +145,7 @@ function AppInner() {
     if (e.key === 'ArrowLeft') prev();
     if (e.key === 'ArrowRight') next();
     if (e.key === 'Enter') setSelectedCharacter(characters[active]);
-  }, [prev, next, selectedCharacter, characters, active]);
+  }, [hasStarted, prev, next, selectedCharacter, characters, active]);
 
   useEffect(() => {
     window.addEventListener('keydown', onKeyDown);
@@ -873,6 +870,13 @@ function AppInner() {
 
       </div>
       {/* ─── End UI Wrapper ────────────────────────────────────────────────── */}
+
+      {/* ─── Cinematic Intro / Landing Screen (Before Entering Showroom) ─── */}
+      <AnimatePresence>
+        {!hasStarted && (
+          <IntroScreen onStart={() => setHasStarted(true)} />
+        )}
+      </AnimatePresence>
 
       {/* 9. Full Character Detail View Modal / Overlay */}
       <AnimatePresence>
