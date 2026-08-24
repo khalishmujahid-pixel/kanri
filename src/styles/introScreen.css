@@ -28,11 +28,11 @@
   pointer-events: none;
 }
 
-/* Cinematic Subtle Vignette Overlay */
+/* Cinematic Subtle Vignette Overlay — crystal clear video visibility */
 .intro-vignette {
   position: absolute;
   inset: 0;
-  background: radial-gradient(circle at 50% 50%, rgba(0, 0, 0, 0.1) 0%, rgba(4, 7, 14, 0.45) 80%, rgba(4, 7, 14, 0.75) 100%);
+  background: radial-gradient(circle at 50% 50%, transparent 60%, rgba(0, 0, 0, 0.35) 100%);
   z-index: 1;
   pointer-events: none;
 }

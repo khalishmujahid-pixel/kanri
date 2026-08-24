@@ -178,7 +178,6 @@ function AppInner() {
   const [active, setActive] = useState(0);
   const [liked, setLiked] = useState<Set<number>>(new Set());
   const [selectedCharacter, setSelectedCharacter] = useState<Character | null>(null);
-  const [videoLoaded, setVideoLoaded] = useState(false);
   // Controls whether user has clicked START on the intro page
   const [hasStarted, setHasStarted] = useState(false);
   // Controls full background video playback state before dealing cards
@@ -353,50 +352,78 @@ function AppInner() {
         transition: 'background 0.6s cubic-bezier(0.4,0,0.2,1)',
       }}
     >
-      {/* 1. Dynamic Background Video — hidden on presentation (light) theme */}
-      <video
-        ref={bgVideoRef}
-        autoPlay
-        loop={!isPlayingFullVideo}
-        muted
-        playsInline
-        onEnded={() => {
-          if (isPlayingFullVideo) {
-            handleFinishVideo();
-          }
-        }}
-        onLoadedData={() => setVideoLoaded(true)}
-        style={{
-          position: 'absolute',
-          inset: 0,
-          width: '100%',
-          height: '100%',
-          objectFit: 'cover',
-          objectPosition: 'center',
-          opacity: isPresentation ? 0 : videoLoaded ? 0.83 : 0,
-          transition: 'opacity 1s ease-in-out',
-          zIndex: 1,
-          pointerEvents: 'none',
-        }}
-      >
-        <source src="/assets/videos/intro.mp4" type="video/mp4" />
-        <source src="/assets/videos/background.mp4" type="video/mp4" />
-      </video>
+      {/* 1. Intro Screen Video Layer (intro.mp4) — 100% Clear, Vivid & Looping */}
+      {!hasStarted && (
+        <video
+          key="video-intro"
+          autoPlay
+          loop
+          muted
+          playsInline
+          style={{
+            position: 'absolute',
+            inset: 0,
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
+            objectPosition: 'center',
+            zIndex: 1,
+            pointerEvents: 'none',
+            opacity: 1,
+          }}
+        >
+          <source src="/assets/videos/intro.mp4" type="video/mp4" />
+          <source src="/assets/videos/background.mp4" type="video/mp4" />
+        </video>
+      )}
 
-      {/* 2. Frosted/Vignette Tint Overlay — theme-aware */}
-      <div
-        style={{
-          position: 'absolute',
-          inset: 0,
-          background: 'var(--theme-bg-overlay)',
-          zIndex: 2,
-          pointerEvents: 'none',
-          transition: 'background 0.6s cubic-bezier(0.4,0,0.2,1)',
-        }}
-      />
+      {/* 2. Transition Cutscene & Dashboard Video Layer (background.mp4) */}
+      {hasStarted && (
+        <video
+          ref={bgVideoRef}
+          key="video-dashboard"
+          autoPlay
+          loop={!isPlayingFullVideo}
+          muted
+          playsInline
+          onEnded={() => {
+            if (isPlayingFullVideo) {
+              handleFinishVideo();
+            }
+          }}
+          style={{
+            position: 'absolute',
+            inset: 0,
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
+            objectPosition: 'center',
+            opacity: isPresentation ? 0 : 1,
+            transition: 'opacity 0.6s ease-in-out',
+            zIndex: 1,
+            pointerEvents: 'none',
+          }}
+        >
+          <source src="/assets/videos/background.mp4" type="video/mp4" />
+        </video>
+      )}
+
+      {/* 3. Frosted/Vignette Tint Overlay — active only on Dashboard */}
+      {hasStarted && !isPlayingFullVideo && (
+        <div
+          style={{
+            position: 'absolute',
+            inset: 0,
+            background: 'var(--theme-bg-overlay)',
+            zIndex: 2,
+            pointerEvents: 'none',
+            transition: 'background 0.6s cubic-bezier(0.4,0,0.2,1)',
+          }}
+        />
+      )}
 
       {/* Presentation: soft linen texture overlay */}
-      {isPresentation && (
+      {hasStarted && !isPlayingFullVideo && isPresentation && (
         <div
           style={{
             position: 'absolute',
@@ -408,22 +435,24 @@ function AppInner() {
         />
       )}
 
-      {/* 3. Subtle center soft glow — theme-aware color */}
-      <div
-        style={{
-          position: 'absolute',
-          top: '30%',
-          left: '50%',
-          transform: 'translate(-50%, -50%)',
-          width: '65vw',
-          height: '45vh',
-          background: 'var(--theme-center-glow)',
-          filter: 'blur(50px)',
-          zIndex: 2,
-          pointerEvents: 'none',
-          transition: 'background 0.6s cubic-bezier(0.4,0,0.2,1)',
-        }}
-      />
+      {/* 4. Subtle center soft glow — active on Dashboard */}
+      {hasStarted && !isPlayingFullVideo && (
+        <div
+          style={{
+            position: 'absolute',
+            top: '30%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            width: '65vw',
+            height: '45vh',
+            background: 'var(--theme-center-glow)',
+            filter: 'blur(50px)',
+            zIndex: 2,
+            pointerEvents: 'none',
+            transition: 'background 0.6s cubic-bezier(0.4,0,0.2,1)',
+          }}
+        />
+      )}
 
       {/* ─── UI Wrapper — fades in after intro video plays ─────────────────── */}
       <div
