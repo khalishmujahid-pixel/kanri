@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Play, Zap, ShieldCheck, Activity } from 'lucide-react';
+import { Play, Sparkles } from 'lucide-react';
 import '../styles/introScreen.css';
 
 interface IntroScreenProps {
@@ -8,7 +8,7 @@ interface IntroScreenProps {
 }
 
 export const IntroScreen: React.FC<IntroScreenProps> = ({ onStart }) => {
-  // Listen for Enter or Space key to start immediately
+  // Keyboard listener for Enter or Space key to proceed
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Enter' || e.key === ' ') {
@@ -25,74 +25,53 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({ onStart }) => {
       className="intro-screen-overlay"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      exit={{ opacity: 0, scale: 1.05, filter: 'blur(10px)' }}
-      transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+      exit={{ opacity: 0, scale: 1.04, filter: 'blur(8px)' }}
+      transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
     >
-      <div className="intro-grid-pattern" aria-hidden="true" />
-
-      <motion.div
-        className="intro-content-card"
-        initial={{ y: 24, opacity: 0, scale: 0.96 }}
-        animate={{ y: 0, opacity: 1, scale: 1 }}
-        exit={{ y: -20, opacity: 0, scale: 0.96 }}
-        transition={{ duration: 0.6, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
+      {/* Dedicated Intro Video Background (prioritizes intro.mp4, fallbacks to background.mp4) */}
+      <video
+        autoPlay
+        loop
+        muted
+        playsInline
+        className="intro-video-bg"
       >
-        {/* Top Telemetry Beacon Badge */}
-        <div className="intro-top-badge">
-          <span className="intro-radar-dot" />
-          <span>F1 PIT GARAGE // LIVE | SHIFT RED TEAM</span>
-        </div>
+        <source src="/assets/videos/intro.mp4" type="video/mp4" />
+        <source src="/assets/videos/background.mp4" type="video/mp4" />
+      </video>
 
-        {/* Main Title & Subtitle */}
-        <h1 className="intro-main-title">
-          <span className="highlight-orange">PW MAINT BODY#2</span> <br />
-          RED ZONE
-        </h1>
+      {/* Cinematic Vignette Overlay */}
+      <div className="intro-vignette" aria-hidden="true" />
 
-        <p className="intro-sub-tagline">
-          KANRI OPERATION &amp; KAIZEN INTELLIGENCE PLATFORM
-        </p>
-
-        {/* Interactive Start Button */}
-        <div className="intro-start-btn-wrap">
-          <motion.button
-            type="button"
-            className="intro-start-btn"
-            onClick={onStart}
-            whileHover={{ scale: 1.03 }}
-            whileTap={{ scale: 0.98 }}
-            autoFocus
-          >
-            <div className="intro-btn-icon">
-              <Play size={13} fill="#ffffff" />
-            </div>
-            <span>START SYSTEM</span>
-            <Zap size={14} className="zap-glow-icon" />
-          </motion.button>
-
-          <div className="intro-start-hint">
-            <span>Tekan</span>
-            <kbd>ENTER</kbd>
-            <span>atau Klik untuk Masuk</span>
+      {/* Elegant Center-Bottom Action Hub */}
+      <motion.div
+        className="intro-action-hub"
+        initial={{ y: 20, opacity: 0, scale: 0.95 }}
+        animate={{ y: 0, opacity: 1, scale: 1 }}
+        exit={{ y: 15, opacity: 0, scale: 0.95 }}
+        transition={{ duration: 0.7, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
+      >
+        <motion.button
+          type="button"
+          className="intro-elegant-btn"
+          onClick={onStart}
+          whileHover={{ scale: 1.04 }}
+          whileTap={{ scale: 0.98 }}
+          autoFocus
+        >
+          <div className="intro-play-icon-wrap">
+            <Play size={10} fill="currentColor" />
           </div>
+          <span>START OPERATION</span>
+          <Sparkles size={13} style={{ color: '#ff9f1c', opacity: 0.8 }} />
+        </motion.button>
+
+        <div className="intro-sub-hint">
+          <span>TEKAN</span>
+          <kbd>ENTER</kbd>
+          <span>ATAU KLIK UNTUK MASUK</span>
         </div>
       </motion.div>
-
-      {/* Bottom Telemetry HUD Status */}
-      <div className="intro-footer-telemetry">
-        <div className="intro-telemetry-item">
-          <span className="dot-green" />
-          <span>SYSTEM READY</span>
-        </div>
-        <div className="intro-telemetry-item">
-          <Activity size={11} color="#ff6a1a" />
-          <span>WELDING BODY #2</span>
-        </div>
-        <div className="intro-telemetry-item">
-          <ShieldCheck size={11} color="#22c55e" />
-          <span>SECURITY ZONE AUTHENTICATED</span>
-        </div>
-      </div>
     </motion.div>
   );
 };
