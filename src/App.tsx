@@ -258,6 +258,7 @@ function AppInner() {
 
     if (bgVideoRef.current) {
       bgVideoRef.current.currentTime = 0;
+      bgVideoRef.current.playbackRate = 1.25;
       bgVideoRef.current.loop = false;
       bgVideoRef.current.play().catch(() => {});
     }
@@ -269,15 +270,23 @@ function AppInner() {
     setShowUI(true);
 
     if (bgVideoRef.current) {
+      bgVideoRef.current.playbackRate = 1.25;
       bgVideoRef.current.loop = true;
       bgVideoRef.current.play().catch(() => {});
     }
 
-    // Trigger card dealing sequence completion after ~1.6s
+    // Trigger card dealing sequence completion after ~1.8s
     setTimeout(() => {
       setCardsDealt(true);
-    }, 1600);
+    }, 1800);
   }, []);
+
+  // Enforce 1.25x playback rate on background video
+  useEffect(() => {
+    if (bgVideoRef.current) {
+      bgVideoRef.current.playbackRate = 1.25;
+    }
+  }, [hasStarted, isPlayingFullVideo, showUI]);
 
   // Handler: When user clicks "INTRO" to return to landing screen
   const handleBackToIntro = useCallback(() => {
@@ -287,6 +296,7 @@ function AppInner() {
     setHasStarted(false);
 
     if (bgVideoRef.current) {
+      bgVideoRef.current.playbackRate = 1.25;
       bgVideoRef.current.loop = true;
       bgVideoRef.current.play().catch(() => {});
     }
@@ -386,6 +396,12 @@ function AppInner() {
           loop={!isPlayingFullVideo}
           muted
           playsInline
+          onPlay={(e) => {
+            (e.currentTarget as HTMLVideoElement).playbackRate = 1.25;
+          }}
+          onLoadedMetadata={(e) => {
+            (e.currentTarget as HTMLVideoElement).playbackRate = 1.25;
+          }}
           onEnded={() => {
             if (isPlayingFullVideo) {
               handleFinishVideo();
@@ -454,15 +470,14 @@ function AppInner() {
         />
       )}
 
-      {/* ─── UI Wrapper — fades in after intro video plays ─────────────────── */}
+      {/* ─── UI Wrapper — immediate container visibility for sharp card dealing ─── */}
       <div
         style={{
           position: 'absolute',
           inset: 0,
           zIndex: 10,
           opacity: showUI ? 1 : 0,
-          transform: showUI ? 'translateY(0)' : 'translateY(12px)',
-          transition: 'opacity 1.2s cubic-bezier(0.4,0,0.2,1), transform 1.2s cubic-bezier(0.4,0,0.2,1)',
+          transition: 'opacity 0.2s ease',
           pointerEvents: showUI ? 'auto' : 'none',
         }}
       >
@@ -537,18 +552,21 @@ function AppInner() {
           const cardW = isMobile ? 'clamp(270px, 80vw, 340px)' : isTablet ? 'clamp(380px, 54vw, 520px)' : 'clamp(420px, 46vw, 640px)';
           const cardAspect = isMobile ? '3 / 4' : isTablet ? '4 / 3' : '16 / 9';
 
-          // Card Dealing Animation (Pembagian Kartu Remi)
-          // Cards deal out sequentially 1 per 1 from center deck into their carousel slot
+          // Card Dealing Animation (Pembagian Kartu Remi yang Sangat Terasa & Tajam)
+          // Dealing order: Leftmost visible card (-2) -> Mid-left (-1) -> Center (0) -> Mid-right (+1) -> Rightmost (+2)
           const dealOrder = offset === -2 ? 0 : offset === -1 ? 1 : offset === 0 ? 2 : offset === 1 ? 3 : 4;
-          const dealDelay = `${dealOrder * 0.18}s`;
-          const initialDealTransform = `translate(0, 180px) scale(0.25) rotate(${offset * 14}deg)`;
+          const dealDelay = `${dealOrder * 0.22}s`;
+          
+          // Initial Deck Position: Cards start stacked at bottom center (hidden deck)
+          const initialDealTransform = `translate(0, 360px) scale(0.18) rotate(${offset * 14 - 28}deg)`;
           const finalTransform = `translateX(${xPct}%) scale(${scale}) rotateX(${rotX}deg) rotateY(${rotY}deg)`;
 
           const cardTransform = !cardsDealt && !showUI ? initialDealTransform : finalTransform;
           const cardOpacity = !cardsDealt && !showUI ? 0 : opacity;
 
+          // Punchy casino card dealing physics with distinct overshoot snap
           const cardTransition = !cardsDealt
-            ? `transform 0.85s cubic-bezier(0.16, 1, 0.3, 1) ${dealDelay}, opacity 0.65s ease ${dealDelay}, filter 0.65s ease ${dealDelay}, box-shadow 0.65s ease ${dealDelay}`
+            ? `transform 0.72s cubic-bezier(0.18, 1.25, 0.35, 1) ${dealDelay}, opacity 0.4s ease ${dealDelay}, filter 0.4s ease ${dealDelay}, box-shadow 0.4s ease ${dealDelay}`
             : dragging
             ? 'none'
             : isCenter && (tilt.x !== 0 || tilt.y !== 0)
