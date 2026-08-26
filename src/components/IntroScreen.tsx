@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Play, Sparkles } from 'lucide-react';
 import '../styles/introScreen.css';
@@ -8,6 +8,16 @@ interface IntroScreenProps {
 }
 
 export const IntroScreen: React.FC<IntroScreenProps> = ({ onStart }) => {
+  const [showTitles, setShowTitles] = useState(false);
+
+  // Show center text after 2 seconds
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowTitles(true);
+    }, 2000);
+    return () => clearTimeout(timer);
+  }, []);
+
   // Keyboard listener for Enter or Space key to proceed
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -30,6 +40,15 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({ onStart }) => {
     >
       {/* Cinematic Vignette Overlay */}
       <div className="intro-vignette" aria-hidden="true" />
+
+      {/* Center Titles (Appears after 2 seconds — Clean Plain Text) */}
+      {showTitles && (
+        <div className="intro-center-titles">
+          <h1 className="intro-title-line1">KANRI MEETING</h1>
+          <h2 className="intro-title-line2">BODY#2 RED</h2>
+          <p className="intro-title-line3">Agustus 2026</p>
+        </div>
+      )}
 
       {/* Elegant Center-Bottom Action Hub */}
       <motion.div
