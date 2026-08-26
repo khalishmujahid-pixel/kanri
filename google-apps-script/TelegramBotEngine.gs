@@ -172,6 +172,14 @@ function handleIncomingMessage(msg) {
         sendTelegramMessage(chatId, '⛔ <b>Akses Ditolak</b>\nMenu ini khusus untuk Administrator/Supervisor. Ketik <code>/setadmin</code> untuk mendaftar.');
       }
     } 
+    else if (text === '/cleandupes' || text === '/bersihkan' || text === '🧹 Bersihkan Duplikat') {
+      const res = autoCleanAllDuplicatePmEntries(activePic);
+      if (res && res.success) {
+        sendTelegramMessage(chatId, `🧹 <b>Pembersihan Data Duplikat Selesai!</b>\n\nSebanyak <b>${res.cleanedCount} entri duplikat tanggal lama</b> telah otomatis dibersihkan dari baris Actual.\nHanya tanggal aktual <b>paling baru / terakhir</b> yang dipertahankan!`);
+      } else {
+        sendTelegramMessage(chatId, `ℹ️ Tidak ada entri duplikat tanggal lama yang perlu dibersihkan pada sheet <b>${activePic || 'Aktif'}</b>.`);
+      }
+    }
     else if (text === 'ℹ️ Bantuan' || text === '/help') {
       sendHelpMessage(chatId);
     } 
@@ -1385,3 +1393,105 @@ function setupTelegramWebhook() {
   const res = UrlFetchApp.fetch(url);
   Logger.log("Set Webhook Result: " + res.getContentText());
 }
+
+/**
+ * ============================================================================
+ * 6. UTILITY PEMBERSIH DUPLIKAT MASSAL (AUTO CLEANUP OLD DUPLICATE ENTRIES)
+ * ============================================================================
+ * Memindai baris Actual pada seluruh sheet (atau sheet tertentu).
+ * Jika ditemukan huruf Kanban yang sama muncul di lebih dari 1 tanggal:
+ * - Menjaga tanggal yang PALING BARU (tanggal terbesar / terakhir).
+ * - Menghapus seluruh tanggal yang lebih lama (membersihkan nilai & warna sel ke normal).
+ */
+function autoCleanAllDuplicatePmEntries(targetSheetName) {
+  try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    if (!ss) return { success: false, cleanedCount: 0 };
+    
+    let sheets = [];
+    if (targetSheetName) {
+      const s = ss.getSheetByName(targetSheetName);
+      if (s) sheets.push(s);
+    }
+    if (sheets.length === 0) {
+      sheets = ss.getSheets();
+    }
+    
+    let totalCleaned = 0;
+    
+    sheets.forEach(sheet => {
+      if (!sheet) return;
+      
+      const data = sheet.getDataRange().getValues();
+      const backgrounds = sheet.getDataRange().getBackgrounds();
+      
+      let headerRowIdx = -1;
+      let dayColMap = {};
+      for (let r = 0; r < Math.min(15, data.length); r++) {
+        for (let c = 0; c < data[r].length; c++) {
+          const val = parseInt(data[r][c], 10);
+          if (!isNaN(val) && val >= 1 && val <= 31) {
+            if (headerRowIdx === -1) headerRowIdx = r;
+            dayColMap[val] = c;
+          }
+        }
+        if (headerRowIdx !== -1) break;
+      }
+      
+      if (headerRowIdx === -1) return;
+      
+      for (let r = headerRowIdx + 1; r < data.length; r++) {
+        const row = data[r];
+        let rowTag = '';
+        for (let c = 4; c <= 7; c++) {
+          const t = String(row[c] || '').trim().toUpperCase();
+          if (t === 'A' || t === 'ACTUAL') { rowTag = 'A'; break; }
+        }
+        
+        // Hanya proses baris Actual
+        if (rowTag === 'A') {
+          // Kelompokkan tanggal per jenis Kanban (A, B, C, D)
+          const kanbanDaysMap = {}; // { 'A': [{day: 15, col: 18}, {day: 20, col: 23}] }
+          
+          Object.keys(dayColMap).forEach(dStr => {
+            const day = parseInt(dStr, 10);
+            const col = dayColMap[day];
+            const cellVal = String(row[col] || '').trim().toUpperCase();
+            const bg = backgrounds[r][col] ? backgrounds[r][col].toLowerCase() : '';
+            
+            if (cellVal === 'A' || cellVal === 'B' || cellVal === 'C' || cellVal === 'D' || isGreenColor(bg)) {
+              const kb = (cellVal === 'A' || cellVal === 'B' || cellVal === 'C' || cellVal === 'D') ? cellVal : 'ACTUAL';
+              if (!kanbanDaysMap[kb]) kanbanDaysMap[kb] = [];
+              kanbanDaysMap[kb].push({ day: day, col: col });
+            }
+          });
+          
+          // Jika ada lebih dari 1 entri untuk kanban yang sama
+          Object.keys(kanbanDaysMap).forEach(kb => {
+            const entries = kanbanDaysMap[kb];
+            if (entries.length > 1) {
+              // Urutkan dari tanggal terkecil ke terbesar
+              entries.sort((a, b) => a.day - b.day);
+              // Entri terakhir adalah tanggal PALING BARU (dipertahankan)
+              const latestEntry = entries[entries.length - 1];
+              
+              // Hapus semua entri sebelumnya (yang lebih tua)
+              for (let i = 0; i < entries.length - 1; i++) {
+                const oldEntry = entries[i];
+                sheet.getRange(r + 1, oldEntry.col + 1).setValue('');
+                sheet.getRange(r + 1, oldEntry.col + 1).setBackground(null);
+                totalCleaned++;
+              }
+            }
+          });
+        }
+      }
+    });
+    
+    return { success: true, cleanedCount: totalCleaned };
+  } catch (err) {
+    Logger.log('Error cleaning duplicates: ' + err.toString());
+    return { success: false, error: err.toString(), cleanedCount: 0 };
+  }
+}
+
