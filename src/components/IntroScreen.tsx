@@ -58,20 +58,20 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({ onStart }) => {
       {/* Cinematic Vignette Overlay */}
       <div className="intro-vignette" aria-hidden="true" />
 
-      {/* Center Titles with Hard-Impact Slam Typewriter & Disappear Blur Exit */}
+      {/* Center Titles with Hard-Impact Slam Typewriter & Seamless Static Disappear Blur Exit */}
       {isTypingVisible && (
         <AnimatePresence mode="wait">
           <motion.div
             key={cycleKey}
             className="intro-center-titles"
-            initial={{ opacity: 1, filter: 'blur(0px)' }}
-            animate={{ opacity: 1, filter: 'blur(0px)' }}
+            initial={{ opacity: 1, filter: 'blur(0px)', x: '-50%', y: '-50%' }}
+            animate={{ opacity: 1, filter: 'blur(0px)', x: '-50%', y: '-50%' }}
             exit={{
               opacity: 0,
-              filter: 'blur(22px)',
-              scale: 1.06,
-              y: -12,
-              transition: { duration: 0.85, ease: [0.4, 0, 0.2, 1] }
+              filter: 'blur(20px)',
+              x: '-50%',
+              y: '-50%',
+              transition: { duration: 0.75, ease: 'easeInOut' }
             }}
           >
             {/* Line 1: KANRI MEETING */}
