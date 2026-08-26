@@ -403,9 +403,9 @@ function sendKanbanSelectionWizard(chatId, picName, eqNo) {
         callback_data: `noop`
       }]);
     } else if (taskPlan.done) {
-      msg += `▫️ <b>KANBAN ${kbType}:</b> 🟢 <b>SUDAH DI-PM (SELESAI)</b> — <i>Done D${taskPlan.actualDay || taskPlan.planDay}</i>\n`;
+      msg += `▫️ <b>KANBAN ${kbType}:</b> 🟢 <b>SUDAH DI-PM</b> (Aktual D${taskPlan.actualDay || taskPlan.planDay}) — <i>Klik untuk update/pindah tanggal</i>\n`;
       keyboard.push([{
-        text: `🟢 KANBAN ${kbType} [SUDAH DI-PM: D${taskPlan.actualDay || taskPlan.planDay}]`,
+        text: `🟢 KANBAN ${kbType} [Done D${taskPlan.actualDay || taskPlan.planDay} ➜ Update Tgl]`,
         callback_data: `wiz_kb:${eq.no}:${kbType}`
       }]);
     } else {
@@ -473,7 +473,7 @@ function sendDateSelectionWizard(chatId, picName, eqNo, kanbanType) {
 }
 
 /**
- * STEP 4 WIZARD: Eksekusi Penulisan & Konfirmasi Notifikasi Hijau
+ * STEP 4 WIZARD: Eksekusi Penulisan & Konfirmasi Notifikasi Hijau / Update Pindah Tanggal
  */
 function executeAndConfirmReport(chatId, picName, eqNo, kanbanType, chosenDay) {
   const schedule = fetchPmScheduleFromSheet(picName);
@@ -482,21 +482,39 @@ function executeAndConfirmReport(chatId, picName, eqNo, kanbanType, chosenDay) {
   const coreEq = eq ? eq.coreEquipment : '-';
   const area = eq ? eq.area : '-';
   
-  const success = executeReportToSheet(picName, eqNo, kanbanType, chosenDay);
+  const result = executeReportToSheet(picName, eqNo, kanbanType, chosenDay);
   
-  if (success) {
-    let msg = `╔══════════════════════════════════════╗\n`;
-    msg += `  🟢 <b>LAPORAN PM BERHASIL DISIMPAN!</b>\n`;
-    msg += `╚══════════════════════════════════════╝\n\n`;
-    msg += `✅ <b>Status:</b> <b>SUDAH DI-PM (SELESAI)</b>\n`;
-    msg += `👤 <b>PIC / Sheet:</b> <code>${picName}</code>\n`;
-    msg += `⚙️ <b>Mesin:</b> #${eqNo} <b>${escapeHtml(eqName)}</b>\n`;
-    msg += `🏷️ <b>Core:</b> ${escapeHtml(coreEq)} (${escapeHtml(area)})\n`;
-    msg += `📋 <b>Jenis Kanban:</b> <b>[KANBAN ${kanbanType}]</b>\n`;
-    msg += `📅 <b>Tanggal Eksekusi:</b> <b>Tanggal ${chosenDay} (Bulan Aktif)</b>\n\n`;
-    msg += `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`;
-    msg += `✨ <i>Huruf <b>${kanbanType}</b> dan warna latar belakang <b>HIJAU</b> telah otomatis tercatat pada baris Actual Google Sheet!</i>\n\n`;
-    msg += `Silakan pilih menu selanjutnya:`;
+  if (result && result.success) {
+    let msg = '';
+    
+    if (result.isUpdated && result.previousDay) {
+      msg += `╔══════════════════════════════════════╗\n`;
+      msg += `  🔄 <b>LAPORAN PM BERHASIL DI-UPDATE!</b>\n`;
+      msg += `╚══════════════════════════════════════╝\n\n`;
+      msg += `✅ <b>Status:</b> <b>UPDATED (DIPINDAHKAN / DIREVISI)</b>\n`;
+      msg += `👤 <b>PIC / Sheet:</b> <code>${picName}</code>\n`;
+      msg += `⚙️ <b>Mesin:</b> #${eqNo} <b>${escapeHtml(eqName)}</b>\n`;
+      msg += `🏷️ <b>Core:</b> ${escapeHtml(coreEq)} (${escapeHtml(area)})\n`;
+      msg += `📋 <b>Jenis Kanban:</b> <b>[KANBAN ${kanbanType}]</b>\n`;
+      msg += `🗑️ <b>Tanggal Lama:</b> <s>Tanggal ${result.previousDay}</s> <i>(Dihapus)</i>\n`;
+      msg += `📅 <b>Tanggal Baru Aktif:</b> <b>Tanggal ${chosenDay} (Bulan Aktif)</b>\n\n`;
+      msg += `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`;
+      msg += `✨ <i>Data PM pada Tanggal ${result.previousDay} telah otomatis dibersihkan dan diperbarui ke Tanggal ${chosenDay} pada baris Actual Google Sheet!</i>\n\n`;
+      msg += `Silakan pilih menu selanjutnya:`;
+    } else {
+      msg += `╔══════════════════════════════════════╗\n`;
+      msg += `  🟢 <b>LAPORAN PM BERHASIL DISIMPAN!</b>\n`;
+      msg += `╚══════════════════════════════════════╝\n\n`;
+      msg += `✅ <b>Status:</b> <b>SUDAH DI-PM (SELESAI)</b>\n`;
+      msg += `👤 <b>PIC / Sheet:</b> <code>${picName}</code>\n`;
+      msg += `⚙️ <b>Mesin:</b> #${eqNo} <b>${escapeHtml(eqName)}</b>\n`;
+      msg += `🏷️ <b>Core:</b> ${escapeHtml(coreEq)} (${escapeHtml(area)})\n`;
+      msg += `📋 <b>Jenis Kanban:</b> <b>[KANBAN ${kanbanType}]</b>\n`;
+      msg += `📅 <b>Tanggal Eksekusi:</b> <b>Tanggal ${chosenDay} (Bulan Aktif)</b>\n\n`;
+      msg += `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`;
+      msg += `✨ <i>Huruf <b>${kanbanType}</b> dan warna latar belakang <b>HIJAU</b> telah otomatis tercatat pada baris Actual Google Sheet!</i>\n\n`;
+      msg += `Silakan pilih menu selanjutnya:`;
+    }
     
     const inline = {
       inline_keyboard: [
@@ -900,7 +918,7 @@ function sendPicSelectionKeyboard(chatId, title) {
 function executeReportToSheet(picName, eqNo, kanbanType, actualDay) {
   try {
     const ss = SpreadsheetApp.getActiveSpreadsheet();
-    if (!ss) return false;
+    if (!ss) return { success: false };
     
     let sheet = ss.getSheetByName(picName);
     if (!sheet) {
@@ -912,9 +930,10 @@ function executeReportToSheet(picName, eqNo, kanbanType, actualDay) {
         }
       }
     }
-    if (!sheet) return false;
+    if (!sheet) return { success: false };
     
     const data = sheet.getDataRange().getValues();
+    const backgrounds = sheet.getDataRange().getBackgrounds();
     
     let headerRowIdx = -1;
     let dayColMap = {};
@@ -929,7 +948,7 @@ function executeReportToSheet(picName, eqNo, kanbanType, actualDay) {
       if (headerRowIdx !== -1) break;
     }
     
-    if (headerRowIdx === -1 || !dayColMap[actualDay]) return false;
+    if (headerRowIdx === -1 || !dayColMap[actualDay]) return { success: false };
     
     const targetColIdx = dayColMap[actualDay];
     
@@ -942,16 +961,42 @@ function executeReportToSheet(picName, eqNo, kanbanType, actualDay) {
       }
     }
     
-    if (targetActualRowIdx === -1 || targetActualRowIdx >= data.length) return false;
+    if (targetActualRowIdx === -1 || targetActualRowIdx >= data.length) return { success: false };
     
+    // Periksa apakah sudah ada data aktual sebelumnya pada baris Actual mesin ini
+    let previousDay = null;
+    Object.keys(dayColMap).forEach(dStr => {
+      const d = parseInt(dStr, 10);
+      const c = dayColMap[d];
+      const cellVal = String(data[targetActualRowIdx][c] || '').trim().toUpperCase();
+      const bg = backgrounds[targetActualRowIdx][c] ? backgrounds[targetActualRowIdx][c].toLowerCase() : '';
+      
+      // Jika cell cocok dengan kanban ini atau bernilai hijau
+      if (cellVal === kanbanType || (isGreenColor(bg) && cellVal !== '')) {
+        if (d !== actualDay) {
+          previousDay = d;
+          // Hapus nilai dan kembalikan warna cell lama ke normal (kosong)
+          const prevCell = sheet.getRange(targetActualRowIdx + 1, c + 1);
+          prevCell.setValue('');
+          prevCell.setBackground(null);
+        }
+      }
+    });
+    
+    // Tulis data aktual baru pada tanggal yang dipilih
     const cell = sheet.getRange(targetActualRowIdx + 1, targetColIdx + 1);
     cell.setValue(kanbanType);
     cell.setBackground('#b6d7a8');
     
-    return true;
+    return {
+      success: true,
+      isUpdated: (previousDay !== null && previousDay !== actualDay),
+      previousDay: previousDay,
+      newDay: actualDay
+    };
   } catch (err) {
     Logger.log('Error writing report to sheet: ' + err.toString());
-    return false;
+    return { success: false, error: err.toString() };
   }
 }
 
