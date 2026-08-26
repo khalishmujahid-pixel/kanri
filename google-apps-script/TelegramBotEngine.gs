@@ -1405,23 +1405,49 @@ function setupTelegramWebhook() {
 function onOpen() {
   try {
     const ui = SpreadsheetApp.getUi();
-    ui.createMenu('🛠️ PM Bot Tools')
-      .addItem('🧹 Bersihkan Semua Duplikat Tanggal Lama', 'menuCleanDuplicates')
-      .addItem('🔄 Sinkronkan Webhook Telegram', 'setupTelegramWebhook')
-      .addToUi();
+    if (ui) {
+      ui.createMenu('🛠️ PM Bot Tools')
+        .addItem('🧹 Bersihkan Semua Duplikat Tanggal Lama', 'menuCleanDuplicates')
+        .addItem('🔄 Sinkronkan Webhook Telegram', 'setupTelegramWebhook')
+        .addToUi();
+    }
   } catch (e) {
-    Logger.log('Error in onOpen: ' + e.toString());
+    Logger.log('onOpen UI not available: ' + e.toString());
   }
 }
 
+/**
+ * Fungsi yang aman dijalankan baik dari Menu Google Sheets maupun tombol [▷ Jalankan] di Editor
+ */
 function menuCleanDuplicates() {
   const res = autoCleanAllDuplicatePmEntries();
-  const ui = SpreadsheetApp.getUi();
-  if (res && res.success) {
-    ui.alert('🧹 Pembersihan Duplikat Selesai!', `Sebanyak ${res.cleanedCount} sel tanggal lama pada baris Actual telah berhasil dibersihkan.\nHanya tanggal aktual paling baru yang dipertahankan.`, ui.ButtonSet.OK);
-  } else {
-    ui.alert('ℹ️ Info', 'Tidak ditemukan sel duplikat yang perlu dibersihkan.', ui.ButtonSet.OK);
+  Logger.log('Hasil Pembersihan: ' + JSON.stringify(res));
+  
+  try {
+    const ui = SpreadsheetApp.getUi();
+    if (ui) {
+      if (res && res.success) {
+        ui.alert('🧹 Pembersihan Duplikat Selesai!', `Sebanyak ${res.cleanedCount} sel tanggal lama pada baris Actual telah berhasil dibersihkan.\nHanya tanggal aktual paling baru yang dipertahankan.`, ui.ButtonSet.OK);
+      } else {
+        ui.alert('ℹ️ Info', 'Tidak ditemukan sel duplikat yang perlu dibersihkan.', ui.ButtonSet.OK);
+      }
+    }
+  } catch (e) {
+    Logger.log('UI Alert dilewati (dieksekusi langsung dari editor). Total bersih: ' + (res ? res.cleanedCount : 0));
   }
+  return res;
+}
+
+/**
+ * Runner khusus untuk dijalankan langsung dari Google Apps Script Editor
+ */
+function runCleanDuplicatesFromEditor() {
+  const res = autoCleanAllDuplicatePmEntries();
+  Logger.log('====================================');
+  Logger.log('🧹 HASIL PEMBERSIHAN DUPLIKAT DARI EDITOR:');
+  Logger.log('Total sel tanggal lama yang dibersihkan: ' + res.cleanedCount);
+  Logger.log('Status: ' + (res.success ? 'BERHASIL' : 'GAGAL / ADA ERROR'));
+  Logger.log('====================================');
 }
 
 function autoCleanAllDuplicatePmEntries(targetSheetName) {
