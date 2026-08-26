@@ -23,14 +23,14 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({ onStart }) => {
     return () => clearTimeout(startTimer);
   }, []);
 
-  // Cycle loop: Hard-impact slam typewriter -> Freeze for 5s -> Smooth fade out -> Repeat
+  // Cycle loop: Hard-impact slam typewriter -> Freeze for 5s -> Disappear blur -> Repeat
   useEffect(() => {
     if (!isTypingVisible) return;
 
-    // Typewrite (~2.4s) + Freeze (5.0s) + Fade out & pause (~0.8s) = 8.2s total per cycle
+    // Typewrite (~2.4s) + Freeze (5.0s) + Disappear Blur & pause (~1.2s) = 8.6s total per cycle
     const cycleTimer = setTimeout(() => {
       setCycleKey(prev => prev + 1);
-    }, 8200);
+    }, 8600);
 
     return () => clearTimeout(cycleTimer);
   }, [cycleKey, isTypingVisible]);
@@ -58,15 +58,21 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({ onStart }) => {
       {/* Cinematic Vignette Overlay */}
       <div className="intro-vignette" aria-hidden="true" />
 
-      {/* Center Titles with Hard-Impact Slam Typewriter Animation */}
+      {/* Center Titles with Hard-Impact Slam Typewriter & Disappear Blur Exit */}
       {isTypingVisible && (
         <AnimatePresence mode="wait">
           <motion.div
             key={cycleKey}
             className="intro-center-titles"
-            initial={{ opacity: 1 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0, scale: 0.96, transition: { duration: 0.6, ease: 'easeInOut' } }}
+            initial={{ opacity: 1, filter: 'blur(0px)' }}
+            animate={{ opacity: 1, filter: 'blur(0px)' }}
+            exit={{
+              opacity: 0,
+              filter: 'blur(22px)',
+              scale: 1.06,
+              y: -12,
+              transition: { duration: 0.85, ease: [0.4, 0, 0.2, 1] }
+            }}
           >
             {/* Line 1: KANRI MEETING */}
             <div className="intro-title-line1">
