@@ -236,11 +236,26 @@ function AppInner() {
     setActive(i => (i + 1) % total);
   }, [total]);
 
-  // Preload character images
+  // Comprehensive Preloading & Memory Caching for ultra-smooth 60fps interaction
   useEffect(() => {
+    // 1. Preload background.mp4 so transition is instantaneous
+    const bgVidPreload = document.createElement('video');
+    bgVidPreload.src = '/assets/videos/background.mp4';
+    bgVidPreload.preload = 'auto';
+
+    // 2. Preload character images, portraits, and preview videos
     characters.forEach(char => {
-      const img = new Image();
-      img.src = char.image;
+      if (char.image) {
+        const img = new Image();
+        img.src = char.image;
+      }
+      if (char.portrait) {
+        const port = new Image();
+        port.src = char.portrait;
+      }
+      const vid = document.createElement('video');
+      vid.src = `/assets/characters/${char.id}.mp4`;
+      vid.preload = 'auto';
     });
   }, [characters]);
 
