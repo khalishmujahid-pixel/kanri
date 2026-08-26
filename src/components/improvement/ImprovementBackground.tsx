@@ -15,15 +15,19 @@ import {
   Maximize2,
   MapPin,
   Eye,
-  Sliders
+  Sliders,
+  Sparkles,
+  Compass
 } from 'lucide-react';
 import type { BackgroundData } from '../../types/improvement';
+import { DigitalLayoutSchematic } from './DigitalLayoutSchematic';
 
 interface ImprovementBackgroundProps {
   data: BackgroundData;
 }
 
 export const ImprovementBackground: React.FC<ImprovementBackgroundProps> = ({ data }) => {
+  const [viewMode, setViewMode] = useState<'schematic' | 'cad'>('schematic');
   const [isBlueprintMode, setIsBlueprintMode] = useState<boolean>(true);
   const [isLightboxOpen, setIsLightboxOpen] = useState<boolean>(false);
   const [selectedStation, setSelectedStation] = useState<string>('st5');
@@ -51,7 +55,7 @@ export const ImprovementBackground: React.FC<ImprovementBackgroundProps> = ({ da
         exit={{ opacity: 0, y: -8 }}
         transition={{ duration: 0.28 }}
       >
-        {/* ── 1. Real CAD Engineering Layout & Station Schematic ── */}
+        {/* ── 1. Presentation-Grade Layout & Station Schematic ── */}
         <div className="imp-card imp-layout-card">
           <div className="imp-card-header">
             <div className="imp-card-header-left">
@@ -59,28 +63,28 @@ export const ImprovementBackground: React.FC<ImprovementBackgroundProps> = ({ da
               <span className="imp-card-title">{data.layoutTitle}</span>
             </div>
             <div className="imp-layout-controls">
-              {data.layoutImageUrl && (
-                <div className="imp-layout-toggle-group">
+              <div className="imp-layout-toggle-group">
+                <button
+                  type="button"
+                  className={`imp-layout-toggle-btn ${viewMode === 'schematic' ? 'active' : ''}`}
+                  onClick={() => setViewMode('schematic')}
+                  title="Sketsa Digital Modern Khusus Presentasi (Sangat Jelas & Elegan)"
+                >
+                  <Sparkles size={12} />
+                  <span>DIGITAL SCHEMATIC</span>
+                </button>
+                {data.layoutImageUrl && (
                   <button
                     type="button"
-                    className={`imp-layout-toggle-btn ${isBlueprintMode ? 'active' : ''}`}
-                    onClick={() => setIsBlueprintMode(true)}
-                    title="Tampilan High-Contrast Blueprint Neon"
+                    className={`imp-layout-toggle-btn ${viewMode === 'cad' ? 'active' : ''}`}
+                    onClick={() => setViewMode('cad')}
+                    title="Peta Asli Gambar CAD Teknikal"
                   >
-                    <Sliders size={12} />
-                    <span>DARK BLUEPRINT</span>
+                    <Compass size={12} />
+                    <span>RAW CAD BLUEPRINT</span>
                   </button>
-                  <button
-                    type="button"
-                    className={`imp-layout-toggle-btn ${!isBlueprintMode ? 'active' : ''}`}
-                    onClick={() => setIsBlueprintMode(false)}
-                    title="Tampilan Original CAD Hi-Contrast"
-                  >
-                    <Eye size={12} />
-                    <span>ORIGINAL CAD</span>
-                  </button>
-                </div>
-              )}
+                )}
+              </div>
               {data.activeEquipmentName && (
                 <span className="imp-target-pill">
                   TARGET: <strong>{data.activeEquipmentName}</strong>
@@ -89,9 +93,36 @@ export const ImprovementBackground: React.FC<ImprovementBackgroundProps> = ({ da
             </div>
           </div>
 
-          {/* Real CAD Layout Map Display */}
-          {data.layoutImageUrl && (
+          {/* View 1: Digital Presentation Schematic (Default) */}
+          {viewMode === 'schematic' && (
+            <DigitalLayoutSchematic />
+          )}
+
+          {/* View 2: Real CAD Engineering Layout (Optional Deep-Dive) */}
+          {viewMode === 'cad' && data.layoutImageUrl && (
             <div className="imp-real-cad-wrapper">
+              <div className="cad-sub-controls-bar">
+                <span className="cad-sub-label">FILTER TAMPILAN CAD:</span>
+                <div className="imp-layout-toggle-group">
+                  <button
+                    type="button"
+                    className={`imp-layout-toggle-btn sm ${isBlueprintMode ? 'active' : ''}`}
+                    onClick={() => setIsBlueprintMode(true)}
+                  >
+                    <Sliders size={11} />
+                    <span>DARK BLUEPRINT</span>
+                  </button>
+                  <button
+                    type="button"
+                    className={`imp-layout-toggle-btn sm ${!isBlueprintMode ? 'active' : ''}`}
+                    onClick={() => setIsBlueprintMode(false)}
+                  >
+                    <Eye size={11} />
+                    <span>ORIGINAL CAD</span>
+                  </button>
+                </div>
+              </div>
+
               <div
                 className={`imp-cad-image-container ${isBlueprintMode ? 'blueprint-mode' : 'original-mode'}`}
                 onClick={() => setIsLightboxOpen(true)}
