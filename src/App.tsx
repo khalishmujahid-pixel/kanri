@@ -362,7 +362,7 @@ function AppInner() {
         transition: 'background 0.6s cubic-bezier(0.4,0,0.2,1)',
       }}
     >
-      {/* 1. Intro Screen Video Layer (intro.mp4) — 100% Clear, Vivid & Looping */}
+      {/* 1. Intro Screen Video Layer (intro.mp4) — Subtle Opacity for High Text Contrast */}
       {!hasStarted && (
         <video
           key="video-intro"
@@ -379,7 +379,7 @@ function AppInner() {
             objectPosition: 'center',
             zIndex: 1,
             pointerEvents: 'none',
-            opacity: 1,
+            opacity: 0.85,
           }}
         >
           <source src="/assets/videos/intro.mp4" type="video/mp4" />
