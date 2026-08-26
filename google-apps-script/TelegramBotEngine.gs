@@ -971,16 +971,15 @@ function executeReportToSheet(picName, eqNo, kanbanType, actualDay) {
     
     if (targetActualRowIdx === -1 || targetActualRowIdx >= data.length) return { success: false };
     
-    // Periksa apakah sudah ada data aktual sebelumnya pada baris Actual mesin ini
+    // Periksa apakah sudah ada data aktual sebelumnya HANYA untuk jenis Kanban yang SAMA
     let previousDay = null;
     Object.keys(dayColMap).forEach(dStr => {
       const d = parseInt(dStr, 10);
       const c = dayColMap[d];
       const cellVal = String(data[targetActualRowIdx][c] || '').trim().toUpperCase();
-      const bg = backgrounds[targetActualRowIdx][c] ? backgrounds[targetActualRowIdx][c].toLowerCase() : '';
       
-      // Jika cell cocok dengan kanban ini atau bernilai hijau
-      if (cellVal === kanbanType || (isGreenColor(bg) && cellVal !== '')) {
+      // HANYA periksa dan bersihkan jika jenis KANBAN SAMA PERSIS (A dengan A, B dengan B, dst)
+      if (cellVal === kanbanType) {
         if (d !== actualDay) {
           previousDay = d;
           // Hapus nilai dan kembalikan warna cell lama ke normal (kosong)
@@ -1482,39 +1481,43 @@ function autoCleanAllDuplicatePmEntries(targetSheetName) {
         
         // Hanya proses baris Actual
         if (isActualRow) {
-          const entries = [];
+          // Kelompokkan entri per jenis KANBAN spesifik (A, B, C, D)
+          const kanbanGroup = {
+            'A': [],
+            'B': [],
+            'C': [],
+            'D': []
+          };
           
           Object.keys(dayColMap).forEach(dStr => {
             const day = parseInt(dStr, 10);
             const col = dayColMap[day];
             const cellVal = String(row[col] || '').trim().toUpperCase();
-            const bg = backgrounds[r][col] ? backgrounds[r][col].toLowerCase() : '';
             
-            const isLetterMark = (cellVal === 'A' || cellVal === 'B' || cellVal === 'C' || cellVal === 'D');
-            const isSymbol = (cellVal === '✓' || cellVal === '✔' || cellVal === 'V' || cellVal === 'OK');
-            const isGreen = isGreenColor(bg);
-            
-            if (isLetterMark || isSymbol || isGreen) {
-              if (cellVal !== '' || isGreen) {
-                entries.push({ day: day, col: col, val: cellVal });
-              }
+            if (cellVal === 'A' || cellVal === 'B' || cellVal === 'C' || cellVal === 'D') {
+              kanbanGroup[cellVal].push({ day: day, col: col });
             }
           });
           
-          // Jika ada lebih dari 1 tanggal aktual pada baris mesin ini
-          if (entries.length > 1) {
-            // Urutkan dari tanggal terkecil ke terbesar
-            entries.sort((a, b) => a.day - b.day);
-            
-            // Tanggal terakhir adalah tanggal PALING BARU (dipertahankan)
-            // Hapus semua entri sebelumnya (yang lebih tua)
-            for (let i = 0; i < entries.length - 1; i++) {
-              const oldEntry = entries[i];
-              sheet.getRange(r + 1, oldEntry.col + 1).setValue('');
-              sheet.getRange(r + 1, oldEntry.col + 1).setBackground(null);
-              totalCleaned++;
+          // Proses per jenis Kanban (A, B, C, D) secara terpisah
+          // Jika dalam 1 mesin ada Kanban A dan B, keduanya tetap ada dan tidak saling menghapus!
+          ['A', 'B', 'C', 'D'].forEach(kb => {
+            const list = kanbanGroup[kb];
+            // Hanya hapus jika ada lebih dari 1 tanggal untuk huruf Kanban yang SAMA
+            if (list.length > 1) {
+              // Urutkan dari tanggal terkecil ke terbesar
+              list.sort((a, b) => a.day - b.day);
+              
+              // Entri terakhir (tanggal paling baru) dipertahankan
+              // Hapus entri-entri tanggal sebelumnya untuk huruf Kanban yang SAMA
+              for (let i = 0; i < list.length - 1; i++) {
+                const oldEntry = list[i];
+                sheet.getRange(r + 1, oldEntry.col + 1).setValue('');
+                sheet.getRange(r + 1, oldEntry.col + 1).setBackground(null);
+                totalCleaned++;
+              }
             }
-          }
+          });
         }
       }
     });
