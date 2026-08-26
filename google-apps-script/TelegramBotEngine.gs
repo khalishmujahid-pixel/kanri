@@ -1399,10 +1399,32 @@ function setupTelegramWebhook() {
  * 6. UTILITY PEMBERSIH DUPLIKAT MASSAL (AUTO CLEANUP OLD DUPLICATE ENTRIES)
  * ============================================================================
  * Memindai baris Actual pada seluruh sheet (atau sheet tertentu).
- * Jika ditemukan huruf Kanban yang sama muncul di lebih dari 1 tanggal:
+ * Jika ditemukan lebih dari 1 tanggal terisi pada baris Actual suatu mesin:
  * - Menjaga tanggal yang PALING BARU (tanggal terbesar / terakhir).
  * - Menghapus seluruh tanggal yang lebih lama (membersihkan nilai & warna sel ke normal).
  */
+function onOpen() {
+  try {
+    const ui = SpreadsheetApp.getUi();
+    ui.createMenu('🛠️ PM Bot Tools')
+      .addItem('🧹 Bersihkan Semua Duplikat Tanggal Lama', 'menuCleanDuplicates')
+      .addItem('🔄 Sinkronkan Webhook Telegram', 'setupTelegramWebhook')
+      .addToUi();
+  } catch (e) {
+    Logger.log('Error in onOpen: ' + e.toString());
+  }
+}
+
+function menuCleanDuplicates() {
+  const res = autoCleanAllDuplicatePmEntries();
+  const ui = SpreadsheetApp.getUi();
+  if (res && res.success) {
+    ui.alert('🧹 Pembersihan Duplikat Selesai!', `Sebanyak ${res.cleanedCount} sel tanggal lama pada baris Actual telah berhasil dibersihkan.\nHanya tanggal aktual paling baru yang dipertahankan.`, ui.ButtonSet.OK);
+  } else {
+    ui.alert('ℹ️ Info', 'Tidak ditemukan sel duplikat yang perlu dibersihkan.', ui.ButtonSet.OK);
+  }
+}
+
 function autoCleanAllDuplicatePmEntries(targetSheetName) {
   try {
     const ss = SpreadsheetApp.getActiveSpreadsheet();
@@ -1442,16 +1464,25 @@ function autoCleanAllDuplicatePmEntries(targetSheetName) {
       
       for (let r = headerRowIdx + 1; r < data.length; r++) {
         const row = data[r];
-        let rowTag = '';
-        for (let c = 4; c <= 7; c++) {
-          const t = String(row[c] || '').trim().toUpperCase();
-          if (t === 'A' || t === 'ACTUAL') { rowTag = 'A'; break; }
+        const noVal = parseInt(row[0], 10);
+        
+        let isActualRow = false;
+        for (let c = 0; c < Math.min(10, row.length); c++) {
+          const cellStr = String(row[c] || '').trim().toUpperCase();
+          if (cellStr === 'ACTUAL' || cellStr === 'A') {
+            isActualRow = true;
+            break;
+          }
+        }
+        
+        // Alternatif deteksi: jika baris ini berada tepat di bawah baris No mesin
+        if (!isActualRow && (isNaN(noVal) || noVal === 0 || row[0] === '')) {
+          isActualRow = true;
         }
         
         // Hanya proses baris Actual
-        if (rowTag === 'A') {
-          // Kelompokkan tanggal per jenis Kanban (A, B, C, D)
-          const kanbanDaysMap = {}; // { 'A': [{day: 15, col: 18}, {day: 20, col: 23}] }
+        if (isActualRow) {
+          const entries = [];
           
           Object.keys(dayColMap).forEach(dStr => {
             const day = parseInt(dStr, 10);
@@ -1459,31 +1490,31 @@ function autoCleanAllDuplicatePmEntries(targetSheetName) {
             const cellVal = String(row[col] || '').trim().toUpperCase();
             const bg = backgrounds[r][col] ? backgrounds[r][col].toLowerCase() : '';
             
-            if (cellVal === 'A' || cellVal === 'B' || cellVal === 'C' || cellVal === 'D' || isGreenColor(bg)) {
-              const kb = (cellVal === 'A' || cellVal === 'B' || cellVal === 'C' || cellVal === 'D') ? cellVal : 'ACTUAL';
-              if (!kanbanDaysMap[kb]) kanbanDaysMap[kb] = [];
-              kanbanDaysMap[kb].push({ day: day, col: col });
-            }
-          });
-          
-          // Jika ada lebih dari 1 entri untuk kanban yang sama
-          Object.keys(kanbanDaysMap).forEach(kb => {
-            const entries = kanbanDaysMap[kb];
-            if (entries.length > 1) {
-              // Urutkan dari tanggal terkecil ke terbesar
-              entries.sort((a, b) => a.day - b.day);
-              // Entri terakhir adalah tanggal PALING BARU (dipertahankan)
-              const latestEntry = entries[entries.length - 1];
-              
-              // Hapus semua entri sebelumnya (yang lebih tua)
-              for (let i = 0; i < entries.length - 1; i++) {
-                const oldEntry = entries[i];
-                sheet.getRange(r + 1, oldEntry.col + 1).setValue('');
-                sheet.getRange(r + 1, oldEntry.col + 1).setBackground(null);
-                totalCleaned++;
+            const isLetterMark = (cellVal === 'A' || cellVal === 'B' || cellVal === 'C' || cellVal === 'D');
+            const isSymbol = (cellVal === '✓' || cellVal === '✔' || cellVal === 'V' || cellVal === 'OK');
+            const isGreen = isGreenColor(bg);
+            
+            if (isLetterMark || isSymbol || isGreen) {
+              if (cellVal !== '' || isGreen) {
+                entries.push({ day: day, col: col, val: cellVal });
               }
             }
           });
+          
+          // Jika ada lebih dari 1 tanggal aktual pada baris mesin ini
+          if (entries.length > 1) {
+            // Urutkan dari tanggal terkecil ke terbesar
+            entries.sort((a, b) => a.day - b.day);
+            
+            // Tanggal terakhir adalah tanggal PALING BARU (dipertahankan)
+            // Hapus semua entri sebelumnya (yang lebih tua)
+            for (let i = 0; i < entries.length - 1; i++) {
+              const oldEntry = entries[i];
+              sheet.getRange(r + 1, oldEntry.col + 1).setValue('');
+              sheet.getRange(r + 1, oldEntry.col + 1).setBackground(null);
+              totalCleaned++;
+            }
+          }
         }
       }
     });
