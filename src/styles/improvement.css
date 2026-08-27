@@ -614,8 +614,6 @@
   scroll-behavior: smooth;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior-y: contain;
-  transform: translate3d(0, 0, 0);
-  backface-visibility: hidden;
 }
 
 .stage-slide-viewport::-webkit-scrollbar {

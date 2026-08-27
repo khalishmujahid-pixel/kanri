@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   ChevronLeft,
@@ -619,316 +620,262 @@ export const ImprovementSlideDeck: React.FC<ImprovementSlideDeckProps> = ({
         </div>
       </div>
 
-      {/* ── Fullscreen Zoom Presentation (PowerPoint F5 Mode) ── */}
-      <AnimatePresence>
-        {isZoomed && (
-          <motion.div
-            className="slide-zoom-modal-backdrop f5-mode"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={() => {
-              if (slide6ViewMode === 'video') {
-                setSlide6ViewMode('image');
-                stopAllVideos();
-              } else {
-                setIsZoomed(false);
-              }
-            }}
-          >
-            <div
-              className="slide-zoom-modal-content f5-canvas"
-              onClick={(e) => e.stopPropagation()}
-            >
-              {/* Floating Top Control HUD */}
-              <div className="slide-zoom-topbar f5-hud">
-                <div className="zoom-meta-info">
-                  <div className="flex items-center gap-2">
-                    <span className="zoom-title-chip">
-                      SLIDE {currentIdx + 1} / {totalSlides}
-                    </span>
-                    <span className="f5-mode-tag">F5 PRESENTATION MODE</span>
-                  </div>
-                  <h3 className="zoom-slide-title">{currentSlide.title}</h3>
-                </div>
+      {/* ── Fullscreen Zoom Presentation (Direct Portal to Body) ── */}
+      {typeof document !== 'undefined' &&
+        createPortal(
+          <AnimatePresence>
+            {isZoomed && (
+              <motion.div
+                className="slide-zoom-modal-backdrop"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => {
+                  if (slide6ViewMode === 'video') {
+                    setSlide6ViewMode('image');
+                    stopAllVideos();
+                  } else {
+                    setIsZoomed(false);
+                  }
+                }}
+              >
+                <div
+                  className="slide-zoom-modal-content"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  {/* Top Control Bar */}
+                  <div className="slide-zoom-topbar">
+                    <div className="zoom-meta-info">
+                      <div className="flex items-center gap-2">
+                        <span className="zoom-title-chip">
+                          SLIDE {currentIdx + 1} / {totalSlides}
+                        </span>
+                        <span className="f5-mode-tag">PRESENTATION HD</span>
+                      </div>
+                      <h3 className="zoom-slide-title">{currentSlide.title}</h3>
+                    </div>
 
-                <div className="zoom-top-actions">
-                  {isSlide6 && (
-                    <div className="slide6-view-switcher mr-2">
+                    <div className="zoom-top-actions">
+                      {isSlide6 && (
+                        <div className="slide6-view-switcher mr-2">
+                          <button
+                            type="button"
+                            className={`slide6-mode-btn ${slide6ViewMode === 'image' ? 'active' : ''}`}
+                            onClick={() => {
+                              setSlide6ViewMode('image');
+                              stopAllVideos();
+                            }}
+                            title="Tampilkan Slide Dokumen Gambar"
+                          >
+                            <ImageIcon size={13} />
+                            <span>SLIDE GAMBAR</span>
+                          </button>
+                          <button
+                            type="button"
+                            className={`slide6-mode-btn ${slide6ViewMode === 'video' ? 'active' : ''}`}
+                            onClick={() => {
+                              setSlide6ViewMode('video');
+                              handleStartSequentialPlay();
+                            }}
+                            title="Putar Video Dokumentasi Kaizen 1 & 2"
+                          >
+                            <Video size={13} />
+                            <span>VIDEO AKTUAL</span>
+                          </button>
+                        </div>
+                      )}
+
+                      {pptxUrl && (
+                        <a
+                          href={pptxUrl}
+                          download="Pilar Kaizen.pptx"
+                          className="zoom-btn"
+                          title="Download Dokumen PPTX"
+                        >
+                          <Download size={15} />
+                        </a>
+                      )}
+
                       <button
                         type="button"
-                        className={`slide6-mode-btn ${slide6ViewMode === 'image' ? 'active' : ''}`}
+                        className="zoom-btn close"
                         onClick={() => {
-                          setSlide6ViewMode('image');
-                          stopAllVideos();
+                          if (slide6ViewMode === 'video') {
+                            setSlide6ViewMode('image');
+                            stopAllVideos();
+                          } else {
+                            setIsZoomed(false);
+                          }
                         }}
-                        title="Tampilkan Slide Dokumen Gambar"
+                        title="Tutup (Esc)"
                       >
-                        <ImageIcon size={13} />
-                        <span>SLIDE GAMBAR</span>
-                      </button>
-                      <button
-                        type="button"
-                        className={`slide6-mode-btn video-mode ${slide6ViewMode === 'video' ? 'active' : ''}`}
-                        onClick={() => {
-                          setSlide6ViewMode('video');
-                          handleStartSequentialPlay();
-                        }}
-                        title="Putar Video Dokumentasi Kaizen"
-                      >
-                        <Video size={13} />
-                        <span>VIDEO AKTUAL</span>
+                        <X size={16} />
                       </button>
                     </div>
-                  )}
+                  </div>
 
-                  <button
-                    type="button"
-                    className="zoom-btn close"
-                    onClick={() => {
-                      setIsZoomed(false);
-                      if (slide6ViewMode === 'video') {
-                        setSlide6ViewMode('image');
-                        stopAllVideos();
-                      }
-                    }}
-                    title="Keluar dari Fullscreen (Esc)"
-                  >
-                    <X size={20} />
-                  </button>
-                </div>
-              </div>
+                  {/* Stage Presentation Frame */}
+                  <div className="slide-zoom-stage">
+                    <button
+                      type="button"
+                      className="zoom-nav-btn prev"
+                      onClick={goToPrev}
+                      title="Sebelumnya (←)"
+                    >
+                      <ChevronLeft size={28} />
+                    </button>
 
-              {/* Fullscreen Edge-to-Edge Stage */}
-              <div className="slide-zoom-stage f5-stage">
-                <button
-                  type="button"
-                  className="zoom-nav-btn prev f5-nav"
-                  onClick={goToPrev}
-                  title="Sebelumnya (←)"
-                >
-                  <ChevronLeft size={36} />
-                </button>
+                    {isSlide6 && slide6ViewMode === 'video' ? (
+                      /* Dual Sequential Video Player inside Zoom */
+                      <div className="zoom-f5-video-container">
+                        <div className="zoom-f5-video-topbar">
+                          <div className="flex items-center gap-2">
+                            <span className="video-status-chip">
+                              {isPlayingSequential
+                                ? `MEMUTAR: VIDEO ${activeVideoTrack} DARI 2 (LOOP AKTIF)`
+                                : 'VIDEO DIJEDA'}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <button
+                              type="button"
+                              className="video-ctrl-btn play"
+                              onClick={() => {
+                                if (isPlayingSequential) {
+                                  handlePauseSequential();
+                                } else {
+                                  handleStartSequentialPlay();
+                                }
+                              }}
+                            >
+                              {isPlayingSequential ? <Pause size={12} /> : <Play size={12} />}
+                              <span>{isPlayingSequential ? 'JEDA' : 'PUTAR'}</span>
+                            </button>
+                            <button
+                              type="button"
+                              className="video-ctrl-btn reset"
+                              onClick={handleResetVideos}
+                            >
+                              <RotateCcw size={12} />
+                              <span>RESET</span>
+                            </button>
+                            <button
+                              type="button"
+                              className="video-ctrl-btn mute"
+                              onClick={() => setIsMuted(!isMuted)}
+                            >
+                              {isMuted ? <VolumeX size={12} /> : <Volume2 size={12} />}
+                              <span>{isMuted ? 'UNMUTE' : 'MUTE'}</span>
+                            </button>
+                          </div>
+                        </div>
 
-                {/* If on Slide 6 & Video Mode in Zoom */}
-                {isSlide6 && slide6ViewMode === 'video' ? (
-                  <div className="zoom-f5-video-container">
-                    <div className="zoom-f5-video-topbar">
-                      <div className="flex items-center gap-2">
-                        <span className="video-hero-tag">
-                          <Sparkles size={14} />
-                          <span>DOKUMENTASI VIDEO KAIZEN (HASIL AFTER)</span>
-                        </span>
-                        <span className="text-xs text-slate-400 font-mono">
-                          Pemutaran Sekuensial &amp; Looping Berkelanjutan (1 ➔ 2 ➔ 1)
-                        </span>
+                        <div className="zoom-f5-video-grid">
+                          <div className={`video-player-wrapper f5-player ${activeVideoTrack === 1 ? 'active-track' : ''}`}>
+                            <div className="video-player-header">
+                              <span className="video-track-badge">01. KAIZEN 1</span>
+                              <span className="video-live-pill">{video1Status.toUpperCase()}</span>
+                            </div>
+                            <video
+                              ref={video1Ref}
+                              src="/assets/improvements/Kaizen 1.mp4"
+                              className="video-element"
+                              playsInline
+                              muted={isMuted}
+                              onEnded={handleVideo1Ended}
+                              onClick={() => {
+                                if (video1Ref.current?.paused) {
+                                  handleStartSequentialPlay();
+                                } else {
+                                  handlePauseSequential();
+                                }
+                              }}
+                            />
+                          </div>
+
+                          <div className={`video-player-wrapper f5-player ${activeVideoTrack === 2 ? 'active-track' : ''}`}>
+                            <div className="video-player-header">
+                              <span className="video-track-badge">02. KAIZEN 2</span>
+                              <span className="video-live-pill">{video2Status.toUpperCase()}</span>
+                            </div>
+                            <video
+                              ref={video2Ref}
+                              src="/assets/improvements/Kaizen 2.mp4"
+                              className="video-element"
+                              playsInline
+                              muted={isMuted}
+                              onEnded={handleVideo2Ended}
+                              onClick={() => {
+                                if (video2Ref.current?.paused) {
+                                  setActiveVideoTrack(2);
+                                  video2Ref.current.play().catch(() => {});
+                                } else {
+                                  video2Ref.current?.pause();
+                                }
+                              }}
+                            />
+                          </div>
+                        </div>
                       </div>
+                    ) : (
+                      /* Standard Clean PPTX Image Frame */
+                      <div className="f5-image-wrapper">
+                        <img
+                          src={currentSlide.url}
+                          alt={currentSlide.title}
+                          className="slide-zoom-img"
+                        />
 
-                      <div className="flex items-center gap-2">
-                        {!isPlayingSequential ? (
+                        {/* Floating Video Button in Fullscreen Mode on Slide 6 */}
+                        {isSlide6 && (
                           <button
                             type="button"
-                            className="slide6-master-play-btn"
-                            onClick={handleStartSequentialPlay}
+                            className="slide-floating-video-btn f5-floating-btn"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSlide6ViewMode('video');
+                              handleStartSequentialPlay();
+                            }}
+                            title="Putar Video Dokumentasi Kaizen 1 & 2"
                           >
-                            <Play size={15} />
-                            <span>PUTAR SEKUENSIAL</span>
-                          </button>
-                        ) : (
-                          <button
-                            type="button"
-                            className="slide6-master-play-btn pause"
-                            onClick={handlePauseSequential}
-                          >
-                            <Pause size={15} />
-                            <span>JEDA</span>
+                            <Video size={16} />
+                            <span>PUTAR DOKUMENTASI VIDEO AKTUAL (KAIZEN 1 & 2)</span>
                           </button>
                         )}
-                        <button
-                          type="button"
-                          className="slide6-icon-control-btn"
-                          onClick={handleResetVideos}
-                          title="Reset"
-                        >
-                          <RotateCcw size={14} />
-                          <span>RESET</span>
-                        </button>
-                        <button
-                          type="button"
-                          className={`slide6-icon-control-btn ${!isMuted ? 'active' : ''}`}
-                          onClick={() => setIsMuted(!isMuted)}
-                        >
-                          {isMuted ? <VolumeX size={14} /> : <Volume2 size={14} />}
-                          <span>{isMuted ? 'MUTE' : 'UNMUTE'}</span>
-                        </button>
                       </div>
-                    </div>
-
-                    <div className="zoom-f5-video-grid">
-                      {/* Video 1 */}
-                      <div className={`video-chassis-card ${activeVideoTrack === 1 ? 'active-track' : ''}`}>
-                        <div className="video-chassis-header">
-                          <div className="video-badge-group">
-                            <span className="video-index-badge">VIDEO 01</span>
-                            <span className="video-title-label">Kaizen 1.mp4 — Proses Aliran OHC</span>
-                          </div>
-                          <span className={`video-status-chip ${video1Status}`}>
-                            {video1Status === 'playing' && <span className="status-pulse-dot" />}
-                            {video1Status === 'completed' && <CheckCircle2 size={12} />}
-                            <span>
-                              {video1Status === 'idle' && 'STANDBY'}
-                              {video1Status === 'playing' && 'SEDANG BERJALAN'}
-                              {video1Status === 'completed' && 'SELESAI'}
-                            </span>
-                          </span>
-                        </div>
-                        <div
-                          className="video-player-wrapper f5-player"
-                          onClick={() => {
-                            if (video1Ref.current) {
-                              if (video1Ref.current.paused) {
-                                video1Ref.current.play();
-                                setVideo1Status('playing');
-                                setActiveVideoTrack(1);
-                              } else {
-                                video1Ref.current.pause();
-                                setVideo1Status('idle');
-                              }
-                            }
-                          }}
-                        >
-                          <video
-                            ref={video1Ref}
-                            src="/assets/improvements/Kaizen 1.mp4"
-                            className="video-media-element"
-                            playsInline
-                            muted={isMuted}
-                            preload="metadata"
-                            onEnded={handleVideo1Ended}
-                            onPlay={() => {
-                              setVideo1Status('playing');
-                              setActiveVideoTrack(1);
-                            }}
-                            onPause={() => {
-                              if (video1Status !== 'completed') {
-                                setVideo1Status('idle');
-                              }
-                            }}
-                          />
-                        </div>
-                      </div>
-
-                      {/* Video 2 */}
-                      <div className={`video-chassis-card ${activeVideoTrack === 2 ? 'active-track' : ''}`}>
-                        <div className="video-chassis-header">
-                          <div className="video-badge-group">
-                            <span className="video-index-badge">VIDEO 02</span>
-                            <span className="video-title-label">Kaizen 2.mp4 — Siklus Berkelanjutan</span>
-                          </div>
-                          <span className={`video-status-chip ${video2Status}`}>
-                            {video2Status === 'playing' && <span className="status-pulse-dot" />}
-                            {video2Status === 'completed' && <CheckCircle2 size={12} />}
-                            <span>
-                              {video2Status === 'idle' && 'STANDBY'}
-                              {video2Status === 'playing' && 'SEDANG BERJALAN'}
-                              {video2Status === 'completed' && 'SELESAI'}
-                            </span>
-                          </span>
-                        </div>
-                        <div
-                          className="video-player-wrapper f5-player"
-                          onClick={() => {
-                            if (video2Ref.current) {
-                              if (video2Ref.current.paused) {
-                                video2Ref.current.play();
-                                setVideo2Status('playing');
-                                setActiveVideoTrack(2);
-                              } else {
-                                video2Ref.current.pause();
-                                setVideo2Status('idle');
-                              }
-                            }
-                          }}
-                        >
-                          <video
-                            ref={video2Ref}
-                            src="/assets/improvements/Kaizen 2.mp4"
-                            className="video-media-element"
-                            playsInline
-                            muted={isMuted}
-                            preload="metadata"
-                            onEnded={handleVideo2Ended}
-                            onPlay={() => {
-                              setVideo2Status('playing');
-                              setActiveVideoTrack(2);
-                            }}
-                            onPause={() => {
-                              if (video2Status !== 'completed') {
-                                setVideo2Status('idle');
-                              }
-                            }}
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ) : (
-                  /* Standard Image in Zoom F5 */
-                  <div className="f5-image-wrapper">
-                    <img
-                      src={currentSlide.url}
-                      alt={currentSlide.title}
-                      className="slide-zoom-img f5-img"
-                    />
-
-                    {/* Floating Video Button in Fullscreen Mode on Slide 6 */}
-                    {isSlide6 && (
-                      <button
-                        type="button"
-                        className="slide-floating-video-btn f5-floating-btn"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setSlide6ViewMode('video');
-                          handleStartSequentialPlay();
-                        }}
-                        title="Putar Video Dokumentasi Kaizen 1 & 2"
-                      >
-                        <Video size={18} />
-                        <span>PUTAR DOKUMENTASI VIDEO AKTUAL (KAIZEN 1 & 2)</span>
-                      </button>
                     )}
+
+                    <button
+                      type="button"
+                      className="zoom-nav-btn next"
+                      onClick={goToNext}
+                      title="Selanjutnya (→ / Space)"
+                    >
+                      <ChevronRight size={28} />
+                    </button>
                   </div>
-                )}
 
-                <button
-                  type="button"
-                  className="zoom-nav-btn next f5-nav"
-                  onClick={goToNext}
-                  title="Selanjutnya (→ / Space)"
-                >
-                  <ChevronRight size={36} />
-                </button>
-              </div>
-
-              {/* Floating Bottom HUD */}
-              <div className="slide-zoom-footer f5-bottom-hud">
-                <div className="zoom-dots">
-                  {slides.map((_, dotIdx) => (
-                    <span
-                      key={dotIdx}
-                      className={`zoom-dot ${dotIdx === currentIdx ? 'active' : ''}`}
-                      onClick={() => setCurrentIdx(dotIdx)}
-                    />
-                  ))}
+                  {/* Bottom Footer Bar */}
+                  <div className="slide-zoom-footer">
+                    <div className="zoom-dots">
+                      {slides.map((_, dotIdx) => (
+                        <span
+                          key={dotIdx}
+                          className={`zoom-dot ${dotIdx === currentIdx ? 'active' : ''}`}
+                          onClick={() => setCurrentIdx(dotIdx)}
+                        />
+                      ))}
+                    </div>
+                    <span className="zoom-hint-text">
+                      Gunakan tombol panah ← / → atau Space | Tekan Esc untuk kembali
+                    </span>
+                  </div>
                 </div>
-                <span className="zoom-hint-text">
-                  Gunakan tombol panah ← / → atau Space | Tekan Esc untuk kembali
-                </span>
-              </div>
-            </div>
-          </motion.div>
+              </motion.div>
+            )}
+          </AnimatePresence>,
+          document.body
         )}
-      </AnimatePresence>
     </div>
   );
 };
