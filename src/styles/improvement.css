@@ -3615,13 +3615,15 @@
 
 /* ── Fullscreen Video Container ── */
 .zoom-f5-video-container {
-  width: 94vw;
-  max-width: 1600px;
-  height: 86vh;
+  position: absolute;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
   display: flex;
   flex-direction: column;
-  gap: 14px;
-  margin: auto;
+  gap: 0;
+  padding: 70px 24px 60px 24px;
+  box-sizing: border-box;
   z-index: 40;
 }
 
@@ -3629,24 +3631,60 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: rgba(13, 20, 36, 0.94);
-  border: 1px solid rgba(255, 159, 28, 0.35);
+  background: rgba(8, 12, 22, 0.9);
+  border: 1px solid rgba(255, 159, 28, 0.3);
   border-radius: 10px;
   padding: 10px 18px;
   backdrop-filter: blur(10px);
+  flex-shrink: 0;
+  margin-bottom: 12px;
 }
 
 .zoom-f5-video-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 16px;
+  gap: 14px;
   flex: 1;
+  min-height: 0;
+  height: 100%;
 }
 
 .video-player-wrapper.f5-player {
-  aspect-ratio: 16 / 9;
-  height: auto;
-  max-height: calc(86vh - 120px);
+  position: relative;
+  width: 100%;
+  height: 100%;
+  aspect-ratio: unset;
+  max-height: unset;
+  background: #000;
+  border-radius: 10px;
+  overflow: hidden;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+}
+
+.video-player-wrapper.f5-player .video-player-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background: rgba(4, 6, 12, 0.85);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  flex-shrink: 0;
+}
+
+.video-player-wrapper.f5-player .video-element {
+  width: 100%;
+  flex: 1;
+  min-height: 0;
+  object-fit: contain;
+  background: #000;
+  display: block;
+}
+
+.video-player-wrapper.f5-player.active-track {
+  border: 2px solid #ffb703;
+  box-shadow: 0 0 24px rgba(255, 183, 3, 0.45);
 }
 
 .slide-zoom-footer {
@@ -3908,6 +3946,104 @@
 .slide6-master-play-btn.pause {
   background: linear-gradient(135deg, #eab308, #ca8a04);
   color: #000000;
+}
+
+/* ── Zoom Fullscreen Video Control Buttons ── */
+.video-ctrl-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  font-weight: 800;
+  padding: 6px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  letter-spacing: 0.4px;
+  transition: all 0.2s;
+  text-transform: uppercase;
+  border: 1px solid transparent;
+}
+
+.video-ctrl-btn.play {
+  background: linear-gradient(135deg, rgba(255, 159, 28, 0.9), rgba(255, 85, 0, 0.9));
+  color: #000000;
+  border-color: rgba(255, 255, 255, 0.3);
+  box-shadow: 0 4px 12px rgba(255, 159, 28, 0.4);
+}
+
+.video-ctrl-btn.play:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(255, 159, 28, 0.65);
+}
+
+.video-ctrl-btn.reset {
+  background: rgba(255, 255, 255, 0.08);
+  color: #cbd5e1;
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.video-ctrl-btn.reset:hover {
+  background: rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+}
+
+.video-ctrl-btn.mute {
+  background: rgba(255, 255, 255, 0.08);
+  color: #cbd5e1;
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.video-ctrl-btn.mute:hover {
+  background: rgba(99, 102, 241, 0.25);
+  border-color: #6366f1;
+  color: #a5b4fc;
+}
+
+/* ── Video Player Header & Track Labels ── */
+.video-player-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 14px;
+  background: rgba(4, 6, 12, 0.88);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  flex-shrink: 0;
+}
+
+.video-track-badge {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 800;
+  color: #ffb703;
+  letter-spacing: 0.5px;
+}
+
+.video-live-pill {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 800;
+  padding: 2px 8px;
+  border-radius: 12px;
+  letter-spacing: 0.5px;
+  background: rgba(255, 255, 255, 0.08);
+  color: #64748b;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.video-player-wrapper.active-track .video-live-pill {
+  background: rgba(255, 159, 28, 0.2);
+  color: #ffb703;
+  border-color: rgba(255, 159, 28, 0.5);
+  animation: pulse-border 1.5s infinite;
+}
+
+.video-element {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+  background: #000;
 }
 
 .slide6-icon-control-btn {
