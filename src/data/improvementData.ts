@@ -11,7 +11,8 @@ export const IMPROVEMENT_PROJECTS: ImprovementProject[] = [
     unitShift: 'WELDING BODY#2 // SHIFT RED',
     period: 'Agustus 2026',
     status: 'COMPLETED',
-    thumbnailUrl: '/assets/improvements/ubf_st5_real_mapping.png',
+    thumbnailUrl: '/assets/improvements/DWI P/1.jpeg',
+    pptxUrl: '/assets/improvements/DWI P/Purnomo Kanri.pptx',
     background: {
       layoutTitle: 'LAYOUT UBF (UNDER BODY FINAL) // GLOBAL BODY LINE (GBL)',
       layoutImageUrl: '/assets/improvements/ubf_st5_real_mapping.png',
@@ -231,7 +232,57 @@ export const IMPROVEMENT_PROJECTS: ImprovementProject[] = [
         }
       ],
       targetCompletion: 'Yokoten modifikasi program PLC & cover pelindung sensor proximity telah tuntas 100% pada seluruh stasiun robot NC di UBF (ST#5 & ST#2) pada Agustus 2026.'
-    }
+    },
+    presentationSlides: [
+      {
+        id: 1,
+        url: '/assets/improvements/DWI P/1.jpeg',
+        title: 'ELIMINASI POTENSI NOT-RUN LOKATOR NC MESIN GBL ST#5 UBF',
+        caption: 'Slide 1: Cover Proyek Kaizen — Eliminasi Silent Line Stop Siklus Model Change'
+      },
+      {
+        id: 2,
+        url: '/assets/improvements/DWI P/2.png',
+        title: 'BACKGROUND & LAYOUT AREA GBL UBF',
+        caption: 'Slide 2: Latar Belakang & Layout Line UBF — Occurrence Point ST#5 GBL'
+      },
+      {
+        id: 3,
+        url: '/assets/improvements/DWI P/3.png',
+        title: 'PROBLEM STATEMENT & ALUR MASALAH',
+        caption: 'Slide 3: Problem Statement — Sensor Freeze ON & Silent Line Stop Tanpa Alarm'
+      },
+      {
+        id: 4,
+        url: '/assets/improvements/DWI P/4.png',
+        title: 'WHY-WHY ANALYSIS (5 WHY)',
+        caption: 'Slide 4: Analisa 5-Why — Akar Penyebab Not-Run NC Locator Siklus Model Change'
+      },
+      {
+        id: 5,
+        url: '/assets/improvements/DWI P/5.png',
+        title: 'KAIZEN ASPEK 1: MODIFIKASI PROGRAM PLC',
+        caption: 'Slide 5: Before/After — Penambahan Logika Timer Adding Error & Alarm HMI POKAYOKE FAULT NC'
+      },
+      {
+        id: 6,
+        url: '/assets/improvements/DWI P/6.png',
+        title: 'KAIZEN ASPEK 2: COVER DEFLECTOR ANTI-SPATTER',
+        caption: 'Slide 6: Before/After — Pemasangan Cover Pelindung Sensor Proximity Anti-Gram Spatter'
+      },
+      {
+        id: 7,
+        url: '/assets/improvements/DWI P/7.png',
+        title: 'HASIL KAIZEN & SUMMARY PENCAPAIAN',
+        caption: 'Slide 7: Hasil Kaizen — Auto Alarm < 5 Detik & Sensor 100% Bebas Gram Spatter'
+      },
+      {
+        id: 8,
+        url: '/assets/improvements/DWI P/8.png',
+        title: 'YOKOTEN ACTIVITY — ST#5 & ST#2 UBF',
+        caption: 'Slide 8: Yokoten & Standardisasi — Robot NC Lokator UBF (ST#5 & ST#2) Tuntas 100%'
+      }
+    ]
   },
   {
     id: 'IMP-PILAR-01',
