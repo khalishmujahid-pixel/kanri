@@ -335,16 +335,16 @@ export const INITIAL_CHARACTERS: Character[] = [
         code: 'SEC-03',
         tagline: 'Kaizen & Process Optimization',
         description: 'Implemented improvement projects, breakdown reduction initiatives, and line cycle enhancements.',
-        status: 'READY FOR DATA',
-        recordsCount: 0,
-        lastUpdated: 'Pending Data Input',
+        status: 'ACTIVE — 1 KAIZEN PROJECT',
+        recordsCount: 1,
+        lastUpdated: 'Agustus 2026',
         placeholderItems: [
           {
-            id: 'IMP-001',
-            title: 'Continuous Improvement Framework',
-            status: 'INITIALIZED',
-            date: 'Phase 2',
-            summary: 'Standardized format for tracking line enhancements and technical modifications.'
+            id: 'KAIZEN-OHC-01',
+            title: 'OHC Flow Optimization To Support New Tact Time (1.80 min -> 1.57 min)',
+            status: 'COMPLETED',
+            date: '2026-08',
+            summary: 'Optimasi aliran overhead conveyor (OHC), eliminasi bottleneck transfer, dan peningkatan kecepatan siklus untuk mendukung target Tact Time 1.57 menit.'
           }
         ]
       },

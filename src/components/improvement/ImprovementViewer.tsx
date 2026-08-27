@@ -12,12 +12,14 @@ import {
   Calendar,
   X,
   Keyboard,
-  CheckCircle2
+  CheckCircle2,
+  Download
 } from 'lucide-react';
 import { IMPROVEMENT_PROJECTS } from '../../data/improvementData';
 import { ImprovementBackground } from './ImprovementBackground';
 import { ImprovementBeforeAfter } from './ImprovementBeforeAfter';
 import { ImprovementYokoten } from './ImprovementYokoten';
+import { ImprovementSlideDeck } from './ImprovementSlideDeck';
 import type { Character } from '../../types/character';
 import type { ImprovementProject } from '../../types/improvement';
 
@@ -188,6 +190,24 @@ export const ImprovementViewer: React.FC<ImprovementViewerProps> = ({ character 
 
                     <h4 className="imp-card-main-title">{proj.title}</h4>
 
+                    {/* Project Thumbnail Image Preview */}
+                    {proj.thumbnailUrl && (
+                      <div className="imp-card-thumbnail-box">
+                        <img
+                          src={proj.thumbnailUrl}
+                          alt={proj.title}
+                          className="imp-card-thumb-img"
+                          loading="lazy"
+                        />
+                        <div className="imp-card-thumb-overlay">
+                          <Play size={18} className="play-icon" />
+                          <span>
+                            BUKA PRESENTASI {proj.presentationSlides ? `(${proj.presentationSlides.length} SLIDES)` : ''}
+                          </span>
+                        </div>
+                      </div>
+                    )}
+
                     <p className="imp-card-snippet">
                       {proj.background.problemDescription}
                     </p>
@@ -198,18 +218,33 @@ export const ImprovementViewer: React.FC<ImprovementViewerProps> = ({ character 
                         <span className="target-val">{proj.background.layoutTitle}</span>
                       </div>
 
-                      <button
-                        type="button"
-                        className="imp-open-presentation-btn"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setActiveProject(proj);
-                          setActiveStep('background');
-                        }}
-                      >
-                        <Play size={14} className="play-icon" />
-                        <span>BUKA PRESENTASI</span>
-                      </button>
+                      <div className="imp-card-actions-group">
+                        {proj.pptxUrl && (
+                          <a
+                            href={proj.pptxUrl}
+                            download="Pilar Kaizen.pptx"
+                            className="imp-download-pptx-card-btn"
+                            onClick={(e) => e.stopPropagation()}
+                            title="Download Dokumen Presentasi Resmi (PPTX)"
+                          >
+                            <Download size={13} />
+                            <span>PPTX</span>
+                          </a>
+                        )}
+
+                        <button
+                          type="button"
+                          className="imp-open-presentation-btn"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setActiveProject(proj);
+                            setActiveStep('background');
+                          }}
+                        >
+                          <Play size={14} className="play-icon" />
+                          <span>BUKA PRESENTASI</span>
+                        </button>
+                      </div>
                     </div>
                   </motion.div>
                 ))}
@@ -248,6 +283,17 @@ export const ImprovementViewer: React.FC<ImprovementViewerProps> = ({ character 
               </div>
 
               <div className="stage-top-right">
+                {activeProject.pptxUrl && (
+                  <a
+                    href={activeProject.pptxUrl}
+                    download="Pilar Kaizen.pptx"
+                    className="stage-download-pptx-btn"
+                    title="Download File Dokumen Presentasi PPTX"
+                  >
+                    <Download size={13} />
+                    <span>DOWNLOAD PPTX</span>
+                  </a>
+                )}
                 <span className="stage-code-chip">{activeProject.code}</span>
                 <button
                   type="button"
@@ -268,92 +314,106 @@ export const ImprovementViewer: React.FC<ImprovementViewerProps> = ({ character 
               <h1 className="stage-main-title">{activeProject.title}</h1>
             </div>
 
-            {/* 3-Step Animated Stepper Bar */}
-            <nav className="stage-stepper-bar" aria-label="Presentation Steps">
-              {stepsConfig.map((st, idx) => {
-                const isActive = activeStep === st.key;
-                const isPassed = currentStepIdx > idx;
-
-                return (
-                  <button
-                    key={st.key}
-                    type="button"
-                    className={`stage-step-btn ${isActive ? 'active' : ''} ${isPassed ? 'passed' : ''}`}
-                    onClick={() => setActiveStep(st.key)}
-                  >
-                    <div className="step-btn-top">
-                      <span className="step-btn-num">{st.num}</span>
-                      <span className="step-btn-icon">{st.icon}</span>
-                    </div>
-                    <span className="step-btn-label">{st.label}</span>
-                    {isActive && (
-                      <motion.div
-                        className="stage-active-indicator"
-                        layoutId="stageActiveTab"
-                        transition={{ type: 'spring', stiffness: 350, damping: 30 }}
-                      />
-                    )}
-                  </button>
-                );
-              })}
-            </nav>
-
-            {/* Slide Body Viewport */}
-            <div className="stage-slide-viewport">
-              <AnimatePresence mode="wait">
-                {activeStep === 'background' && (
-                  <ImprovementBackground key={`bg-${activeProject.id}`} data={activeProject.background} />
-                )}
-
-                {activeStep === 'before_after' && (
-                  <ImprovementBeforeAfter key={`ba-${activeProject.id}`} aspects={activeProject.aspects} />
-                )}
-
-                {activeStep === 'yokoten' && activeProject.yokoten && (
-                  <ImprovementYokoten key={`yoko-${activeProject.id}`} data={activeProject.yokoten} />
-                )}
-              </AnimatePresence>
-            </div>
-
-            {/* Presentation Stage Footer Controls */}
-            <div className="stage-footer-bar">
-              <button
-                type="button"
-                className="stage-nav-btn prev"
-                onClick={goToPrevStep}
-                disabled={currentStepIdx === 0}
-              >
-                <ChevronLeft size={16} />
-                <span>PREV SLIDE</span>
-              </button>
-
-              <div className="stage-progress-indicator">
-                <div className="stage-dots-group">
-                  {stepsConfig.map((st, i) => (
-                    <span
-                      key={st.key}
-                      className={`stage-dot ${i === currentStepIdx ? 'active' : ''}`}
-                      onClick={() => setActiveStep(st.key)}
-                      title={st.label}
-                    />
-                  ))}
-                </div>
-                <div className="stage-keyboard-hint">
-                  <Keyboard size={12} />
-                  <span>Navigasi: ← / → Slide | ↑ / ↓ Scroll Layar</span>
-                </div>
+            {/* If Project is Slide Deck Presentation */}
+            {activeProject.presentationSlides && activeProject.presentationSlides.length > 0 ? (
+              <div className="stage-slide-viewport slide-deck-mode">
+                <ImprovementSlideDeck
+                  slides={activeProject.presentationSlides}
+                  projectTitle={activeProject.title}
+                  picName={activeProject.picName}
+                  pptxUrl={activeProject.pptxUrl}
+                />
               </div>
+            ) : (
+              <>
+                {/* 3-Step Animated Stepper Bar for CAD projects */}
+                <nav className="stage-stepper-bar" aria-label="Presentation Steps">
+                  {stepsConfig.map((st, idx) => {
+                    const isActive = activeStep === st.key;
+                    const isPassed = currentStepIdx > idx;
 
-              <button
-                type="button"
-                className="stage-nav-btn next"
-                onClick={goToNextStep}
-                disabled={currentStepIdx === stepsConfig.length - 1}
-              >
-                <span>NEXT SLIDE</span>
-                <ChevronRight size={16} />
-              </button>
-            </div>
+                    return (
+                      <button
+                        key={st.key}
+                        type="button"
+                        className={`stage-step-btn ${isActive ? 'active' : ''} ${isPassed ? 'passed' : ''}`}
+                        onClick={() => setActiveStep(st.key)}
+                      >
+                        <div className="step-btn-top">
+                          <span className="step-btn-num">{st.num}</span>
+                          <span className="step-btn-icon">{st.icon}</span>
+                        </div>
+                        <span className="step-btn-label">{st.label}</span>
+                        {isActive && (
+                          <motion.div
+                            className="stage-active-indicator"
+                            layoutId="stageActiveTab"
+                            transition={{ type: 'spring', stiffness: 350, damping: 30 }}
+                          />
+                        )}
+                      </button>
+                    );
+                  })}
+                </nav>
+
+                {/* Slide Body Viewport for CAD projects */}
+                <div className="stage-slide-viewport">
+                  <AnimatePresence mode="wait">
+                    {activeStep === 'background' && (
+                      <ImprovementBackground key={`bg-${activeProject.id}`} data={activeProject.background} />
+                    )}
+
+                    {activeStep === 'before_after' && (
+                      <ImprovementBeforeAfter key={`ba-${activeProject.id}`} aspects={activeProject.aspects} />
+                    )}
+
+                    {activeStep === 'yokoten' && activeProject.yokoten && (
+                      <ImprovementYokoten key={`yoko-${activeProject.id}`} data={activeProject.yokoten} />
+                    )}
+                  </AnimatePresence>
+                </div>
+
+                {/* Presentation Stage Footer Controls for CAD projects */}
+                <div className="stage-footer-bar">
+                  <button
+                    type="button"
+                    className="stage-nav-btn prev"
+                    onClick={goToPrevStep}
+                    disabled={currentStepIdx === 0}
+                  >
+                    <ChevronLeft size={16} />
+                    <span>PREV SLIDE</span>
+                  </button>
+
+                  <div className="stage-progress-indicator">
+                    <div className="stage-dots-group">
+                      {stepsConfig.map((st, i) => (
+                        <span
+                          key={st.key}
+                          className={`stage-dot ${i === currentStepIdx ? 'active' : ''}`}
+                          onClick={() => setActiveStep(st.key)}
+                          title={st.label}
+                        />
+                      ))}
+                    </div>
+                    <div className="stage-keyboard-hint">
+                      <Keyboard size={12} />
+                      <span>Navigasi: ← / → Slide | ↑ / ↓ Scroll Layar</span>
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    className="stage-nav-btn next"
+                    onClick={goToNextStep}
+                    disabled={currentStepIdx === stepsConfig.length - 1}
+                  >
+                    <span>NEXT SLIDE</span>
+                    <ChevronRight size={16} />
+                  </button>
+                </div>
+              </>
+            )}
           </motion.div>
         )}
       </AnimatePresence>

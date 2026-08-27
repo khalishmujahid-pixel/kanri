@@ -106,6 +106,13 @@ export interface YokotenData {
   targetCompletion: string;
 }
 
+export interface ImprovementSlideItem {
+  id: number;
+  url: string;
+  title: string;
+  caption?: string;
+}
+
 export interface ImprovementProject {
   id: string;
   characterId?: string;
@@ -116,7 +123,12 @@ export interface ImprovementProject {
   unitShift: string;
   period: string;
   status: 'COMPLETED' | 'IN_PROGRESS' | 'YOKOTEN';
+  thumbnailUrl?: string;
   background: BackgroundData;
   aspects: BeforeAfterAspect[];
   yokoten?: YokotenData;
+  presentationSlides?: ImprovementSlideItem[];
+  pptxUrl?: string;
 }
+
+

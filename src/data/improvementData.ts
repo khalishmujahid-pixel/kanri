@@ -11,6 +11,7 @@ export const IMPROVEMENT_PROJECTS: ImprovementProject[] = [
     unitShift: 'WELDING BODY#2 // SHIFT RED',
     period: 'Agustus 2026',
     status: 'COMPLETED',
+    thumbnailUrl: '/assets/improvements/ubf_st5_real_mapping.png',
     background: {
       layoutTitle: 'LAYOUT UBF (UNDER BODY FINAL) // GLOBAL BODY LINE (GBL)',
       layoutImageUrl: '/assets/improvements/ubf_st5_real_mapping.png',
@@ -231,5 +232,91 @@ export const IMPROVEMENT_PROJECTS: ImprovementProject[] = [
       ],
       targetCompletion: 'Yokoten modifikasi program PLC & cover pelindung sensor proximity telah tuntas 100% pada seluruh stasiun robot NC di UBF (ST#5 & ST#2) pada Agustus 2026.'
     }
+  },
+  {
+    id: 'IMP-PILAR-01',
+    characterId: 'c04',
+    code: 'KAIZEN-OHC-01',
+    title: 'OHC FLOW OPTIMIZATION TO SUPPORT NEW TACT TIME (1.80 MIN -> 1.57 MIN)',
+    picName: 'PILAR PRATAMA PUTRA',
+    regNumber: '01830748',
+    unitShift: 'WELDING BODY#2 // SHIFT RED',
+    period: 'Agustus 2026',
+    status: 'COMPLETED',
+    thumbnailUrl: '/assets/improvements/pilar_ohc_summary_infographic.jpg',
+    pptxUrl: '/assets/improvements/Pilar Kaizen.pptx',
+    background: {
+      layoutTitle: 'OHC (OVERHEAD CONVEYOR) MAIN BODY FLOW SYSTEM // BODY#2',
+      layoutImageUrl: '/assets/improvements/pilar_ohc_summary_infographic.jpg',
+      layoutImageCaption: 'Infografis Ringkasan Kaizen OHC Flow Optimization — Body#2 Red Zone',
+      problemTitle: 'BOTTLENECK TRANSFER OHC PADA PENINGKATAN TARGET TACT TIME 1.57 MENIT',
+      problemDescription: 'Peningkatan kapasitas produksi menuntut akselerasi cycle time dari 1.80 menit menjadi 1.57 menit. Jalur Overhead Conveyor (OHC) mengalami bottleneck transfer dan delay flow yang berpotensi membatasi output line pengelasan Body#2.',
+      activeEquipmentName: 'Overhead Conveyor (OHC) Main Body Transfer System',
+      stations: [
+        { id: 'st1', name: 'OHC Loader', status: 'normal' },
+        { id: 'st2', name: 'Main Buffer', status: 'normal' },
+        { id: 'st3', name: 'Transfer Station', isHighlight: true, status: 'issue', details: 'Speed Up & Flow Balance Target' },
+        { id: 'st4', name: 'Unloader Zone', status: 'normal' }
+      ],
+      challenge: 'BAGAIMANA MENGOPTIMALKAN ALIRAN OHC & MEMPERCEPAT KECEPATAN TRANSFER UNTUK MENCAPAI TARGET TACT TIME 1.57 MENIT SECARA STABIL'
+    },
+    presentationSlides: [
+      {
+        id: 1,
+        url: '/assets/improvements/1.jpeg',
+        title: 'OHC FLOW OPTIMIZATION TO SUPPORT NEW TACT TIME',
+        caption: 'Slide 1: Cover Proyek Kaizen — Optimasi Aliran OHC Menuju Tact Time Baru'
+      },
+      {
+        id: 2,
+        url: '/assets/improvements/2.png',
+        title: 'BACKGROUND & TACT TIME TARGET',
+        caption: 'Slide 2: Latar Belakang & Target Tact Time (1.80 Menit -> 1.57 Menit)'
+      },
+      {
+        id: 3,
+        url: '/assets/improvements/3.png',
+        title: 'CHALLENGE & FLOW SCHEMATIC',
+        caption: 'Slide 3: Tantangan & Skema Alur Overhead Conveyor (OHC)'
+      },
+      {
+        id: 4,
+        url: '/assets/improvements/4.png',
+        title: 'GAP ANALYSIS & BOTTLENECK POINTS',
+        caption: 'Slide 4: Analisis Kesenjangan (Gap Analysis) & Titik Hambatan Aliran'
+      },
+      {
+        id: 5,
+        url: '/assets/improvements/5.png',
+        title: 'KAIZEN ACTION: SPEED UP & LAYOUT OPTIMIZATION',
+        caption: 'Slide 5: Tindakan Kaizen — Akselerasi Kecepatan OHC & Penataan Jalur'
+      },
+      {
+        id: 6,
+        url: '/assets/improvements/6.png',
+        title: 'PROBLEM ANALYSIS & COUNTERMEASURES',
+        caption: 'Slide 6: Analisis Masalah & Penerapan Solusi Teknis (Tersedia Video Footage)'
+      },
+      {
+        id: 7,
+        url: '/assets/improvements/7.png',
+        title: 'KAIZEN ACTION EXECUTION DETAILS',
+        caption: 'Slide 7: Rincian Eksekusi Perbaikan & Pengujian Sistem'
+      },
+      {
+        id: 8,
+        url: '/assets/improvements/8.png',
+        title: 'KAIZEN RESULT SUMMARY & TARGET ACHIEVEMENT',
+        caption: 'Slide 8: Rangkuman Hasil Kaizen — Target Tact Time 1.57 Menit Tercapai 100%'
+      },
+      {
+        id: 9,
+        url: '/assets/improvements/9.jpeg',
+        title: 'YOKOTEN & STANDARDIZATION',
+        caption: 'Slide 9: Yokoten & Standardisasi Operasional Red Zone'
+      }
+    ],
+    aspects: []
   }
 ];
+
