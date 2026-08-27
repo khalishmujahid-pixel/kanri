@@ -82,14 +82,14 @@ export const ImprovementSlideDeck: React.FC<ImprovementSlideDeckProps> = ({
         e.preventDefault();
         goToPrev();
       } else if (e.key === 'Escape') {
-        if (isZoomed) {
-          setIsZoomed(false);
-          e.preventDefault();
-        } else if (slide6ViewMode === 'video') {
-          // Esc button returns back to Slide 6 presentation view
+        e.preventDefault();
+        // Priority 1: If in video mode, always go back to slide image first (never exit presentation)
+        if (slide6ViewMode === 'video') {
           setSlide6ViewMode('image');
           stopAllVideos();
-          e.preventDefault();
+        } else if (isZoomed) {
+          // Priority 2: Only close zoom if NOT in video mode
+          setIsZoomed(false);
         }
       } else if (e.key >= '1' && e.key <= String(totalSlides)) {
         const targetIdx = parseInt(e.key, 10) - 1;
