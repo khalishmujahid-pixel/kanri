@@ -20,6 +20,7 @@ import {
   Sparkles
 } from 'lucide-react';
 import type { ImprovementSlideItem } from '../../types/improvement';
+import { preloadAndCacheImage } from '../../utils/assetCache';
 
 interface ImprovementSlideDeckProps {
   slides: ImprovementSlideItem[];
@@ -37,6 +38,13 @@ export const ImprovementSlideDeck: React.FC<ImprovementSlideDeckProps> = ({
   const [currentIdx, setCurrentIdx] = useState<number>(0);
   const [isZoomed, setIsZoomed] = useState<boolean>(false);
   const [autoPlay, setAutoPlay] = useState<boolean>(false);
+
+  // Preload all slides into memory on initial mount
+  useEffect(() => {
+    slides.forEach((s) => {
+      preloadAndCacheImage(s.url);
+    });
+  }, [slides]);
 
   // Slide 6 Video Player Mode (Kaizen 1 & Kaizen 2 Sequential Dual View with Continuous Loop)
   const [slide6ViewMode, setSlide6ViewMode] = useState<'image' | 'video'>('image');

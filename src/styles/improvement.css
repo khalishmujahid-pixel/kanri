@@ -8,6 +8,11 @@
   max-height: calc(100vh - 210px);
   scrollbar-width: thin;
   scrollbar-color: rgba(255, 159, 28, 0.4) transparent;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
 }
 
 .category-content-body.improvement-view::-webkit-scrollbar {
@@ -606,6 +611,11 @@
   padding: 20px 28px;
   scrollbar-width: thin;
   scrollbar-color: rgba(255, 159, 28, 0.4) transparent;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
 }
 
 .stage-slide-viewport::-webkit-scrollbar {

@@ -7,6 +7,7 @@ import { F1GarageHeader } from './components/F1GarageHeader';
 import { IntroScreen } from './components/IntroScreen';
 import { ThemeProvider, useTheme } from './contexts/ThemeContext';
 import { ThemeSelector } from './components/ThemeSelector';
+import { initKaizenMemoryCache, preloadCriticalAssets } from './utils/assetCache';
 
 function PinIcon() {
   return (
@@ -205,20 +206,28 @@ function AppInner() {
   const isMobile = viewportWidth < 768;
   const isTablet = viewportWidth >= 768 && viewportWidth < 1024;
 
-  // Interactive 3D Card Tilt & Parallax Tracking
+  // Interactive 3D Card Tilt & Parallax Tracking (rAF Throttled for 120fps fluid motion)
   const [tilt, setTilt] = useState({ x: 0, y: 0 });
+  const tiltRafRef = useRef<number | null>(null);
 
-  const handleCardMouseMove = (e: React.MouseEvent<HTMLDivElement>, isCenter: boolean) => {
+  const handleCardMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>, isCenter: boolean) => {
     if (!isCenter || isMobile) return;
     const rect = e.currentTarget.getBoundingClientRect();
     const x = (e.clientX - rect.left) / rect.width - 0.5;
     const y = (e.clientY - rect.top) / rect.height - 0.5;
-    setTilt({ x: Math.round(x * 12 * 10) / 10, y: Math.round(-y * 12 * 10) / 10 });
-  };
+    const newX = Math.round(x * 12 * 10) / 10;
+    const newY = Math.round(-y * 12 * 10) / 10;
 
-  const handleCardMouseLeave = () => {
+    if (tiltRafRef.current) cancelAnimationFrame(tiltRafRef.current);
+    tiltRafRef.current = requestAnimationFrame(() => {
+      setTilt({ x: newX, y: newY });
+    });
+  }, [isMobile]);
+
+  const handleCardMouseLeave = useCallback(() => {
+    if (tiltRafRef.current) cancelAnimationFrame(tiltRafRef.current);
     setTilt({ x: 0, y: 0 });
-  };
+  }, []);
 
   // Drag & Touch Swipe handling
   const [dragging, setDragging] = useState(false);
@@ -227,36 +236,33 @@ function AppInner() {
   const touchStartYRef = useRef(0);
 
   const prev = useCallback(() => {
+    if (tiltRafRef.current) cancelAnimationFrame(tiltRafRef.current);
     setTilt({ x: 0, y: 0 });
     setActive(i => (i - 1 + total) % total);
   }, [total]);
 
   const next = useCallback(() => {
+    if (tiltRafRef.current) cancelAnimationFrame(tiltRafRef.current);
     setTilt({ x: 0, y: 0 });
     setActive(i => (i + 1) % total);
   }, [total]);
 
-  // Comprehensive Preloading & Memory Caching for ultra-smooth 60fps interaction
+  // Comprehensive Preloading & Local Memory Caching for zero-lag smooth 60/120fps interactions
   useEffect(() => {
-    // 1. Preload background.mp4 so transition is instantaneous
+    initKaizenMemoryCache();
+
+    // Preload background video metadata
     const bgVidPreload = document.createElement('video');
     bgVidPreload.src = '/assets/videos/background.mp4';
-    bgVidPreload.preload = 'auto';
+    bgVidPreload.preload = 'metadata';
 
-    // 2. Preload character images, portraits, and preview videos
+    // Preload character portraits and images into local memory cache
+    const charImages: string[] = [];
     characters.forEach(char => {
-      if (char.image) {
-        const img = new Image();
-        img.src = char.image;
-      }
-      if (char.portrait) {
-        const port = new Image();
-        port.src = char.portrait;
-      }
-      const vid = document.createElement('video');
-      vid.src = `/assets/characters/${char.id}.mp4`;
-      vid.preload = 'auto';
+      if (char.image) charImages.push(char.image);
+      if (char.portrait) charImages.push(char.portrait);
     });
+    preloadCriticalAssets(charImages);
   }, [characters]);
 
   // Reset video-ready state each time the active card changes
