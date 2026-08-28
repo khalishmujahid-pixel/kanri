@@ -73,13 +73,13 @@ export const TLShadowOverlay: React.FC<TLShadowOverlayProps> = ({ isVisible, tl 
             <video
               ref={setVideoRef}
               key={tl.tlVideoUrl}
+              src={tl.tlVideoUrl}
               className="tl-overlay-video"
               autoPlay
               muted
               loop
               playsInline
               preload="auto"
-              poster={tl.image}
               onCanPlay={(e) => {
                 const vid = e.currentTarget;
                 vid.muted = true;
@@ -90,9 +90,7 @@ export const TLShadowOverlay: React.FC<TLShadowOverlayProps> = ({ isVisible, tl 
                 vid.muted = true;
                 vid.play().catch(() => {});
               }}
-            >
-              <source src={tl.tlVideoUrl} type="video/mp4" />
-            </video>
+            />
             {/* Subtle vignette overlay on video */}
             <div className="tl-video-vignette" />
           </div>
