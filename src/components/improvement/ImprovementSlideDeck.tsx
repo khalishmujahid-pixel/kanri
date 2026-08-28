@@ -11,11 +11,10 @@ import {
   Play,
   Pause,
   RotateCcw,
-  Grid,
+  Layers,
   FileText,
   Video,
   Image as ImageIcon,
-  CheckCircle2,
   Volume2,
   VolumeX,
   Sparkles
@@ -47,16 +46,13 @@ export const ImprovementSlideDeck: React.FC<ImprovementSlideDeckProps> = ({
     });
   }, [slides]);
 
-  // Slide 6 Video Player Mode (Kaizen 1 & Kaizen 2 Sequential Dual View with Continuous Loop)
+  // Slide 6 Video Player Mode (Unified Single Video: Video Kaizen Pilar with Continuous Loop)
   const [slide6ViewMode, setSlide6ViewMode] = useState<'image' | 'video'>('image');
-  const [isPlayingSequential, setIsPlayingSequential] = useState<boolean>(false);
-  const [activeVideoTrack, setActiveVideoTrack] = useState<1 | 2 | null>(null);
-  const [video1Status, setVideo1Status] = useState<'idle' | 'playing' | 'completed'>('idle');
-  const [video2Status, setVideo2Status] = useState<'idle' | 'playing' | 'completed'>('idle');
-  const [isMuted, setIsMuted] = useState<boolean>(true);
+  const [isVideoPlaying, setIsVideoPlaying] = useState<boolean>(false);
+  const [isMuted, setIsMuted] = useState<boolean>(false);
 
-  const video1Ref = useRef<HTMLVideoElement | null>(null);
-  const video2Ref = useRef<HTMLVideoElement | null>(null);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+  const zoomVideoRef = useRef<HTMLVideoElement | null>(null);
 
   const totalSlides = slides.length;
   const currentSlide = slides[currentIdx];
@@ -68,6 +64,59 @@ export const ImprovementSlideDeck: React.FC<ImprovementSlideDeckProps> = ({
 
   const goToPrev = () => {
     setCurrentIdx((prev) => (prev > 0 ? prev - 1 : totalSlides - 1));
+  };
+
+  // Stop video playback safely
+  const stopAllVideos = () => {
+    if (videoRef.current) {
+      videoRef.current.pause();
+    }
+    if (zoomVideoRef.current) {
+      zoomVideoRef.current.pause();
+    }
+    setIsVideoPlaying(false);
+  };
+
+  // Direct Play Handler: Immediately starts video playback on click
+  const handleDirectPlayVideo = () => {
+    setSlide6ViewMode('video');
+    setIsVideoPlaying(true);
+
+    setTimeout(() => {
+      if (videoRef.current) {
+        videoRef.current.currentTime = 0;
+        videoRef.current.play().catch(() => {});
+      }
+      if (zoomVideoRef.current) {
+        zoomVideoRef.current.currentTime = 0;
+        zoomVideoRef.current.play().catch(() => {});
+      }
+    }, 50);
+  };
+
+  const handleTogglePlay = () => {
+    const activeRef = isZoomed ? zoomVideoRef : videoRef;
+    if (activeRef.current) {
+      if (activeRef.current.paused) {
+        activeRef.current.play().catch(() => {});
+        setIsVideoPlaying(true);
+      } else {
+        activeRef.current.pause();
+        setIsVideoPlaying(false);
+      }
+    }
+  };
+
+  const handleResetVideo = () => {
+    if (videoRef.current) {
+      videoRef.current.currentTime = 0;
+      videoRef.current.play().catch(() => {});
+    }
+    if (zoomVideoRef.current) {
+      zoomVideoRef.current.currentTime = 0;
+      zoomVideoRef.current.play().catch(() => {});
+    }
+    setIsVideoPlaying(true);
   };
 
   // Keyboard navigation for presentation slides
@@ -120,89 +169,6 @@ export const ImprovementSlideDeck: React.FC<ImprovementSlideDeckProps> = ({
     }
   }, [currentIdx, isSlide6]);
 
-  const stopAllVideos = () => {
-    if (video1Ref.current) {
-      video1Ref.current.pause();
-    }
-    if (video2Ref.current) {
-      video2Ref.current.pause();
-    }
-    setIsPlayingSequential(false);
-    setActiveVideoTrack(null);
-  };
-
-  // Start Sequential Playback: Video 1 -> Video 2 -> Loops continuously while open
-  const handleStartSequentialPlay = () => {
-    setIsPlayingSequential(true);
-    setVideo1Status('playing');
-    setVideo2Status('idle');
-    setActiveVideoTrack(1);
-
-    if (video2Ref.current) {
-      video2Ref.current.pause();
-      video2Ref.current.currentTime = 0;
-    }
-
-    if (video1Ref.current) {
-      video1Ref.current.currentTime = 0;
-      video1Ref.current.play().catch(() => {});
-    }
-  };
-
-  const handlePauseSequential = () => {
-    setIsPlayingSequential(false);
-    if (activeVideoTrack === 1 && video1Ref.current) {
-      video1Ref.current.pause();
-      setVideo1Status('idle');
-    } else if (activeVideoTrack === 2 && video2Ref.current) {
-      video2Ref.current.pause();
-      setVideo2Status('idle');
-    }
-  };
-
-  const handleResetVideos = () => {
-    stopAllVideos();
-    if (video1Ref.current) {
-      video1Ref.current.currentTime = 0;
-    }
-    if (video2Ref.current) {
-      video2Ref.current.currentTime = 0;
-    }
-    setVideo1Status('idle');
-    setVideo2Status('idle');
-  };
-
-  // Video 1 Ended Event: Stop at final frame and trigger Video 2
-  const handleVideo1Ended = () => {
-    setVideo1Status('completed');
-    setActiveVideoTrack(2);
-    setVideo2Status('playing');
-
-    if (video2Ref.current) {
-      video2Ref.current.currentTime = 0;
-      video2Ref.current.play().catch(() => {});
-    }
-  };
-
-  // Video 2 Ended Event: Automatically loop back to Video 1 while in video mode!
-  const handleVideo2Ended = () => {
-    setVideo2Status('completed');
-    if (slide6ViewMode === 'video') {
-      setTimeout(() => {
-        if (video1Ref.current) {
-          setActiveVideoTrack(1);
-          setVideo1Status('playing');
-          setVideo2Status('idle');
-          video1Ref.current.currentTime = 0;
-          video1Ref.current.play().catch(() => {});
-        }
-      }, 500);
-    } else {
-      setIsPlayingSequential(false);
-      setActiveVideoTrack(null);
-    }
-  };
-
   return (
     <div className="slide-deck-container">
       {/* ── Slide Deck Control Header ── */}
@@ -219,7 +185,7 @@ export const ImprovementSlideDeck: React.FC<ImprovementSlideDeckProps> = ({
             {isSlide6 && (
               <span className="slide-deck-video-available-chip">
                 <Video size={12} />
-                <span>VIDEO DOKUMENTASI TERSEDIA (PART 1 & 2)</span>
+                <span>VIDEO DOKUMENTASI TERSEDIA (LOOP AKTIF)</span>
               </span>
             )}
           </div>
@@ -230,7 +196,7 @@ export const ImprovementSlideDeck: React.FC<ImprovementSlideDeckProps> = ({
         </div>
 
         <div className="slide-deck-actions">
-          {/* Slide 6: Switch between Image Slide and Dual Video Player */}
+          {/* Slide 6: Switch between Image Slide and Single Video Player */}
           {isSlide6 && (
             <div className="slide6-view-switcher">
               <button
@@ -249,13 +215,12 @@ export const ImprovementSlideDeck: React.FC<ImprovementSlideDeckProps> = ({
                 type="button"
                 className={`slide6-mode-btn video-mode ${slide6ViewMode === 'video' ? 'active' : ''}`}
                 onClick={() => {
-                  setSlide6ViewMode('video');
-                  handleStartSequentialPlay();
+                  handleDirectPlayVideo();
                 }}
-                title="Tampilkan Video Dokumentasi Aktual Kaizen (Sejajar)"
+                title="Putar Video Dokumentasi Kaizen Langsung"
               >
                 <Video size={13} />
-                <span>VIDEO AKTUAL AFTER</span>
+                <span>VIDEO AKTUAL</span>
               </button>
             </div>
           )}
@@ -333,9 +298,9 @@ export const ImprovementSlideDeck: React.FC<ImprovementSlideDeckProps> = ({
           <ChevronLeft size={28} />
         </button>
 
-        {/* ── Condition A: Slide 6 Dual Video Player Mode (Sejajar 1 Frame) ── */}
+        {/* ── Condition A: Slide 6 Single Unified Video Player Mode (Full Frame Looping) ── */}
         {isSlide6 && slide6ViewMode === 'video' ? (
-          <div className="slide6-dual-video-stage">
+          <div className="slide6-single-video-stage">
             {/* Top Video Stage Bar */}
             <div className="slide6-video-topbar">
               <div className="slide6-video-heading">
@@ -344,38 +309,26 @@ export const ImprovementSlideDeck: React.FC<ImprovementSlideDeckProps> = ({
                   <span>DOKUMENTASI VIDEO KAIZEN (HASIL AFTER SECARA KESELURUHAN)</span>
                 </span>
                 <span className="video-hero-desc">
-                  Pemutaran Sekuensial: Video 1 play hingga selesai (freeze di akhir) ➔ Langsung memutar Video 2
+                  Video Kaizen Pilar.mp4 — Hasil Optimasi Aliran OHC (Pemutaran Looping Otomatis)
                 </span>
               </div>
 
               {/* Master Playback Controls */}
               <div className="slide6-video-controls-hub">
-                {!isPlayingSequential ? (
-                  <button
-                    type="button"
-                    className="slide6-master-play-btn"
-                    onClick={handleStartSequentialPlay}
-                    title="Putar Video 1 lalu lanjut otomatis ke Video 2"
-                  >
-                    <Play size={15} />
-                    <span>PUTAR SEKUENSIAL (1 ➔ 2)</span>
-                  </button>
-                ) : (
-                  <button
-                    type="button"
-                    className="slide6-master-play-btn pause"
-                    onClick={handlePauseSequential}
-                    title="Jeda Pemutaran Video"
-                  >
-                    <Pause size={15} />
-                    <span>JEDA (PAUSE)</span>
-                  </button>
-                )}
+                <button
+                  type="button"
+                  className={`slide6-master-play-btn ${isVideoPlaying ? 'pause' : ''}`}
+                  onClick={handleTogglePlay}
+                  title={isVideoPlaying ? 'Jeda Video' : 'Putar Video'}
+                >
+                  {isVideoPlaying ? <Pause size={15} /> : <Play size={15} />}
+                  <span>{isVideoPlaying ? 'JEDA (PAUSE)' : 'PUTAR VIDEO'}</span>
+                </button>
 
                 <button
                   type="button"
                   className="slide6-icon-control-btn"
-                  onClick={handleResetVideos}
+                  onClick={handleResetVideo}
                   title="Putar Ulang dari Awal"
                 >
                   <RotateCcw size={14} />
@@ -394,125 +347,24 @@ export const ImprovementSlideDeck: React.FC<ImprovementSlideDeckProps> = ({
               </div>
             </div>
 
-            {/* Side-by-Side Unified Video Frame (Grid 2 Kolom Sejajar) */}
-            <div className="slide6-dual-video-grid">
-              {/* ── Frame 1: Kaizen 1.mp4 ── */}
-              <div className={`video-chassis-card ${activeVideoTrack === 1 ? 'active-track' : ''}`}>
-                <div className="video-chassis-header">
-                  <div className="video-badge-group">
-                    <span className="video-index-badge">VIDEO 01</span>
-                    <span className="video-title-label">Kaizen 1.mp4 — Proses Aliran OHC (After Part 1)</span>
-                  </div>
-                  <span className={`video-status-chip ${video1Status}`}>
-                    {video1Status === 'playing' && <span className="status-pulse-dot" />}
-                    {video1Status === 'completed' && <CheckCircle2 size={12} />}
-                    <span>
-                      {video1Status === 'idle' && 'STANDBY'}
-                      {video1Status === 'playing' && 'SEDANG BERJALAN'}
-                      {video1Status === 'completed' && 'SELESAI (STOP DI FRAME AKHIR)'}
-                    </span>
-                  </span>
+            {/* Unified Single Video Frame (Full Canvas) */}
+            <div className="slide6-single-video-player-wrapper" onClick={handleTogglePlay}>
+              <video
+                ref={videoRef}
+                src="/assets/videos/Video Kaizen Pilar.mp4"
+                className="video-media-element single-player"
+                playsInline
+                autoPlay
+                loop
+                muted={isMuted}
+                onPlay={() => setIsVideoPlaying(true)}
+                onPause={() => setIsVideoPlaying(false)}
+              />
+              {!isVideoPlaying && (
+                <div className="video-center-play-overlay">
+                  <Play size={48} />
                 </div>
-
-                <div
-                  className="video-player-wrapper"
-                  onClick={() => {
-                    if (video1Ref.current) {
-                      if (video1Ref.current.paused) {
-                        video1Ref.current.play();
-                        setVideo1Status('playing');
-                        setActiveVideoTrack(1);
-                      } else {
-                        video1Ref.current.pause();
-                        setVideo1Status('idle');
-                      }
-                    }
-                  }}
-                >
-                  <video
-                    ref={video1Ref}
-                    src="/assets/improvements/Kaizen 1.mp4"
-                    className="video-media-element"
-                    playsInline
-                    muted={isMuted}
-                    preload="metadata"
-                    onEnded={handleVideo1Ended}
-                    onPlay={() => {
-                      setVideo1Status('playing');
-                      setActiveVideoTrack(1);
-                    }}
-                    onPause={() => {
-                      if (video1Status !== 'completed') {
-                        setVideo1Status('idle');
-                      }
-                    }}
-                  />
-                  {video1Status === 'idle' && (
-                    <div className="video-center-play-overlay">
-                      <Play size={28} />
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* ── Frame 2: Kaizen 2.mp4 ── */}
-              <div className={`video-chassis-card ${activeVideoTrack === 2 ? 'active-track' : ''}`}>
-                <div className="video-chassis-header">
-                  <div className="video-badge-group">
-                    <span className="video-index-badge">VIDEO 02</span>
-                    <span className="video-title-label">Kaizen 2.mp4 — Hasil Siklus Berkelanjutan (After Part 2)</span>
-                  </div>
-                  <span className={`video-status-chip ${video2Status}`}>
-                    {video2Status === 'playing' && <span className="status-pulse-dot" />}
-                    {video2Status === 'completed' && <CheckCircle2 size={12} />}
-                    <span>
-                      {video2Status === 'idle' && 'STANDBY'}
-                      {video2Status === 'playing' && 'SEDANG BERJALAN'}
-                      {video2Status === 'completed' && 'SELESAI (STOP DI FRAME AKHIR)'}
-                    </span>
-                  </span>
-                </div>
-
-                <div
-                  className="video-player-wrapper"
-                  onClick={() => {
-                    if (video2Ref.current) {
-                      if (video2Ref.current.paused) {
-                        video2Ref.current.play();
-                        setVideo2Status('playing');
-                        setActiveVideoTrack(2);
-                      } else {
-                        video2Ref.current.pause();
-                        setVideo2Status('idle');
-                      }
-                    }
-                  }}
-                >
-                  <video
-                    ref={video2Ref}
-                    src="/assets/improvements/Kaizen 2.mp4"
-                    className="video-media-element"
-                    playsInline
-                    muted={isMuted}
-                    preload="metadata"
-                    onEnded={handleVideo2Ended}
-                    onPlay={() => {
-                      setVideo2Status('playing');
-                      setActiveVideoTrack(2);
-                    }}
-                    onPause={() => {
-                      if (video2Status !== 'completed') {
-                        setVideo2Status('idle');
-                      }
-                    }}
-                  />
-                  {video2Status === 'idle' && (
-                    <div className="video-center-play-overlay">
-                      <Play size={28} />
-                    </div>
-                  )}
-                </div>
-              </div>
+              )}
             </div>
           </div>
         ) : (
@@ -542,20 +394,19 @@ export const ImprovementSlideDeck: React.FC<ImprovementSlideDeckProps> = ({
               <span className="total-num">{String(totalSlides).padStart(2, '0')}</span>
             </div>
 
-            {/* If on Slide 6, show a direct floating button to switch to Video Mode */}
+            {/* If on Slide 6, show direct floating button to switch & immediately play video */}
             {isSlide6 ? (
               <button
                 type="button"
                 className="slide-floating-video-btn"
                 onClick={(e) => {
                   e.stopPropagation();
-                  setSlide6ViewMode('video');
-                  handleStartSequentialPlay();
+                  handleDirectPlayVideo();
                 }}
-                title="Buka Video Dokumentasi Aktual Kaizen (Part 1 & 2)"
+                title="Buka & Putar Video Dokumentasi Kaizen Langsung"
               >
-                <Video size={16} />
-                <span>PUTAR DOKUMENTASI VIDEO AKTUAL (KAIZEN 1 & 2)</span>
+                <Play size={16} />
+                <span>PUTAR DOKUMENTASI VIDEO KAIZEN (DIRECT PLAY)</span>
               </button>
             ) : (
               <div className="slide-hover-zoom-hint">
@@ -581,46 +432,61 @@ export const ImprovementSlideDeck: React.FC<ImprovementSlideDeckProps> = ({
       {/* ── Interactive Bottom Thumbnails Strip (1 - N) ── */}
       <div className="slide-thumbnails-strip-wrap">
         <div className="slide-thumbnails-header">
-          <div className="strip-label-box">
-            <Grid size={13} />
-            <span>PILIH SLIDE PRESENTASI ({totalSlides} SLIDES)</span>
+          <div className="flex items-center gap-2">
+            <Layers size={13} />
+            <span className="font-mono text-[11px] font-bold text-slate-300">
+              NAVIGASI DOKUMEN SLIDE ({currentIdx + 1}/{totalSlides})
+            </span>
           </div>
-          <span className="strip-hotkey-hint">Tekan angka 1-{totalSlides} pada keyboard untuk lompat cepat</span>
+          <span className="text-[10px] font-mono text-slate-400">
+            Klik thumbnail atau gunakan tombol keyboard ← / →
+          </span>
         </div>
 
         <div className="slide-thumbnails-grid">
-          {slides.map((s, sIdx) => {
-            const isSelected = sIdx === currentIdx;
-            const isThumbSlide6 = sIdx === 5;
-
+          {slides.map((s, idx) => {
+            const isActive = idx === currentIdx;
+            const isSlide6Thumb = idx === 5;
             return (
-              <motion.button
-                key={s.id}
-                type="button"
-                className={`slide-thumb-card ${isSelected ? 'selected' : ''}`}
-                onClick={() => setCurrentIdx(sIdx)}
-                whileHover={{ y: -3, transition: { duration: 0.15 } }}
-                whileTap={{ scale: 0.96 }}
-                title={`Slide ${sIdx + 1}: ${s.title}`}
+              <div
+                key={s.id || idx}
+                className={`slide-thumb-card ${isActive ? 'active' : ''}`}
+                onClick={() => {
+                  setCurrentIdx(idx);
+                  if (idx !== 5) {
+                    setSlide6ViewMode('image');
+                    stopAllVideos();
+                  }
+                }}
+                title={`Slide ${idx + 1}: ${s.title}`}
               >
-                <div className="slide-thumb-image-box">
-                  <img src={s.url} alt={s.title} className="slide-thumb-img" loading="lazy" />
-                  <span className="slide-thumb-badge">0{sIdx + 1}</span>
-                  {isSelected && <span className="slide-thumb-active-dot" />}
-                  {isThumbSlide6 && (
-                    <span className="slide-thumb-video-icon-tag" title="Tersedia Video">
+                <div className="slide-thumb-img-wrapper">
+                  <img
+                    src={s.url}
+                    alt={s.title}
+                    className="slide-thumb-img"
+                    loading="lazy"
+                  />
+                  <div className="slide-thumb-index-tag">{idx + 1}</div>
+                  {isSlide6Thumb && (
+                    <div className="slide-thumb-video-icon-tag" title="Tersedia Video Footage">
                       <Video size={10} />
-                    </span>
+                    </div>
                   )}
                 </div>
-                <span className="slide-thumb-title-text">{s.title}</span>
-              </motion.button>
+                <div className="slide-thumb-info">
+                  <span className="slide-thumb-num">SLIDE {idx + 1}</span>
+                  <span className="slide-thumb-title">{s.title}</span>
+                </div>
+              </div>
             );
           })}
         </div>
       </div>
 
-      {/* ── Fullscreen Zoom Presentation (Direct Portal to Body) ── */}
+      {/* ═════════════════════════════════════════════════════════════════════
+          FULLSCREEN ZOOM LIGHTBOX MODAL (PORTAL TO DOCUMENT.BODY)
+          ═════════════════════════════════════════════════════════════════════ */}
       {typeof document !== 'undefined' &&
         createPortal(
           <AnimatePresence>
@@ -674,10 +540,9 @@ export const ImprovementSlideDeck: React.FC<ImprovementSlideDeckProps> = ({
                             type="button"
                             className={`slide6-mode-btn ${slide6ViewMode === 'video' ? 'active' : ''}`}
                             onClick={() => {
-                              setSlide6ViewMode('video');
-                              handleStartSequentialPlay();
+                              handleDirectPlayVideo();
                             }}
-                            title="Putar Video Dokumentasi Kaizen 1 & 2"
+                            title="Putar Video Dokumentasi Kaizen Langsung"
                           >
                             <Video size={13} />
                             <span>VIDEO AKTUAL</span>
@@ -726,35 +591,28 @@ export const ImprovementSlideDeck: React.FC<ImprovementSlideDeckProps> = ({
                     </button>
 
                     {isSlide6 && slide6ViewMode === 'video' ? (
-                      /* Dual Sequential Video Player inside Zoom */
+                      /* Single Unified Video Player inside Zoom */
                       <div className="zoom-f5-video-container">
                         <div className="zoom-f5-video-topbar">
                           <div className="flex items-center gap-2">
-                            <span className="video-status-chip">
-                              {isPlayingSequential
-                                ? `MEMUTAR: VIDEO ${activeVideoTrack} DARI 2 (LOOP AKTIF)`
-                                : 'VIDEO DIJEDA'}
+                            <span className="video-status-chip playing">
+                              <span className="status-pulse-dot" />
+                              <span>{isVideoPlaying ? 'MEMUTAR: VIDEO KAIZEN PILAR (LOOP AKTIF)' : 'VIDEO DIJEDA'}</span>
                             </span>
                           </div>
                           <div className="flex items-center gap-2">
                             <button
                               type="button"
                               className="video-ctrl-btn play"
-                              onClick={() => {
-                                if (isPlayingSequential) {
-                                  handlePauseSequential();
-                                } else {
-                                  handleStartSequentialPlay();
-                                }
-                              }}
+                              onClick={handleTogglePlay}
                             >
-                              {isPlayingSequential ? <Pause size={12} /> : <Play size={12} />}
-                              <span>{isPlayingSequential ? 'JEDA' : 'PUTAR'}</span>
+                              {isVideoPlaying ? <Pause size={12} /> : <Play size={12} />}
+                              <span>{isVideoPlaying ? 'JEDA' : 'PUTAR'}</span>
                             </button>
                             <button
                               type="button"
                               className="video-ctrl-btn reset"
-                              onClick={handleResetVideos}
+                              onClick={handleResetVideo}
                             >
                               <RotateCcw size={12} />
                               <span>RESET</span>
@@ -770,51 +628,23 @@ export const ImprovementSlideDeck: React.FC<ImprovementSlideDeckProps> = ({
                           </div>
                         </div>
 
-                        <div className="zoom-f5-video-grid">
-                          <div className={`video-player-wrapper f5-player ${activeVideoTrack === 1 ? 'active-track' : ''}`}>
-                            <div className="video-player-header">
-                              <span className="video-track-badge">01. KAIZEN 1</span>
-                              <span className="video-live-pill">{video1Status.toUpperCase()}</span>
+                        <div className="zoom-f5-single-video-wrapper" onClick={handleTogglePlay}>
+                          <video
+                            ref={zoomVideoRef}
+                            src="/assets/videos/Video Kaizen Pilar.mp4"
+                            className="video-element"
+                            playsInline
+                            autoPlay
+                            loop
+                            muted={isMuted}
+                            onPlay={() => setIsVideoPlaying(true)}
+                            onPause={() => setIsVideoPlaying(false)}
+                          />
+                          {!isVideoPlaying && (
+                            <div className="video-center-play-overlay">
+                              <Play size={64} />
                             </div>
-                            <video
-                              ref={video1Ref}
-                              src="/assets/improvements/Kaizen 1.mp4"
-                              className="video-element"
-                              playsInline
-                              muted={isMuted}
-                              onEnded={handleVideo1Ended}
-                              onClick={() => {
-                                if (video1Ref.current?.paused) {
-                                  handleStartSequentialPlay();
-                                } else {
-                                  handlePauseSequential();
-                                }
-                              }}
-                            />
-                          </div>
-
-                          <div className={`video-player-wrapper f5-player ${activeVideoTrack === 2 ? 'active-track' : ''}`}>
-                            <div className="video-player-header">
-                              <span className="video-track-badge">02. KAIZEN 2</span>
-                              <span className="video-live-pill">{video2Status.toUpperCase()}</span>
-                            </div>
-                            <video
-                              ref={video2Ref}
-                              src="/assets/improvements/Kaizen 2.mp4"
-                              className="video-element"
-                              playsInline
-                              muted={isMuted}
-                              onEnded={handleVideo2Ended}
-                              onClick={() => {
-                                if (video2Ref.current?.paused) {
-                                  setActiveVideoTrack(2);
-                                  video2Ref.current.play().catch(() => {});
-                                } else {
-                                  video2Ref.current?.pause();
-                                }
-                              }}
-                            />
-                          </div>
+                          )}
                         </div>
                       </div>
                     ) : (
@@ -833,13 +663,12 @@ export const ImprovementSlideDeck: React.FC<ImprovementSlideDeckProps> = ({
                             className="slide-floating-video-btn f5-floating-btn"
                             onClick={(e) => {
                               e.stopPropagation();
-                              setSlide6ViewMode('video');
-                              handleStartSequentialPlay();
+                              handleDirectPlayVideo();
                             }}
-                            title="Putar Video Dokumentasi Kaizen 1 & 2"
+                            title="Putar Video Dokumentasi Kaizen Langsung"
                           >
-                            <Video size={16} />
-                            <span>PUTAR DOKUMENTASI VIDEO AKTUAL (KAIZEN 1 & 2)</span>
+                            <Play size={16} />
+                            <span>PUTAR DOKUMENTASI VIDEO KAIZEN (DIRECT PLAY)</span>
                           </button>
                         )}
                       </div>
