@@ -804,6 +804,16 @@ function AppInner() {
                     {active + 1} / {total}
                   </div>
 
+                  {/* ── Improvement Notification Badge (luxury shimmer) ── */}
+                  {char.categories.improvement.recordsCount > 0 && (
+                    <div className="kaizen-notif-badge">
+                      <span className="kaizen-notif-shimmer" />
+                      <span className="kaizen-notif-icon">⚡</span>
+                      <span className="kaizen-notif-text">KAIZEN</span>
+                      <span className="kaizen-notif-count">{char.categories.improvement.recordsCount}</span>
+                    </div>
+                  )}
+
                   {/* Bottom Character Info with High Contrast Glass Backdrop */}
                   <div
                     style={{
