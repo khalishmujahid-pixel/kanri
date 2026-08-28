@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { TeamLeaderData } from '../data/characters';
 
@@ -8,19 +8,40 @@ interface TLShadowOverlayProps {
 }
 
 export const TLShadowOverlay: React.FC<TLShadowOverlayProps> = ({ isVisible, tl }) => {
-  const videoRef = useRef<HTMLVideoElement>(null);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
 
-  // Autoplay + loop when visible
+  // Callback ref to guarantee muted DOM property is set before browser autoplay checks
+  const setVideoRef = useCallback((node: HTMLVideoElement | null) => {
+    videoRef.current = node;
+    if (node) {
+      node.defaultMuted = true;
+      node.muted = true;
+      node.playsInline = true;
+      node.play().catch(() => {
+        // Autoplay policy fallback: will play on first interaction
+      });
+    }
+  }, []);
+
+  // Ensure video plays smoothly when visibility transitions or TL changes
   useEffect(() => {
     const vid = videoRef.current;
     if (!vid) return;
+
+    vid.defaultMuted = true;
+    vid.muted = true;
+
     if (isVisible) {
-      vid.currentTime = 0;
-      vid.play().catch(() => {/* autoplay blocked — silently ignore */});
+      const playPromise = vid.play();
+      if (playPromise !== undefined) {
+        playPromise.catch(() => {
+          // Retry on loadeddata/canplay
+        });
+      }
     } else {
       vid.pause();
     }
-  }, [isVisible]);
+  }, [isVisible, tl?.tlVideoUrl]);
 
   if (!tl) return null;
 
@@ -50,15 +71,28 @@ export const TLShadowOverlay: React.FC<TLShadowOverlayProps> = ({ isVisible, tl 
           {/* Video */}
           <div className="tl-overlay-video-wrap">
             <video
-              ref={videoRef}
-              src={tl.tlVideoUrl}
+              ref={setVideoRef}
+              key={tl.tlVideoUrl}
               className="tl-overlay-video"
+              autoPlay
               muted
               loop
               playsInline
-              autoPlay
               preload="auto"
-            />
+              poster={tl.image}
+              onCanPlay={(e) => {
+                const vid = e.currentTarget;
+                vid.muted = true;
+                vid.play().catch(() => {});
+              }}
+              onLoadedData={(e) => {
+                const vid = e.currentTarget;
+                vid.muted = true;
+                vid.play().catch(() => {});
+              }}
+            >
+              <source src={tl.tlVideoUrl} type="video/mp4" />
+            </video>
             {/* Subtle vignette overlay on video */}
             <div className="tl-video-vignette" />
           </div>
@@ -86,3 +120,4 @@ export const TLShadowOverlay: React.FC<TLShadowOverlayProps> = ({ isVisible, tl 
     </AnimatePresence>
   );
 };
+
