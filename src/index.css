@@ -54,6 +54,189 @@ html, body {
   display: none;
 }
 
+/* ═══════════════════════════════════════════════════════
+   TL SHADOW OVERLAY — Machrus Team Leader presence badge
+   ═══════════════════════════════════════════════════════ */
+
+.tl-shadow-overlay {
+  position: fixed;
+  bottom: 28px;
+  right: 28px;
+  z-index: 450;
+  width: 248px;
+  border-radius: 14px;
+  background: rgba(4, 6, 12, 0.93);
+  border: 1.5px solid rgba(255, 183, 3, 0.5);
+  box-shadow:
+    0 0 0 1px rgba(255, 183, 3, 0.12),
+    0 8px 32px rgba(0, 0, 0, 0.65),
+    0 0 28px rgba(255, 183, 3, 0.22);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  overflow: hidden;
+  pointer-events: none;
+  user-select: none;
+}
+
+.tl-overlay-header {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 12px;
+  background: linear-gradient(135deg, rgba(255, 183, 3, 0.22), rgba(255, 140, 0, 0.14));
+  border-bottom: 1px solid rgba(255, 183, 3, 0.25);
+}
+
+.tl-crown-icon {
+  font-size: 13px;
+  line-height: 1;
+}
+
+.tl-overlay-label {
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  font-weight: 900;
+  color: #ffb703;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+}
+
+.tl-overlay-video-wrap {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  background: #000;
+  overflow: hidden;
+}
+
+.tl-overlay-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.tl-video-vignette {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(to bottom, rgba(4,6,12,0.3) 0%, transparent 30%, transparent 70%, rgba(4,6,12,0.5) 100%),
+    linear-gradient(to right, rgba(4,6,12,0.2) 0%, transparent 20%, transparent 80%, rgba(4,6,12,0.2) 100%);
+  pointer-events: none;
+}
+
+.tl-overlay-footer {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 8px 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.tl-overlay-avatar {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1.5px solid rgba(255, 183, 3, 0.55);
+  flex-shrink: 0;
+}
+
+.tl-overlay-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+
+.tl-overlay-name {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 800;
+  color: #f1f5f9;
+  letter-spacing: 0.4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tl-overlay-zone {
+  font-family: var(--font-mono);
+  font-size: 8.5px;
+  color: rgba(255, 255, 255, 0.45);
+  letter-spacing: 0.3px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tl-shadowing-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-family: var(--font-mono);
+  font-size: 8px;
+  font-weight: 900;
+  color: #ffb703;
+  letter-spacing: 0.8px;
+  background: rgba(255, 183, 3, 0.12);
+  border: 1px solid rgba(255, 183, 3, 0.3);
+  border-radius: 20px;
+  padding: 2px 7px;
+  flex-shrink: 0;
+}
+
+.tl-shadow-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #ffb703;
+  box-shadow: 0 0 6px #ffb703;
+  animation: tl-pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes tl-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.65); }
+}
+
+/* Mobile: smaller, repositioned */
+@media (max-width: 768px) {
+  .tl-shadow-overlay {
+    width: 190px;
+    bottom: 90px;
+    right: 16px;
+  }
+
+  .tl-overlay-header {
+    padding: 5px 10px;
+  }
+
+  .tl-overlay-label {
+    font-size: 8.5px;
+  }
+
+  .tl-overlay-footer {
+    padding: 6px 10px;
+    gap: 7px;
+  }
+
+  .tl-overlay-avatar {
+    width: 24px;
+    height: 24px;
+  }
+
+  .tl-overlay-name {
+    font-size: 9px;
+  }
+
+  .tl-shadowing-pill {
+    font-size: 7px;
+    padding: 2px 5px;
+  }
+}
+
 /* Character Detail Overlay & Modal View */
 .detail-view-container {
   position: fixed;

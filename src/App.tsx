@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { AnimatePresence } from 'framer-motion';
-import { INITIAL_CHARACTERS } from './data/characters';
+import { INITIAL_CHARACTERS, MEMBER_TO_TL_MAP } from './data/characters';
 import type { Character } from './types/character';
 import { CharacterDetail } from './components/CharacterDetail';
 import { F1GarageHeader } from './components/F1GarageHeader';
@@ -8,6 +8,7 @@ import { IntroScreen } from './components/IntroScreen';
 import { ThemeProvider, useTheme } from './contexts/ThemeContext';
 import { ThemeSelector } from './components/ThemeSelector';
 import { initKaizenMemoryCache, preloadCriticalAssets } from './utils/assetCache';
+import { TLShadowOverlay } from './components/TLShadowOverlay';
 
 function PinIcon() {
   return (
@@ -1156,6 +1157,19 @@ function AppInner() {
           />
         )}
       </AnimatePresence>
+
+      {/* ─── TL Shadow Overlay (Machrus) — visible when active/selected char is a member ─── */}
+      {(() => {
+        // Priority: selected char (detail view) > carousel active char (dashboard)
+        const currentId = selectedCharacter?.id ?? characters[active]?.id;
+        const activeTL = currentId ? MEMBER_TO_TL_MAP[currentId] ?? null : null;
+        return (
+          <TLShadowOverlay
+            isVisible={!!activeTL && showUI}
+            tl={activeTL}
+          />
+        );
+      })()}
     </div>
   );
 }

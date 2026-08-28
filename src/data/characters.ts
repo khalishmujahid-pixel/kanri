@@ -952,5 +952,43 @@ export const INITIAL_CHARACTERS: Character[] = [
   }
 ];
 
+// ─────────────────────────────────────────────────────────
+//  TEAM LEADERS — Not rendered in carousel; used for
+//  TL Shadow Overlay feature (Machrus → Pilar/Arli/Dendy/Aziz)
+// ─────────────────────────────────────────────────────────
 
+export interface TeamLeaderData {
+  id: string;
+  name: string;
+  role: string;
+  department: string;
+  unit: string;
+  zone: string;
+  image: string;
+  isTeamLeader: true;
+  leaderOf: string[];
+  tlVideoUrl: string;
+}
 
+export const TEAM_LEADERS: TeamLeaderData[] = [
+  {
+    id: 'tl_machrus',
+    name: 'MACHRUS',
+    role: 'Team Leader',
+    department: 'Maintenance',
+    unit: 'Shift RED',
+    zone: 'Welding Body#2',
+    image: '/assets/characters/machrus.jpg',
+    isTeamLeader: true,
+    leaderOf: ['c04', 'c07', 'c08', 'c03'], // Pilar, Arli, Mochamad Dendy, Aziz
+    tlVideoUrl: '/assets/videos/Machrus_TL_Welcome_1080p_202608280808.mp4',
+  },
+];
+
+// O(1) lookup: characterId → their Team Leader data
+export const MEMBER_TO_TL_MAP: Record<string, TeamLeaderData> = {};
+TEAM_LEADERS.forEach((tl) => {
+  tl.leaderOf.forEach((memberId) => {
+    MEMBER_TO_TL_MAP[memberId] = tl;
+  });
+});

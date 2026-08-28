@@ -70,4 +70,8 @@ export interface Character {
     improvement: CategoryData;
     safety: CategoryData;
   };
+  /** Team Leader fields */
+  isTeamLeader?: boolean;    // true for TL characters
+  leaderOf?: string[];       // array of member character IDs
+  tlVideoUrl?: string;       // URL for TL welcome video overlay
 }
