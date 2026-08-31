@@ -37,6 +37,19 @@ function getYears(docs: PmDocument[]): number[] {
   return [...new Set(docs.map(d => d.year))].sort((a, b) => b - a);
 }
 
+function getPicSheetName(character: Character): string {
+  const name = character.name.toUpperCase();
+  if (name.includes('DENDY')) return 'DENDY';
+  if (name.includes('KURDI')) return 'KURDI';
+  if (name.includes('DWI')) return 'DWI';
+  if (name.includes('DENNY')) return 'DENNY';
+  if (name.includes('AZIZ')) return 'AZIZ';
+  if (name.includes('PILAR')) return 'PILAR';
+  if (name.includes('IKHMAL')) return 'IKHMAL';
+  if (name.includes('ARLI')) return 'ARLI';
+  return character.name.split(' ')[0];
+}
+
 export const CharacterDetail: React.FC<CharacterDetailProps> = ({
   character,
   onBackToShowroom,
@@ -56,10 +69,10 @@ export const CharacterDetail: React.FC<CharacterDetailProps> = ({
   const [isLiveActive, setIsLiveActive] = useState<boolean>(false);
   const [lastSyncedTime, setLastSyncedTime] = useState<string | null>(null);
 
-  const syncFromSheets = async (isBackground = false) => {
+  const syncFromSheets = async (isBackground = false, targetMonth = pmMonth) => {
     if (!isBackground) setIsLiveSyncing(true);
-    const firstName = character.name.split(' ')[0]; // e.g. "KURDI"
-    const data = await fetchLivePmSchedule(firstName);
+    const picSheetName = getPicSheetName(character); // e.g. "DENDY", "KURDI", "DWI"
+    const data = await fetchLivePmSchedule(picSheetName, targetMonth);
     if (data && data.length > 0) {
       setLiveSchedule(data);
       setIsLiveActive(true);
@@ -70,22 +83,25 @@ export const CharacterDetail: React.FC<CharacterDetailProps> = ({
           second: '2-digit',
         })
       );
+    } else if (!isBackground) {
+      // If no data returned for this month
+      setLiveSchedule(null);
     }
     if (!isBackground) setIsLiveSyncing(false);
   };
 
-  // Auto-fetch on entry + background polling every 20 seconds
+  // Auto-fetch on entry or month switch + background polling every 20 seconds
   React.useEffect(() => {
     if (activeCategory === 'pm') {
       setLiveSchedule(null);
       setIsLiveActive(false);
-      syncFromSheets(false); // Initial immediate sync
+      syncFromSheets(false, pmMonth); // Immediate sync for selected month
       const intervalId = setInterval(() => {
-        syncFromSheets(true); // Background silent sync every 20s
+        syncFromSheets(true, pmMonth); // Background silent sync every 20s
       }, 20000);
       return () => clearInterval(intervalId);
     }
-  }, [activeCategory, character.name]);
+  }, [activeCategory, character.name, pmMonth]);
 
   // Lightbox state for PM document
   const [lightboxDoc, setLightboxDoc] = useState<PmDocument | null>(null);
@@ -330,7 +346,7 @@ export const CharacterDetail: React.FC<CharacterDetailProps> = ({
                         isLiveActive={isLiveActive}
                         isLiveSyncing={isLiveSyncing}
                         lastSyncedTime={lastSyncedTime}
-                        onForceSync={() => syncFromSheets(false)}
+                        onForceSync={() => syncFromSheets(false, pmMonth)}
                       />
                     ) : (
                       <div className="ready-notice-box" style={{ margin: '8px 0 14px' }}>

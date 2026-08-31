@@ -74,12 +74,14 @@ export const PmSCurveChart: React.FC<PmSCurveChartProps> = ({
     .map((t) => t.actualDay!);
   const maxActualDay = doneActualDays.length > 0 ? Math.max(...doneActualDays) : 0;
 
-  // Dynamic running date: takes whichever is larger between current date, max actual recorded, or day 19
-  const isCurrentMonth = year === 2026 && month === 8;
-  const calendarDay = new Date().getDate();
+  // Dynamic running date: takes whichever is appropriate based on whether it is current month, past month, or future
+  const now = new Date();
+  const isCurrentMonth = year === now.getFullYear() && month === (now.getMonth() + 1);
+  const isPastMonth = year < now.getFullYear() || (year === now.getFullYear() && month < (now.getMonth() + 1));
+  const calendarDay = now.getDate();
   const currentRunningDay = isCurrentMonth
-    ? Math.min(daysInMonth, Math.max(calendarDay, maxActualDay, 19))
-    : daysInMonth;
+    ? Math.min(daysInMonth, Math.max(calendarDay, maxActualDay))
+    : (isPastMonth ? daysInMonth : Math.min(daysInMonth, Math.max(1, maxActualDay)));
 
   const totalPlanMonth = allTasks.length; // 27 tasks for August
   const planToday = allTasks.filter((t) => t.planDay <= currentRunningDay).length;
@@ -674,13 +676,13 @@ export const PmSCurveChart: React.FC<PmSCurveChartProps> = ({
           <div className="legend-entry">
             <span className="legend-symbol actual-symbol" />
             <span className="legend-name">
-              ACTUAL CUMULATIVE (8 DONE AS OF D19)
+              ACTUAL CUMULATIVE ({actualToday} DONE AS OF D{currentRunningDay})
             </span>
           </div>
           <div className="legend-entry">
             <span className="legend-symbol today-symbol" />
             <span className="legend-name">
-              TODAY CUTOFF (19 AGUSTUS 2026)
+              TODAY CUTOFF ({currentRunningDay} {monthName.toUpperCase()} {year})
             </span>
           </div>
           <div className="legend-entry">
@@ -783,7 +785,7 @@ export const PmSCurveChart: React.FC<PmSCurveChartProps> = ({
                   </div>
                   <div>
                     <div className="pm-scurve-sub-tag">
-                      HIGH DEFINITION TELEMETRY // {monthName.toUpperCase()} {year} // LIVE CUTOFF: 19 AGUSTUS
+                      HIGH DEFINITION TELEMETRY // {monthName.toUpperCase()} {year} // LIVE CUTOFF: {currentRunningDay} {monthName.toUpperCase()}
                     </div>
                     <h3 className="pm-zoom-modal-title">
                       S-CURVE PM CUMULATIVE PLAN VS ACTUAL (EXPANDED VIEW)
@@ -814,15 +816,15 @@ export const PmSCurveChart: React.FC<PmSCurveChartProps> = ({
                   <span className="metric-val">{totalPlanMonth} TASKS</span>
                 </div>
                 <div className="pm-metric-chip">
-                  <span className="metric-label">PLAN TARGET (AS OF D19)</span>
+                  <span className="metric-label">PLAN TARGET (AS OF D{currentRunningDay})</span>
                   <span className="metric-val">{planToday} TASKS</span>
                 </div>
                 <div className="pm-metric-chip success">
-                  <span className="metric-label">ACTUAL DONE (D19)</span>
+                  <span className="metric-label">ACTUAL DONE (D{currentRunningDay})</span>
                   <span className="metric-val">{actualToday} COMPLETED</span>
                 </div>
                 <div className="pm-metric-chip warning">
-                  <span className="metric-label">CURRENT DELAY (D19)</span>
+                  <span className="metric-label">CURRENT DELAY (D{currentRunningDay})</span>
                   <span className="metric-val">-{delayToday} TASKS</span>
                 </div>
                 <div className="pm-metric-chip highlight">
@@ -886,11 +888,11 @@ export const PmSCurveChart: React.FC<PmSCurveChartProps> = ({
                 </div>
                 <div className="legend-entry">
                   <span className="legend-symbol actual-symbol" />
-                  <span>ACTUAL CUMULATIVE ({actualToday} DONE AS OF D19)</span>
+                  <span>ACTUAL CUMULATIVE ({actualToday} DONE AS OF D{currentRunningDay})</span>
                 </div>
                 <div className="legend-entry">
                   <span className="legend-symbol today-symbol" />
-                  <span>RUNNING DATE CUTOFF: 19 AGUSTUS 2026</span>
+                  <span>RUNNING DATE CUTOFF: {currentRunningDay} {monthName.toUpperCase()} {year}</span>
                 </div>
                 <div className="legend-entry">
                   <span className="legend-symbol delay-symbol" />

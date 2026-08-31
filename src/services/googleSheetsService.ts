@@ -14,12 +14,15 @@ export interface SheetApiResponse {
 }
 
 /**
- * Fetch live PM schedule data from Google Sheets for a specific character/PIC
+ * Fetch live PM schedule data from Google Sheets for a specific character/PIC and Month
  */
-export async function fetchLivePmSchedule(picName: string): Promise<PmEquipmentEntry[] | null> {
+export async function fetchLivePmSchedule(
+  picName: string,
+  month: number | string = 9
+): Promise<PmEquipmentEntry[] | null> {
   try {
-    // Add cache buster timestamp to ensure fresh response every time
-    const url = `${GOOGLE_APPS_SCRIPT_URL}?pic=${encodeURIComponent(picName)}&_t=${Date.now()}`;
+    // Add cache buster timestamp and month query to ensure fresh and accurate response
+    const url = `${GOOGLE_APPS_SCRIPT_URL}?pic=${encodeURIComponent(picName)}&month=${encodeURIComponent(String(month))}&_t=${Date.now()}`;
     const response = await fetch(url, {
       method: 'GET',
       cache: 'no-store',

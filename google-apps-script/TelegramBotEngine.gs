@@ -1,8 +1,9 @@
 /**
  * ============================================================================
- * PM MODULE EXCELENT MAINTENANCE TELEGRAM BOT ENGINE (v3.2 - Dual View Mode)
- * User Biasa: Profil PIC Personal & Swa Jawab
- * Admin / Supervisor: Dashboard Overview Semua Line & Multi Sheet Inspector
+ * PM MODULE EXCELENT MAINTENANCE TELEGRAM BOT ENGINE (v4.0 - Multi-Month Edition)
+ * User Biasa: Profil PIC Personal & Swa-Jawab Laporan PM
+ * Admin / Supervisor: Dashboard Overview Semua Line & Multi-Sheet Inspector
+ * Multi-Month: Dukungan Penuh Bulan ke-1 (Agustus 2026) & Bulan ke-2 (September 2026)
  * ============================================================================
  */
 
@@ -13,7 +14,7 @@ const CONFIG = {
   // Token Bot Telegram
   BOT_TOKEN: '8951359806:AAFXsn4VhlXx7_gGNZfohEf3kZ-T-RIoJhk',
   
-  // URL Deployment Web App Anda
+  // URL Deployment Web App
   WEB_APP_URL: 'https://script.google.com/macros/s/AKfycbzYvd259Z8Cw8g4kBsyTGkvnwaswS6rinGICFW6fWiPP445sw3v2zldOdMf1WqRRJAAtw/exec',
   
   // Daftar Chat ID Admin Default
@@ -23,7 +24,15 @@ const CONFIG = {
   TIMEZONE: 'Asia/Jakarta',
   
   // Nama Sheet Default jika fallback
-  DEFAULT_SHEET_NAME: 'KURDI'
+  DEFAULT_SHEET_NAME: 'KURDI',
+  
+  // Default Bulan Aktif Terkini (September 2026 = Bulan 9 / Bulan ke-2)
+  DEFAULT_MONTH: 9
+};
+
+const MONTHS_CONFIG = {
+  8: { num: 8, name: 'Agustus 2026', short: 'Agustus', label: 'Bulan ke-1', days: 31 },
+  9: { num: 9, name: 'September 2026', short: 'September', label: 'Bulan ke-2', days: 30 }
 };
 
 // ============================================================================
@@ -61,30 +70,42 @@ function doGet(e) {
   try {
     const params = e ? e.parameter : {};
     const picParam = params.pic || '';
+    const monthParam = params.month || params.m || String(CONFIG.DEFAULT_MONTH);
     
     if (picParam.toUpperCase() === 'LIST') {
       const ss = SpreadsheetApp.getActiveSpreadsheet();
       const sheetNames = ss ? ss.getSheets().map(s => s.getName()) : [];
       return createJsonResponse({
         success: true,
-        availableSheets: sheetNames
+        availableSheets: sheetNames,
+        availableMonths: [
+          { num: 8, name: 'Agustus 2026', label: 'Bulan ke-1' },
+          { num: 9, name: 'September 2026', label: 'Bulan ke-2' }
+        ]
       });
     }
     
     const targetPic = picParam || CONFIG.DEFAULT_SHEET_NAME;
-    const scheduleData = fetchPmScheduleFromSheet(targetPic);
+    const scheduleData = fetchPmScheduleFromSheet(targetPic, monthParam);
     
     if (!scheduleData || scheduleData.length === 0) {
       return createJsonResponse({
         success: false,
-        error: 'Data PM tidak ditemukan untuk sheet/PIC: ' + targetPic,
-        pic: targetPic
+        error: 'Data PM tidak ditemukan untuk sheet/PIC: ' + targetPic + ' (Bulan ' + monthParam + ')',
+        pic: targetPic,
+        month: monthParam
       });
     }
+    
+    const targetMonthNum = parseInt(monthParam, 10) || CONFIG.DEFAULT_MONTH;
+    const monthMeta = MONTHS_CONFIG[targetMonthNum] || { name: `Bulan ${targetMonthNum}`, label: `Bulan ke-${targetMonthNum}` };
     
     return createJsonResponse({
       success: true,
       pic: targetPic,
+      month: targetMonthNum,
+      monthName: monthMeta.name,
+      monthLabel: monthMeta.label,
       totalEquipment: scheduleData.length,
       equipmentSchedule: scheduleData
     });
@@ -113,6 +134,7 @@ function handleIncomingMessage(msg) {
     
     const isAdmin = checkIsAdmin(chatId);
     let activePic = getUserPic(chatId);
+    let activeMonth = getUserMonth(chatId);
     
     // Foto Bukti Laporan
     if (msg.photo && msg.photo.length > 0) {
@@ -127,57 +149,60 @@ function handleIncomingMessage(msg) {
         sendPicSelectionKeyboard(chatId, '⚠️ <b>Pilih Sheet PIC Terlebih Dahulu:</b>\nTentukan sheet yang ingin Anda laporkan:', 'lapor');
         return;
       }
-      handleTextReport(chatId, activePic, text);
+      handleTextReport(chatId, activePic, text, activeMonth);
       return;
     }
     
     if (text.startsWith('/start') || text === '🔄 Menu Utama' || text === '/menu' || text.startsWith('/pm')) {
-      sendWelcomeMessage(chatId, userName, activePic, isAdmin);
+      sendWelcomeMessage(chatId, userName, activePic, activeMonth, isAdmin);
     } 
     else if (text === '📅 Jadwal PM Hari Ini' || text === '/today') {
       if (!activePic) {
         sendPicSelectionKeyboard(chatId, 'Silakan pilih sheet PIC yang ingin dilihat jadwalnya:', 'today');
         return;
       }
-      sendTodaySchedule(chatId, activePic);
+      sendTodaySchedule(chatId, activePic, activeMonth);
     } 
     else if (text === '🚨 List PM Delay' || text === '/delay') {
       if (!activePic) {
         sendPicSelectionKeyboard(chatId, 'Silakan pilih sheet PIC yang ingin diperiksa delay-nya:', 'delay');
         return;
       }
-      sendDelayDetail(chatId, activePic);
+      sendDelayDetail(chatId, activePic, activeMonth);
     } 
     else if (text === '📝 Input Lapor PM' || text === '/lapor' || text === '/input') {
       if (!activePic) {
         sendPicSelectionKeyboard(chatId, 'Silakan pilih sheet PIC untuk input laporan:', 'lapor');
         return;
       }
-      sendEquipmentSelectionWizard(chatId, activePic);
+      sendEquipmentSelectionWizard(chatId, activePic, activeMonth);
     }
     else if (text === '📈 Summary Progress PM' || text === '/summary') {
       if (!activePic) {
         sendPicSelectionKeyboard(chatId, 'Silakan pilih sheet PIC untuk melihat ringkasan progress:', 'summary');
         return;
       }
-      sendSummaryProgress(chatId, activePic);
+      sendSummaryProgress(chatId, activePic, activeMonth);
     } 
+    else if (text === '🗓️ Pilih / Ganti Bulan' || text === '🗓️ Ganti Bulan' || text === '/bulan' || text === '/month') {
+      sendMonthSelectionKeyboard(chatId);
+    }
     else if (text === '👤 Pilih / Ganti PIC' || text === '👤 Buka / Pantau Sheet' || text === '/pic') {
       sendPicSelectionKeyboard(chatId, 'Silakan pilih sheet PIC yang ingin Anda buka / pantau:');
     } 
     else if (text === '👑 Admin Overview' || text === '/admin') {
       if (isAdmin) {
-        sendAdminOverview(chatId);
+        sendAdminOverview(chatId, activeMonth);
       } else {
         sendTelegramMessage(chatId, '⛔ <b>Akses Ditolak</b>\nMenu ini khusus untuk Administrator/Supervisor. Ketik <code>/setadmin</code> untuk mendaftar.');
       }
     } 
     else if (text === '/cleandupes' || text === '/bersihkan' || text === '🧹 Bersihkan Duplikat') {
-      const res = autoCleanAllDuplicatePmEntries(activePic);
+      const res = autoCleanAllDuplicatePmEntries(activePic, activeMonth);
       if (res && res.success) {
-        sendTelegramMessage(chatId, `🧹 <b>Pembersihan Data Duplikat Selesai!</b>\n\nSebanyak <b>${res.cleanedCount} entri duplikat tanggal lama</b> telah otomatis dibersihkan dari baris Actual.\nHanya tanggal aktual <b>paling baru / terakhir</b> yang dipertahankan!`);
+        sendTelegramMessage(chatId, `🧹 <b>Pembersihan Data Duplikat Selesai!</b>\n\nSebanyak <b>${res.cleanedCount} entri duplikat tanggal lama</b> telah otomatis dibersihkan dari baris Actual (${getMonthDisplayName(activeMonth)}).\nHanya tanggal aktual <b>paling baru / terakhir</b> yang dipertahankan!`);
       } else {
-        sendTelegramMessage(chatId, `ℹ️ Tidak ada entri duplikat tanggal lama yang perlu dibersihkan pada sheet <b>${activePic || 'Aktif'}</b>.`);
+        sendTelegramMessage(chatId, `ℹ️ Tidak ada entri duplikat tanggal lama yang perlu dibersihkan pada sheet <b>${activePic || 'Aktif'}</b> (${getMonthDisplayName(activeMonth)}).`);
       }
     }
     else if (text === 'ℹ️ Bantuan' || text === '/help') {
@@ -188,7 +213,7 @@ function handleIncomingMessage(msg) {
       sendTelegramMessage(chatId, '✅ <b>Selamat!</b> Chat ID Anda (<code>' + chatId + '</code>) kini terdaftar sebagai <b>ADMINISTRATOR / SUPERVISOR</b>.\nKetik /admin untuk membuka dashboard supervisor.');
     } 
     else {
-      sendWelcomeMessage(chatId, userName, activePic, isAdmin);
+      sendWelcomeMessage(chatId, userName, activePic, activeMonth, isAdmin);
     }
   } catch (err) {
     Logger.log('Error handling message: ' + err.toString());
@@ -204,19 +229,38 @@ function handleCallbackQuery(cb) {
     const data = cb.data || '';
     const isAdmin = checkIsAdmin(chatId);
     let activePic = getUserPic(chatId);
+    let activeMonth = getUserMonth(chatId);
     
     answerCallback(cb.id);
     
+    // 0. Menu Akses Bulan
+    if (data === 'cmd_switch_month') {
+      sendMonthSelectionKeyboard(chatId);
+    }
+    else if (data.startsWith('set_month:')) {
+      const selectedMonthNum = parseInt(data.substring('set_month:'.length), 10) || CONFIG.DEFAULT_MONTH;
+      setUserMonth(chatId, selectedMonthNum);
+      activeMonth = selectedMonthNum;
+      
+      const mInfo = MONTHS_CONFIG[selectedMonthNum] || { name: `Bulan ${selectedMonthNum}`, label: `Bulan ke-${selectedMonthNum}` };
+      const text = `✅ <b>Periode Bulan Berhasil Diubah!</b>\n\n` +
+                   `🗓️ <b>Bulan Aktif:</b> <b>${mInfo.name} (${mInfo.label})</b>\n` +
+                   `👤 <b>PIC Aktif:</b> <code>${activePic || '(Belum Dipilih)'}</code>\n\n` +
+                   `Seluruh jadwal, delay, dan input laporan akan mengacu pada periode ini.`;
+      sendTelegramMessage(chatId, text, getMainInlineKeyboard(isAdmin, activePic, activeMonth));
+    }
     // 1. Pilih PIC
-    if (data.startsWith('set_pic:')) {
+    else if (data.startsWith('set_pic:')) {
       const selectedSheetName = decodeURIComponent(data.substring('set_pic:'.length));
       setUserPic(chatId, selectedSheetName);
       activePic = selectedSheetName;
       
+      const mInfo = MONTHS_CONFIG[activeMonth] || { name: `Bulan ${activeMonth}`, label: `Bulan ke-${activeMonth}` };
       const text = `✅ <b>Sheet Berhasil Dibuka!</b>\n\n` +
-                   `📄 <b>Sheet Aktif:</b> <code>${selectedSheetName}</code>\n\n` +
+                   `📄 <b>Sheet Aktif:</b> <code>${selectedSheetName}</code>\n` +
+                   `🗓️ <b>Periode:</b> ${mInfo.name} (${mInfo.label})\n\n` +
                    `Silakan pilih menu di bawah ini:`;
-      sendTelegramMessage(chatId, text, getMainInlineKeyboard(isAdmin, activePic));
+      sendTelegramMessage(chatId, text, getMainInlineKeyboard(isAdmin, activePic, activeMonth));
     } 
     // 2. Step 1 Wizard: Buka Menu Pilih Mesin
     else if (data === 'cmd_lapor_wizard' || data === 'cmd_lapor_menu') {
@@ -224,7 +268,7 @@ function handleCallbackQuery(cb) {
         sendPicSelectionKeyboard(chatId, 'Silakan pilih sheet PIC untuk input laporan:', 'lapor');
         return;
       }
-      sendEquipmentSelectionWizard(chatId, activePic);
+      sendEquipmentSelectionWizard(chatId, activePic, activeMonth);
     }
     // 3. Step 2 Wizard: Mesin Dipilih -> Tampilkan Pilihan Kanban
     else if (data.startsWith('wiz_eq:')) {
@@ -233,7 +277,7 @@ function handleCallbackQuery(cb) {
         return;
       }
       const eqNo = parseInt(data.split(':')[1], 10);
-      sendKanbanSelectionWizard(chatId, activePic, eqNo);
+      sendKanbanSelectionWizard(chatId, activePic, eqNo, activeMonth);
     }
     // 4. Step 3 Wizard: Kanban Dipilih -> Tampilkan Pilihan Tanggal
     else if (data.startsWith('wiz_kb:')) {
@@ -244,7 +288,7 @@ function handleCallbackQuery(cb) {
       const parts = data.split(':');
       const eqNo = parseInt(parts[1], 10);
       const kanban = parts[2];
-      sendDateSelectionWizard(chatId, activePic, eqNo, kanban);
+      sendDateSelectionWizard(chatId, activePic, eqNo, kanban, activeMonth);
     }
     // 5. Step 4 Wizard: Tanggal Dipilih -> Eksekusi Penulisan
     else if (data.startsWith('wiz_date:')) {
@@ -257,7 +301,7 @@ function handleCallbackQuery(cb) {
       const kanban = parts[2];
       const chosenDay = parseInt(parts[3], 10);
       
-      executeAndConfirmReport(chatId, activePic, eqNo, kanban, chosenDay);
+      executeAndConfirmReport(chatId, activePic, eqNo, kanban, chosenDay, activeMonth);
     }
     // 6. Tombol Aksi Menu Utama
     else if (data === 'cmd_today') {
@@ -265,34 +309,37 @@ function handleCallbackQuery(cb) {
         sendPicSelectionKeyboard(chatId, 'Silakan pilih sheet PIC yang ingin dilihat jadwalnya:', 'today');
         return;
       }
-      sendTodaySchedule(chatId, activePic);
+      sendTodaySchedule(chatId, activePic, activeMonth);
     } 
     else if (data === 'cmd_delay') {
       if (!activePic) {
         sendPicSelectionKeyboard(chatId, 'Silakan pilih sheet PIC yang ingin diperiksa delay-nya:', 'delay');
         return;
       }
-      sendDelayDetail(chatId, activePic);
+      sendDelayDetail(chatId, activePic, activeMonth);
     } 
     else if (data === 'cmd_summary') {
       if (!activePic) {
         sendPicSelectionKeyboard(chatId, 'Silakan pilih sheet PIC untuk melihat ringkasan progress:', 'summary');
         return;
       }
-      sendSummaryProgress(chatId, activePic);
+      sendSummaryProgress(chatId, activePic, activeMonth);
     } 
     else if (data === 'cmd_switch_pic') {
       sendPicSelectionKeyboard(chatId, '🔄 <b>Pilih Sheet PIC:</b>\nSilakan pilih sheet yang ingin Anda buka / pantau:');
     } 
     else if (data === 'cmd_admin_overview') {
       if (isAdmin) {
-        sendAdminOverview(chatId);
+        sendAdminOverview(chatId, activeMonth);
       } else {
         sendTelegramMessage(chatId, '⛔ Akses Admin Diperlukan.');
       }
     } 
     else if (data === 'cmd_help') {
       sendHelpMessage(chatId);
+    }
+    else if (data === 'cmd_menu') {
+      sendWelcomeMessage(chatId, 'Rekan Maintenance', activePic, activeMonth, isAdmin);
     }
   } catch (err) {
     Logger.log('Error handling callback: ' + err.toString());
@@ -304,25 +351,25 @@ function handleCallbackQuery(cb) {
 // ============================================================================
 
 /**
- * 1. Pesan Sambutan & Menu Utama (Disesuaikan untuk Admin vs PIC Biasa)
+ * 1. Pesan Sambutan & Menu Utama
  */
-function sendWelcomeMessage(chatId, userName, activePic, isAdmin) {
-  const today = getTodayDayNumber();
+function sendWelcomeMessage(chatId, userName, activePic, activeMonth, isAdmin) {
+  const today = getTodayDayNumber(activeMonth);
+  const mInfo = MONTHS_CONFIG[activeMonth] || { name: `Bulan ${activeMonth}`, label: `Bulan ke-${activeMonth}` };
   const dateStr = Utilities.formatDate(new Date(), CONFIG.TIMEZONE, 'dd MMMM yyyy');
   
   let msg = `🤖 <b>PM Module Excelent Maintenance</b>\n`;
   msg += `<i>Swa-Jawab Jadwal, Evaluasi Delay & Input Laporan PM</i>\n`;
   msg += `━━━━━━━━━━━━━━━━━━━━━━━\n`;
   msg += `👋 Halo, <b>${escapeHtml(userName)}</b>!\n`;
+  msg += `🗓️ <b>Bulan Aktif:</b> <b>${mInfo.name} (${mInfo.label})</b>\n`;
   msg += `📅 <b>Tanggal:</b> ${dateStr} (Hari ke-${today})\n`;
   
   if (isAdmin) {
-    // Tampilan Khusus Admin: Tidak Menampilkan Profil PIC Tertentu
     msg += `👑 <b>Status:</b> <b>Administrator / Supervisor (All Lines)</b>\n`;
     msg += `━━━━━━━━━━━━━━━━━━━━━━━\n\n`;
     msg += `Silakan pantau seluruh performa line atau buka sheet tertentu:`;
   } else {
-    // Tampilan PIC Biasa: Menampilkan Profil PIC Masing-masing
     const hasPic = activePic && activePic.length > 0;
     const picDisplay = hasPic ? `<code>${activePic}</code>` : `<i>(Belum Dipilih)</i>`;
     msg += `👤 <b>Profil PIC:</b> ${picDisplay}\n`;
@@ -334,23 +381,58 @@ function sendWelcomeMessage(chatId, userName, activePic, isAdmin) {
     }
   }
   
-  sendTelegramMessage(chatId, msg, getMainInlineKeyboard(isAdmin, activePic), getPersistentReplyKeyboard(isAdmin));
+  sendTelegramMessage(chatId, msg, getMainInlineKeyboard(isAdmin, activePic, activeMonth), getPersistentReplyKeyboard(isAdmin));
+}
+
+/**
+ * Dialog Pemilihan Periode Bulan
+ */
+function sendMonthSelectionKeyboard(chatId) {
+  const activeMonth = getUserMonth(chatId);
+  
+  let msg = `╔══════════════════════════════════════╗\n`;
+  msg += `  🗓️ <b>PILIH PERIODE BULAN PM ACTIVITY</b>\n`;
+  msg += `╚══════════════════════════════════════╝\n\n`;
+  msg += `Program PM Maintenance saat ini telah memasuki <b>Bulan ke-2 (September 2026)</b>.\n\n`;
+  msg += `Silakan pilih periode bulan yang ingin Anda kelola / pantau:\n`;
+  
+  const keyboard = [
+    [
+      {
+        text: `${activeMonth === 9 ? '🟢' : '📅'} Bulan 2: September 2026 ${activeMonth === 9 ? '✔ [AKTIF]' : ''}`,
+        callback_data: 'set_month:9'
+      }
+    ],
+    [
+      {
+        text: `${activeMonth === 8 ? '🟢' : '📅'} Bulan 1: Agustus 2026 ${activeMonth === 8 ? '✔ [AKTIF]' : ''}`,
+        callback_data: 'set_month:8'
+      }
+    ],
+    [
+      { text: '🔙 Menu Utama', callback_data: 'cmd_menu' }
+    ]
+  ];
+  
+  sendTelegramMessage(chatId, msg, { inline_keyboard: keyboard });
 }
 
 /**
  * STEP 1 WIZARD: Pilih Equipment / Mesin
  */
-function sendEquipmentSelectionWizard(chatId, picName) {
-  const schedule = fetchPmScheduleFromSheet(picName);
+function sendEquipmentSelectionWizard(chatId, picName, targetMonth) {
+  const schedule = fetchPmScheduleFromSheet(picName, targetMonth);
+  const mInfo = MONTHS_CONFIG[targetMonth] || { name: `Bulan ${targetMonth}`, label: `Bulan ke-${targetMonth}` };
   
   if (!schedule || schedule.length === 0) {
-    sendTelegramMessage(chatId, `⚠️ Data PM tidak ditemukan untuk sheet: <b>${picName}</b>.`);
+    sendTelegramMessage(chatId, `⚠️ Data PM tidak ditemukan untuk sheet: <b>${picName}</b> (${mInfo.name}).`);
     return;
   }
   
   let msg = `╔══════════════════════════════════════╗\n`;
   msg += `  📝 <b>INPUT LAPORAN PM — LANGKAH 1/3</b>\n`;
   msg += `  👤 <b>PIC / Sheet:</b> ${picName}\n`;
+  msg += `  🗓️ <b>Periode:</b> ${mInfo.name} (${mInfo.label})\n`;
   msg += `╚══════════════════════════════════════╝\n\n`;
   msg += `Silakan <b>pilih mesin / equipment</b> yang akan dilaporkan pemeliharaannya:\n\n`;
   
@@ -364,7 +446,7 @@ function sendEquipmentSelectionWizard(chatId, picName) {
     const icon = isAllDone ? '🟢' : '⚙️';
     
     currentRow.push({
-      text: `${icon} #${eq.no} ${eq.equipmentName}`,
+      text: `${icon} #${eq.no} ${eq.equipmentName || eq.coreEquipment || 'Mesin ' + eq.no}`,
       callback_data: `wiz_eq:${eq.no}`
     });
     
@@ -380,14 +462,15 @@ function sendEquipmentSelectionWizard(chatId, picName) {
 }
 
 /**
- * STEP 2 WIZARD: Pilih Kanban (A/B/C/D) dengan Validasi Plan & Notifikasi Hijau
+ * STEP 2 WIZARD: Pilih Kanban (A/B/C/D)
  */
-function sendKanbanSelectionWizard(chatId, picName, eqNo) {
-  const schedule = fetchPmScheduleFromSheet(picName);
+function sendKanbanSelectionWizard(chatId, picName, eqNo, targetMonth) {
+  const schedule = fetchPmScheduleFromSheet(picName, targetMonth);
   const eq = schedule ? schedule.find(item => item.no === eqNo) : null;
+  const mInfo = MONTHS_CONFIG[targetMonth] || { name: `Bulan ${targetMonth}` };
   
   if (!eq) {
-    sendTelegramMessage(chatId, `⚠️ Equipment #${eqNo} tidak ditemukan.`);
+    sendTelegramMessage(chatId, `⚠️ Equipment #${eqNo} tidak ditemukan pada ${mInfo.name}.`);
     return;
   }
   
@@ -395,6 +478,7 @@ function sendKanbanSelectionWizard(chatId, picName, eqNo) {
   msg += `  📝 <b>INPUT LAPORAN PM — LANGKAH 2/3</b>\n`;
   msg += `  ⚙️ <b>Mesin:</b> #${eq.no} ${eq.equipmentName}\n`;
   msg += `  🏷️ <b>Core:</b> ${eq.coreEquipment} (${eq.area})\n`;
+  msg += `  🗓️ <b>Bulan:</b> ${mInfo.name}\n`;
   msg += `╚══════════════════════════════════════╝\n\n`;
   msg += `Pilih <b>Jenis Kanban</b> yang akan dilaporkan:\n\n`;
   
@@ -405,7 +489,7 @@ function sendKanbanSelectionWizard(chatId, picName, eqNo) {
     const taskPlan = eq.tasks.find(t => t.kanbanType === kbType);
     
     if (!taskPlan) {
-      msg += `▫️ <b>KANBAN ${kbType}:</b> <i>🚫 Tidak ada Plan bulan ini</i>\n`;
+      msg += `▫️ <b>KANBAN ${kbType}:</b> <i>🚫 Tidak ada Plan pada ${mInfo.short || mInfo.name}</i>\n`;
       keyboard.push([{
         text: `🚫 KANBAN ${kbType} (Tidak Ada Plan)`,
         callback_data: `noop`
@@ -432,13 +516,13 @@ function sendKanbanSelectionWizard(chatId, picName, eqNo) {
 }
 
 /**
- * STEP 3 WIZARD: Pilih Tanggal Eksekusi (1 s/d Hari Ini)
+ * STEP 3 WIZARD: Pilih Tanggal Eksekusi
  */
-function sendDateSelectionWizard(chatId, picName, eqNo, kanbanType) {
-  const schedule = fetchPmScheduleFromSheet(picName);
+function sendDateSelectionWizard(chatId, picName, eqNo, kanbanType, targetMonth) {
+  const schedule = fetchPmScheduleFromSheet(picName, targetMonth);
   const eq = schedule ? schedule.find(item => item.no === eqNo) : null;
-  const today = getTodayDayNumber();
-  const dateStr = Utilities.formatDate(new Date(), CONFIG.TIMEZONE, 'MMMM yyyy');
+  const mInfo = MONTHS_CONFIG[targetMonth] || { name: `Bulan ${targetMonth}`, days: 30 };
+  const totalDays = mInfo.days || 30;
   
   if (!eq) {
     sendTelegramMessage(chatId, `⚠️ Equipment #${eqNo} tidak ditemukan.`);
@@ -448,147 +532,104 @@ function sendDateSelectionWizard(chatId, picName, eqNo, kanbanType) {
   let msg = `╔══════════════════════════════════════╗\n`;
   msg += `  📅 <b>PILIH TANGGAL EKSEKUSI PM — LANGKAH 3/3</b>\n`;
   msg += `  ⚙️ <b>Mesin:</b> #${eq.no} ${eq.equipmentName}\n`;
-  msg += `  🏷️ <b>Kanban:</b> [KANBAN ${kanbanType}]\n`;
-  msg += `  📆 <b>Periode:</b> ${dateStr} (Maksimal Hari Ini: D${today})\n`;
+  msg += `  🏷️ <b>Kanban:</b> KANBAN ${kanbanType}\n`;
+  msg += `  🗓️ <b>Periode:</b> ${mInfo.name}\n`;
   msg += `╚══════════════════════════════════════╝\n\n`;
-  msg += `Pilih <b>tanggal aktual</b> pemeliharaan dilakukan:\n\n`;
+  msg += `Pilih <b>tanggal aktual</b> saat pemeliharaan mesin selesai dilakukan:\n`;
   
   const keyboard = [];
+  let currentRow = [];
   
-  // Tombol Eksekusi Hari Ini
-  keyboard.push([{
-    text: `🌟 EKSEKUSI HARI INI (Tanggal ${today})`,
-    callback_data: `wiz_date:${eq.no}:${kanbanType}:${today}`
-  }]);
-  
-  // Pilihan tanggal sebelumnya (1..today-1)
-  let dateRow = [];
-  for (let d = today - 1; d >= 1; d--) {
-    dateRow.push({
-      text: `Tgl ${d}`,
+  for (let d = 1; d <= totalDays; d++) {
+    currentRow.push({
+      text: `D${d}`,
       callback_data: `wiz_date:${eq.no}:${kanbanType}:${d}`
     });
     
-    if (dateRow.length === 4 || d === 1) {
-      keyboard.push(dateRow);
-      dateRow = [];
+    if (currentRow.length === 5 || d === totalDays) {
+      keyboard.push(currentRow);
+      currentRow = [];
     }
   }
   
-  keyboard.push([{ text: `🔙 Kembali Pilih Kanban`, callback_data: `wiz_eq:${eq.no}` }]);
+  keyboard.push([{ text: '🔙 Ganti Kanban', callback_data: `wiz_eq:${eq.no}` }]);
   
   sendTelegramMessage(chatId, msg, { inline_keyboard: keyboard });
 }
 
 /**
- * STEP 4 WIZARD: Eksekusi Penulisan & Konfirmasi Notifikasi Hijau / Update Pindah Tanggal
+ * STEP 4: Eksekusi Penulisan ke Google Sheet & Kirim Konfirmasi
  */
-function executeAndConfirmReport(chatId, picName, eqNo, kanbanType, chosenDay) {
-  const schedule = fetchPmScheduleFromSheet(picName);
-  const eq = schedule ? schedule.find(item => item.no === eqNo) : null;
-  const eqName = eq ? eq.equipmentName : `Mesin #${eqNo}`;
-  const coreEq = eq ? eq.coreEquipment : '-';
-  const area = eq ? eq.area : '-';
+function executeAndConfirmReport(chatId, picName, eqNo, kanbanType, chosenDay, targetMonth) {
+  const res = executeReportToSheet(picName, eqNo, kanbanType, chosenDay, targetMonth);
+  const mInfo = MONTHS_CONFIG[targetMonth] || { name: `Bulan ${targetMonth}` };
   
-  const result = executeReportToSheet(picName, eqNo, kanbanType, chosenDay);
-  
-  if (result && result.success) {
-    let msg = '';
-    
-    if (result.isUpdated && result.previousDay) {
-      msg += `╔══════════════════════════════════════╗\n`;
-      msg += `  🔄 <b>LAPORAN PM BERHASIL DI-UPDATE!</b>\n`;
-      msg += `╚══════════════════════════════════════╝\n\n`;
-      msg += `✅ <b>Status:</b> <b>UPDATED (DIPINDAHKAN / DIREVISI)</b>\n`;
-      msg += `👤 <b>PIC / Sheet:</b> <code>${picName}</code>\n`;
-      msg += `⚙️ <b>Mesin:</b> #${eqNo} <b>${escapeHtml(eqName)}</b>\n`;
-      msg += `🏷️ <b>Core:</b> ${escapeHtml(coreEq)} (${escapeHtml(area)})\n`;
-      msg += `📋 <b>Jenis Kanban:</b> <b>[KANBAN ${kanbanType}]</b>\n`;
-      msg += `🗑️ <b>Tanggal Lama:</b> <s>Tanggal ${result.previousDay}</s> <i>(Dihapus)</i>\n`;
-      msg += `📅 <b>Tanggal Baru Aktif:</b> <b>Tanggal ${chosenDay} (Bulan Aktif)</b>\n\n`;
-      msg += `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`;
-      msg += `✨ <i>Data PM pada Tanggal ${result.previousDay} telah otomatis dibersihkan dan diperbarui ke Tanggal ${chosenDay} pada baris Actual Google Sheet!</i>\n\n`;
-      msg += `Silakan pilih menu selanjutnya:`;
-    } else {
-      msg += `╔══════════════════════════════════════╗\n`;
-      msg += `  🟢 <b>LAPORAN PM BERHASIL DISIMPAN!</b>\n`;
-      msg += `╚══════════════════════════════════════╝\n\n`;
-      msg += `✅ <b>Status:</b> <b>SUDAH DI-PM (SELESAI)</b>\n`;
-      msg += `👤 <b>PIC / Sheet:</b> <code>${picName}</code>\n`;
-      msg += `⚙️ <b>Mesin:</b> #${eqNo} <b>${escapeHtml(eqName)}</b>\n`;
-      msg += `🏷️ <b>Core:</b> ${escapeHtml(coreEq)} (${escapeHtml(area)})\n`;
-      msg += `📋 <b>Jenis Kanban:</b> <b>[KANBAN ${kanbanType}]</b>\n`;
-      msg += `📅 <b>Tanggal Eksekusi:</b> <b>Tanggal ${chosenDay} (Bulan Aktif)</b>\n\n`;
-      msg += `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`;
-      msg += `✨ <i>Huruf <b>${kanbanType}</b> dan warna latar belakang <b>HIJAU</b> telah otomatis tercatat pada baris Actual Google Sheet!</i>\n\n`;
-      msg += `Silakan pilih menu selanjutnya:`;
-    }
+  if (res && res.success) {
+    const actionText = res.isUpdated 
+      ? `🔄 <b>TANGGAL PM BERHASIL DIPERBARUI!</b>\n<i>(Pindah dari tanggal D${res.previousDay} ➜ D${res.newDay})</i>`
+      : `✅ <b>LAPORAN PM BERHASIL DISIMPAN!</b>`;
+      
+    let msg = `╔══════════════════════════════════════╗\n`;
+    msg += `  ${actionText}\n`;
+    msg += `╚══════════════════════════════════════╝\n\n`;
+    msg += `📄 <b>Sheet PIC :</b> <code>${picName}</code>\n`;
+    msg += `🗓️ <b>Periode   :</b> <b>${mInfo.name}</b>\n`;
+    msg += `⚙️ <b>Mesin No  :</b> #${eqNo}\n`;
+    msg += `🏷️ <b>Kanban    :</b> KANBAN ${kanbanType}\n`;
+    msg += `📅 <b>Tgl Aktual:</b> Tanggal ${chosenDay} (D${chosenDay})\n`;
+    msg += `📊 <b>Status    :</b> 🟢 <b>100% COMPLETED</b>\n\n`;
+    msg += `Data otomatis tercatat dan tersinkronisasi ke Dashboard & S-Curve KANRI! ✨`;
     
     const inline = {
       inline_keyboard: [
-        [{ text: '📝 Lapor Mesin Lain', callback_data: 'cmd_lapor_wizard' }],
-        [{ text: '🚨 Cek Sisa Delay', callback_data: 'cmd_delay' }, { text: '📈 Progress S-Curve', callback_data: 'cmd_summary' }],
-        [{ text: '🔄 Menu Utama', callback_data: 'cmd_summary' }]
+        [{ text: '📝 Input Lapor Mesin Lain', callback_data: 'cmd_lapor_wizard' }],
+        [{ text: '📈 Lihat Progress S-Curve', callback_data: 'cmd_summary' }, { text: '🚨 Cek Sisa Delay', callback_data: 'cmd_delay' }],
+        [{ text: '🔄 Menu Utama', callback_data: 'cmd_menu' }]
       ]
     };
     
     sendTelegramMessage(chatId, msg, inline);
   } else {
-    sendTelegramMessage(chatId, `❌ <b>Gagal Menyimpan ke Google Sheet!</b>\nPeriksa kembali apakah sheet <b>${picName}</b> sedang dibuka atau terkunci.`);
+    sendTelegramMessage(chatId, `❌ <b>Gagal Menyimpan Laporan</b>\nTerjadi kendala teknis saat menulis ke Google Sheet.\n<i>Pesan Error: ${res ? res.error : 'Unknown'}</i>`);
   }
 }
 
 /**
- * Handle input laporan teks cepat
+ * Handle input teks cepat: LAPOR#NO#KANBAN#TANGGAL
  */
-function handleTextReport(chatId, picName, text) {
+function handleTextReport(chatId, picName, text, targetMonth) {
   const parts = text.split('#');
-  if (parts.length < 3) {
-    sendTelegramMessage(chatId, `ℹ️ <b>Format Laporan Teks:</b>\n<code>LAPOR#NO_MESIN#KANBAN</code> atau <code>LAPOR#NO_MESIN#KANBAN#TANGGAL</code>\nContoh: <code>LAPOR#3#A</code> atau <code>LAPOR#3#A#22</code>`);
+  if (parts.length < 4) {
+    sendTelegramMessage(chatId, `⚠️ Format salah. Gunakan format:\n<code>LAPOR#NO_MESIN#KANBAN#TANGGAL</code>\nContoh: <code>LAPOR#1#A#5</code>`);
     return;
   }
   
-  const query = parts[1].trim();
-  const kanban = parts[2].trim().toUpperCase();
-  const customDay = parts[3] ? parseInt(parts[3].trim(), 10) : getTodayDayNumber();
-  const today = getTodayDayNumber();
+  const eqNo = parseInt(parts[1], 10);
+  const kanban = parts[2].toUpperCase().trim();
+  const day = parseInt(parts[3], 10);
   
-  const actualDay = Math.min(today, Math.max(1, isNaN(customDay) ? today : customDay));
-  
-  const schedule = fetchPmScheduleFromSheet(picName);
-  if (!schedule || schedule.length === 0) {
-    sendTelegramMessage(chatId, `⚠️ Sheet tidak ditemukan: <b>${picName}</b>`);
+  if (isNaN(eqNo) || isNaN(day) || !['A', 'B', 'C', 'D'].includes(kanban)) {
+    sendTelegramMessage(chatId, `⚠️ Parameter tidak valid. Pastikan nomor mesin dan tanggal adalah angka, serta kanban adalah A, B, C, atau D.`);
     return;
   }
   
-  let targetEq = null;
-  const eqNo = parseInt(query, 10);
-  if (!isNaN(eqNo)) {
-    targetEq = schedule.find(eq => eq.no === eqNo);
-  } else {
-    targetEq = schedule.find(eq => eq.equipmentName.toLowerCase().includes(query.toLowerCase()));
-  }
-  
-  if (!targetEq) {
-    sendTelegramMessage(chatId, `⚠️ Mesin <b>${escapeHtml(query)}</b> tidak ditemukan di sheet <b>${picName}</b>.`);
-    return;
-  }
-  
-  executeAndConfirmReport(chatId, picName, targetEq.no, kanban, actualDay);
+  executeAndConfirmReport(chatId, picName, eqNo, kanban, day, targetMonth);
 }
 
 /**
- * 2. Cek Jadwal PM Hari Ini
+ * 2. Jadwal PM Hari Ini
  */
-function sendTodaySchedule(chatId, picName) {
-  const schedule = fetchPmScheduleFromSheet(picName);
-  const calendarDay = getTodayDayNumber();
-  const dateStr = Utilities.formatDate(new Date(), CONFIG.TIMEZONE, 'dd MMMM yyyy');
+function sendTodaySchedule(chatId, picName, targetMonth) {
+  const schedule = fetchPmScheduleFromSheet(picName, targetMonth);
+  const mInfo = MONTHS_CONFIG[targetMonth] || { name: `Bulan ${targetMonth}` };
   
   if (!schedule || schedule.length === 0) {
-    sendTelegramMessage(chatId, `⚠️ <b>Data Tidak Ditemukan</b>\nTidak ada data jadwal PM untuk sheet: <b>${picName}</b>.`);
+    sendTelegramMessage(chatId, `⚠️ Data PM tidak ditemukan untuk sheet: <b>${picName}</b> (${mInfo.name}).`);
     return;
   }
+  
+  const calendarDay = getTodayDayNumber(targetMonth);
+  const dateStr = Utilities.formatDate(new Date(), CONFIG.TIMEZONE, 'dd MMMM yyyy');
   
   const todayTasks = [];
   schedule.forEach(eq => {
@@ -612,6 +653,7 @@ function sendTodaySchedule(chatId, picName) {
   let msg = `╔══════════════════════════════════════╗\n`;
   msg += `  📅 <b>JADWAL PM HARI INI</b>\n`;
   msg += `  👤 <b>PIC / Sheet:</b> ${picName}\n`;
+  msg += `  🗓️ <b>Bulan:</b> ${mInfo.name}\n`;
   msg += `  📆 <b>Tanggal:</b> ${dateStr} (Day ${calendarDay})\n`;
   msg += `╚══════════════════════════════════════╝\n\n`;
   
@@ -644,7 +686,7 @@ function sendTodaySchedule(chatId, picName) {
   const inline = {
     inline_keyboard: [
       [{ text: '📝 Input Lapor PM', callback_data: 'cmd_lapor_wizard' }, { text: '🚨 Lihat List Delay', callback_data: 'cmd_delay' }],
-      [{ text: '📈 Progress S-Curve', callback_data: 'cmd_summary' }, { text: '👤 Ganti PIC / Sheet', callback_data: 'cmd_switch_pic' }]
+      [{ text: '📈 Progress S-Curve', callback_data: 'cmd_summary' }, { text: '🗓️ Ganti Bulan', callback_data: 'cmd_switch_month' }]
     ]
   };
   
@@ -654,15 +696,16 @@ function sendTodaySchedule(chatId, picName) {
 /**
  * 3. List PM Delay
  */
-function sendDelayDetail(chatId, picName) {
-  const schedule = fetchPmScheduleFromSheet(picName);
+function sendDelayDetail(chatId, picName, targetMonth) {
+  const schedule = fetchPmScheduleFromSheet(picName, targetMonth);
+  const mInfo = MONTHS_CONFIG[targetMonth] || { name: `Bulan ${targetMonth}` };
   
   if (!schedule || schedule.length === 0) {
-    sendTelegramMessage(chatId, `⚠️ Data PM tidak ditemukan untuk sheet: <b>${picName}</b>.`);
+    sendTelegramMessage(chatId, `⚠️ Data PM tidak ditemukan untuk sheet: <b>${picName}</b> (${mInfo.name}).`);
     return;
   }
   
-  const calendarDay = getTodayDayNumber();
+  const calendarDay = getTodayDayNumber(targetMonth);
   const dateStr = Utilities.formatDate(new Date(), CONFIG.TIMEZONE, 'dd MMMM yyyy');
   
   const delayedTasks = [];
@@ -691,12 +734,13 @@ function sendDelayDetail(chatId, picName) {
   let msg = `╔══════════════════════════════════════╗\n`;
   msg += `  🚨 <b>DAFTAR PM DELAY & REMAIN</b>\n`;
   msg += `  👤 <b>PIC / Sheet:</b> ${picName}\n`;
+  msg += `  🗓️ <b>Periode:</b> ${mInfo.name}\n`;
   msg += `  📆 <b>Cutoff:</b> Hari ke-${calendarDay} (${dateStr})\n`;
   msg += `╚══════════════════════════════════════╝\n\n`;
   
   if (delayedTasks.length === 0) {
     msg += `🎉 <b>EXCELLENT! ON TRACK (TIDAK ADA PM DELAY)!</b>\n\n`;
-    msg += `Seluruh jadwal PM s/d Hari ke-${calendarDay} telah berhasil diselesaikan tepat waktu (100% On Schedule).\n`;
+    msg += `Seluruh jadwal PM ${mInfo.name} s/d Hari ke-${calendarDay} telah berhasil diselesaikan tepat waktu (100% On Schedule).\n`;
   } else {
     msg += `⚠️ <b>TOTAL DELAY: ${delayedTasks.length} TASK</b>\n`;
     msg += `├ 🔴 Kanban A (Rutin)     : <b>${kanbanA.length} Task</b>\n`;
@@ -731,7 +775,7 @@ function sendDelayDetail(chatId, picName) {
   const inline = {
     inline_keyboard: [
       [{ text: '📝 Input Lapor PM', callback_data: 'cmd_lapor_wizard' }, { text: '📅 Jadwal Hari Ini', callback_data: 'cmd_today' }],
-      [{ text: '📈 Progress S-Curve', callback_data: 'cmd_summary' }, { text: '👤 Ganti PIC / Sheet', callback_data: 'cmd_switch_pic' }]
+      [{ text: '📈 Progress S-Curve', callback_data: 'cmd_summary' }, { text: '🗓️ Ganti Bulan', callback_data: 'cmd_switch_month' }]
     ]
   };
   
@@ -741,11 +785,12 @@ function sendDelayDetail(chatId, picName) {
 /**
  * 4. Summary Progress & S-Curve
  */
-function sendSummaryProgress(chatId, picName) {
-  const schedule = fetchPmScheduleFromSheet(picName);
+function sendSummaryProgress(chatId, picName, targetMonth) {
+  const schedule = fetchPmScheduleFromSheet(picName, targetMonth);
+  const mInfo = MONTHS_CONFIG[targetMonth] || { name: `Bulan ${targetMonth}` };
   
   if (!schedule || schedule.length === 0) {
-    sendTelegramMessage(chatId, `⚠️ Data PM tidak ditemukan untuk sheet: <b>${picName}</b>.`);
+    sendTelegramMessage(chatId, `⚠️ Data PM tidak ditemukan untuk sheet: <b>${picName}</b> (${mInfo.name}).`);
     return;
   }
   
@@ -754,7 +799,7 @@ function sendSummaryProgress(chatId, picName) {
     eq.tasks.forEach(t => allTasks.push(t));
   });
   
-  const calendarDay = getTodayDayNumber();
+  const calendarDay = getTodayDayNumber(targetMonth);
   const dateStr = Utilities.formatDate(new Date(), CONFIG.TIMEZONE, 'dd MMMM yyyy');
   
   const totalMonth = allTasks.length;
@@ -777,8 +822,9 @@ function sendSummaryProgress(chatId, picName) {
   const statusBadge = delayCount <= 0 ? '🟢 ON TRACK (S-CURVE AMAN)' : `🔴 BEHIND SCHEDULE (-${delayCount} TASK)`;
   
   let msg = `╔══════════════════════════════════════╗\n`;
-  msg += `  📈 <b>RINGKASAN TELEMETRI PM BULAN INI</b>\n`;
+  msg += `  📈 <b>RINGKASAN TELEMETRI PM BULANAN</b>\n`;
   msg += `  👤 <b>PIC / Sheet:</b> ${picName}\n`;
+  msg += `  🗓️ <b>Periode:</b> ${mInfo.name}\n`;
   msg += `  📆 <b>Cutoff:</b> Hari ke-${calendarDay} (${dateStr})\n`;
   msg += `╚══════════════════════════════════════╝\n\n`;
   
@@ -792,7 +838,7 @@ function sendSummaryProgress(chatId, picName) {
   msg += `├ 🏆 <b>Achievement Rate</b> : <b>${achieveRate}%</b> (vs Plan Hari Ini)\n`;
   msg += `└ 📦 <b>Monthly Progress</b> : <b>${monthRate}%</b> (dari Total ${totalMonth} Task)\n\n`;
   
-  msg += `<b>🏷️ PROGRESS KANBAN (BULAN INI):</b>\n`;
+  msg += `<b>🏷️ PROGRESS KANBAN (${mInfo.short || mInfo.name}):</b>\n`;
   msg += `├ 🔴 Kanban A : <b>${kanbanADone} / ${kanbanA.length} Done</b>\n`;
   if (kanbanB.length > 0) msg += `├ 🟠 Kanban B : <b>${kanbanBDone} / ${kanbanB.length} Done</b>\n`;
   if (kanbanC.length > 0) msg += `├ 🟡 Kanban C : <b>${kanbanCDone} / ${kanbanC.length} Done</b>\n`;
@@ -807,7 +853,7 @@ function sendSummaryProgress(chatId, picName) {
   const inline = {
     inline_keyboard: [
       [{ text: '📝 Input Lapor PM', callback_data: 'cmd_lapor_wizard' }, { text: '🚨 Lihat List Delay', callback_data: 'cmd_delay' }],
-      [{ text: '📅 Jadwal Hari Ini', callback_data: 'cmd_today' }, { text: '👤 Ganti PIC / Sheet', callback_data: 'cmd_switch_pic' }]
+      [{ text: '📅 Jadwal Hari Ini', callback_data: 'cmd_today' }, { text: '🗓️ Ganti Bulan', callback_data: 'cmd_switch_month' }]
     ]
   };
   
@@ -817,9 +863,10 @@ function sendSummaryProgress(chatId, picName) {
 /**
  * 5. Dashboard Admin / Supervisor (Overview Semua Line)
  */
-function sendAdminOverview(chatId) {
+function sendAdminOverview(chatId, targetMonth) {
   const dateStr = Utilities.formatDate(new Date(), CONFIG.TIMEZONE, 'dd MMMM yyyy');
-  const calendarDay = getTodayDayNumber();
+  const calendarDay = getTodayDayNumber(targetMonth);
+  const mInfo = MONTHS_CONFIG[targetMonth] || { name: `Bulan ${targetMonth}` };
   
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const sheets = ss ? ss.getSheets() : [];
@@ -827,6 +874,7 @@ function sendAdminOverview(chatId) {
   let msg = `╔══════════════════════════════════════╗\n`;
   msg += `  👑 <b>SUPERVISOR PM DASHBOARD</b>\n`;
   msg += `  🌐 <b>Overview Seluruh Sheet & Line</b>\n`;
+  msg += `  🗓️ <b>Periode:</b> ${mInfo.name}\n`;
   msg += `  📆 <b>Cutoff:</b> Hari ke-${calendarDay} (${dateStr})\n`;
   msg += `╚══════════════════════════════════════╝\n\n`;
   
@@ -836,7 +884,7 @@ function sendAdminOverview(chatId) {
   
   sheets.forEach((sheet, idx) => {
     const sheetName = sheet.getName();
-    const schedule = fetchPmScheduleFromSheet(sheetName);
+    const schedule = fetchPmScheduleFromSheet(sheetName, targetMonth);
     
     if (!schedule || schedule.length === 0) return;
     
@@ -862,7 +910,7 @@ function sendAdminOverview(chatId) {
   
   const overallRate = totalAllPlan > 0 ? Math.round((totalAllActual / totalAllPlan) * 100) : 0;
   msg += `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`;
-  msg += `📊 <b>TOTAL LINE OVERVIEW:</b>\n`;
+  msg += `📊 <b>TOTAL LINE OVERVIEW (${mInfo.short || mInfo.name}):</b>\n`;
   msg += `├ Total Target s/d D${calendarDay} : <b>${totalAllPlan} Task</b>\n`;
   msg += `├ Total Aktual Selesai     : <b>${totalAllActual} Task</b>\n`;
   msg += `├ Total Delay Seluruh Line : <b>${totalAllDelay} Task</b>\n`;
@@ -870,7 +918,7 @@ function sendAdminOverview(chatId) {
   
   const inline = {
     inline_keyboard: [
-      [{ text: '🔄 Refresh Overview', callback_data: 'cmd_admin_overview' }],
+      [{ text: '🔄 Refresh Overview', callback_data: 'cmd_admin_overview' }, { text: '🗓️ Ganti Bulan', callback_data: 'cmd_switch_month' }],
       [{ text: '👤 Buka Sheet Tertentu', callback_data: 'cmd_switch_pic' }]
     ]
   };
@@ -886,12 +934,13 @@ function sendHelpMessage(chatId) {
   msg += `━━━━━━━━━━━━━━━━━━━━━━━\n\n`;
   msg += `<b>📌 Alur Input Laporan PM:</b>\n`;
   msg += `1. Klik <b>[📝 Input Lapor PM]</b> lalu pilih Mesin.\n`;
-  msg += `2. Pilih Kanban (hanya Kanban yang ada di Plan bulan ini yang aktif).\n`;
-  msg += `3. Pilih tanggal eksekusi (1 s/d hari ini).\n`;
-  msg += `4. Data otomatis tersimpan ke baris Actual Google Sheet!\n\n`;
+  msg += `2. Pilih Kanban (hanya Kanban yang ada di Plan bulan aktif yang tampil).\n`;
+  msg += `3. Pilih tanggal eksekusi (1 s/d hari ini / akhir bulan).\n`;
+  msg += `4. Data otomatis tersimpan ke baris Actual periode yang dipilih di Google Sheet!\n\n`;
   
   msg += `<b>🤖 Daftar Command:</b>\n`;
   msg += `• /start - Membuka menu utama\n`;
+  msg += `• /bulan - Mengganti periode bulan (Agustus vs September)\n`;
   msg += `• /today - Menampilkan jadwal PM hari ini\n`;
   msg += `• /delay - Menampilkan seluruh mesin yang delay\n`;
   msg += `• /lapor - Membuka wizard input laporan PM\n`;
@@ -900,7 +949,7 @@ function sendHelpMessage(chatId) {
   msg += `• /admin - Membuka dashboard supervisor (jika admin)\n`;
   msg += `• /setadmin - Mendaftarkan ID Anda sebagai Admin bot\n\n`;
   
-  sendTelegramMessage(chatId, msg, getMainInlineKeyboard(checkIsAdmin(chatId), getUserPic(chatId)));
+  sendTelegramMessage(chatId, msg, getMainInlineKeyboard(checkIsAdmin(chatId), getUserPic(chatId), getUserMonth(chatId)));
 }
 
 function sendPicSelectionKeyboard(chatId, title) {
@@ -920,73 +969,340 @@ function sendPicSelectionKeyboard(chatId, title) {
 }
 
 // ============================================================================
-// 5. PARSER & WRITER DATA SPREADSHEET PM
+// 5. PARSER & WRITER DATA SPREADSHEET PM (MULTI-MONTH BLOCK ENGINE)
 // ============================================================================
 
-function executeReportToSheet(picName, eqNo, kanbanType, actualDay) {
-  try {
-    const ss = SpreadsheetApp.getActiveSpreadsheet();
-    if (!ss) return { success: false };
+/**
+ * Mendeteksi seluruh blok tabel bulan dalam lembar spreadsheet berdasarkan baris header hari
+ */
+function detectMonthBlocks(data) {
+  const blocks = [];
+  const headerRows = [];
+  
+  for (let r = 0; r < data.length; r++) {
+    const row = data[r];
+    let dayCols = {};
+    let dayCount = 0;
     
-    let sheet = ss.getSheetByName(picName);
-    if (!sheet) {
-      const sheets = ss.getSheets();
-      for (let i = 0; i < sheets.length; i++) {
-        if (sheets[i].getName().toLowerCase().includes(picName.toLowerCase())) {
-          sheet = sheets[i];
-          break;
-        }
+    for (let c = 0; c < row.length; c++) {
+      const val = parseInt(row[c], 10);
+      if (!isNaN(val) && val >= 1 && val <= 31) {
+        dayCols[val] = c;
+        dayCount++;
       }
     }
-    if (!sheet) return { success: false };
     
-    const data = sheet.getDataRange().getValues();
-    const backgrounds = sheet.getDataRange().getBackgrounds();
-    
-    let headerRowIdx = -1;
-    let dayColMap = {};
-    for (let r = 0; r < Math.min(15, data.length); r++) {
-      for (let c = 0; c < data[r].length; c++) {
-        const val = parseInt(data[r][c], 10);
-        if (!isNaN(val) && val >= 1 && val <= 31) {
-          if (headerRowIdx === -1) headerRowIdx = r;
-          dayColMap[val] = c;
-        }
-      }
-      if (headerRowIdx !== -1) break;
+    // Jika sebuah baris memiliki minimal 15 nomor hari berturut-turut, maka itu baris header hari PM
+    if (dayCount >= 15) {
+      headerRows.push({ rowIdx: r, dayColMap: dayCols, dayCount: dayCount });
     }
+  }
+  
+  for (let i = 0; i < headerRows.length; i++) {
+    const h = headerRows[i];
+    const nextHeader = headerRows[i + 1];
+    const startRow = h.rowIdx + 1;
+    const endRow = nextHeader ? nextHeader.rowIdx - 1 : data.length - 1;
     
-    if (headerRowIdx === -1 || !dayColMap[actualDay]) return { success: false };
+    // Deteksi nama bulan dari baris-baris di atas header (maksimal 6 baris ke atas)
+    let detectedMonthNum = null;
+    let detectedMonthName = '';
     
-    const targetColIdx = dayColMap[actualDay];
-    
-    let targetActualRowIdx = -1;
-    for (let r = headerRowIdx + 1; r < data.length; r++) {
-      const noVal = parseInt(data[r][0], 10);
-      if (noVal === eqNo) {
-        targetActualRowIdx = r + 1;
+    for (let pr = Math.max(0, h.rowIdx - 6); pr <= h.rowIdx; pr++) {
+      const text = data[pr].join(' ').toUpperCase();
+      if (text.includes('SEPTEMBER') || text.includes('SEP')) {
+        detectedMonthNum = 9;
+        detectedMonthName = 'September 2026';
+        break;
+      } else if (text.includes('AGUSTUS') || text.includes('AUGUST') || text.includes('AUG')) {
+        detectedMonthNum = 8;
+        detectedMonthName = 'Agustus 2026';
+        break;
+      } else if (text.includes('OKTOBER') || text.includes('OCT')) {
+        detectedMonthNum = 10;
+        detectedMonthName = 'Oktober 2026';
+        break;
+      } else if (text.includes('JULI') || text.includes('JUL')) {
+        detectedMonthNum = 7;
+        detectedMonthName = 'Juli 2026';
         break;
       }
     }
     
-    if (targetActualRowIdx === -1 || targetActualRowIdx >= data.length) return { success: false };
+    // Fallback: Jika tidak terdeteksi dari teks, Blok 0 = Agustus (8), Blok 1 = September (9), dst.
+    if (!detectedMonthNum) {
+      detectedMonthNum = 8 + i;
+      detectedMonthName = detectedMonthNum === 9 ? 'September 2026' : (detectedMonthNum === 8 ? 'Agustus 2026' : `Bulan ${detectedMonthNum}`);
+    }
     
-    // Periksa apakah sudah ada data aktual sebelumnya HANYA untuk jenis Kanban yang SAMA
+    blocks.push({
+      blockIndex: i,
+      monthNum: detectedMonthNum,
+      monthName: detectedMonthName,
+      headerRowIdx: h.rowIdx,
+      startRow: startRow,
+      endRow: endRow,
+      dayColMap: h.dayColMap
+    });
+  }
+  
+  return blocks;
+}
+
+function parseScheduleFromBlock(data, backgrounds, block) {
+  const schedule = [];
+  let currentEquipment = null;
+  const dayColMap = block.dayColMap;
+  
+  for (let r = block.startRow; r <= block.endRow; r++) {
+    const row = data[r];
+    if (!row) continue;
+    
+    const noVal = parseInt(row[0], 10);
+    const coreEq = String(row[1] || '').trim();
+    const eqName = String(row[2] || '').trim();
+    const area = String(row[3] || '').trim();
+    const noKanban = String(row[4] || '').trim();
+    
+    let rowTag = '';
+    for (let c = 4; c <= 7; c++) {
+      const t = String(row[c] || '').trim().toUpperCase();
+      if (t === 'P' || t === 'PLAN') { rowTag = 'P'; break; }
+      if (t === 'A' || t === 'ACTUAL') { rowTag = 'A'; break; }
+    }
+    
+    const isNewEquipment = !isNaN(noVal) && noVal > 0;
+    
+    if (isNewEquipment) {
+      if (currentEquipment) {
+        schedule.push(currentEquipment);
+      }
+      currentEquipment = {
+        no: noVal,
+        coreEquipment: coreEq,
+        equipmentName: eqName,
+        area: area,
+        noKanban: noKanban,
+        tasks: []
+      };
+    }
+    
+    if (!currentEquipment) continue;
+    
+    const isActualRow = rowTag === 'A' || (!isNewEquipment && (rowTag === 'A' || eqName === '' || noVal === 0 || isNaN(noVal)));
+    
+    if (!isActualRow) {
+      Object.keys(dayColMap).forEach(dayStr => {
+        const day = parseInt(dayStr, 10);
+        const col = dayColMap[day];
+        const cellVal = String(row[col] || '').trim().toUpperCase();
+        
+        if (cellVal === 'A' || cellVal === 'B' || cellVal === 'C' || cellVal === 'D') {
+          currentEquipment.tasks.push({
+            kanbanType: cellVal,
+            planDay: day,
+            done: false
+          });
+        }
+      });
+    } else {
+      Object.keys(dayColMap).forEach(dayStr => {
+        const day = parseInt(dayStr, 10);
+        const col = dayColMap[day];
+        const cellVal = String(row[col] || '').trim().toUpperCase();
+        const bg = (backgrounds[r] && backgrounds[r][col]) ? backgrounds[r][col].toLowerCase() : '';
+        
+        const isLetterMark = (cellVal === 'A' || cellVal === 'B' || cellVal === 'C' || cellVal === 'D');
+        const isCheckSymbol = (cellVal === '✓' || cellVal === '✔' || cellVal === 'V' || cellVal === 'OK');
+        const isGreen = isGreenColor(bg);
+        
+        if (isLetterMark || isCheckSymbol || isGreen) {
+          let targetTask = null;
+          
+          if (isLetterMark) {
+            targetTask = currentEquipment.tasks.find(t => t.kanbanType === cellVal && t.planDay === day && !t.done);
+            if (!targetTask) {
+              targetTask = currentEquipment.tasks.find(t => t.kanbanType === cellVal && !t.done);
+            }
+          }
+          
+          if (!targetTask) {
+            targetTask = currentEquipment.tasks.find(t => t.planDay === day && !t.done);
+          }
+          
+          if (!targetTask && (isGreen || isCheckSymbol)) {
+            targetTask = currentEquipment.tasks.find(t => !t.done);
+          }
+          
+          if (targetTask) {
+            targetTask.done = true;
+            targetTask.actualDay = day;
+          }
+        }
+      });
+    }
+  }
+  
+  if (currentEquipment) {
+    schedule.push(currentEquipment);
+  }
+  
+  return schedule;
+}
+
+/**
+ * Pencari sheet yang cerdas dan toleran terhadap variasi nama PIC (misal: "MOCHAMAD DENDY" -> Sheet "DENDY")
+ */
+function findSheetByPicName(ss, picName) {
+  if (!ss || !picName) return null;
+  const cleanPic = String(picName).trim().toUpperCase();
+  
+  // 1. Exact match
+  let sheet = ss.getSheetByName(cleanPic);
+  if (sheet) return sheet;
+  
+  sheet = ss.getSheetByName(picName);
+  if (sheet) return sheet;
+  
+  const sheets = ss.getSheets();
+  
+  // 2. Exact match case-insensitive
+  for (let i = 0; i < sheets.length; i++) {
+    if (sheets[i].getName().toUpperCase().trim() === cleanPic) {
+      return sheets[i];
+    }
+  }
+  
+  // 3. Substring match
+  for (let i = 0; i < sheets.length; i++) {
+    const sName = sheets[i].getName().toUpperCase().trim();
+    if (cleanPic.includes(sName) || sName.includes(cleanPic)) {
+      return sheets[i];
+    }
+  }
+  
+  // 4. Special name aliases
+  if (cleanPic.includes('DENDY') || cleanPic.includes('MOCHAMAD') || cleanPic.includes('GHIFFARI')) {
+    sheet = ss.getSheetByName('DENDY');
+    if (sheet) return sheet;
+  }
+  if (cleanPic.includes('DWI') || cleanPic.includes('PURNOMO')) {
+    sheet = ss.getSheetByName('DWI');
+    if (sheet) return sheet;
+  }
+  if (cleanPic.includes('DENNY') || cleanPic.includes('NURIANTO')) {
+    sheet = ss.getSheetByName('DENNY');
+    if (sheet) return sheet;
+  }
+  if (cleanPic.includes('AZIZ') || cleanPic.includes('MUSLIM')) {
+    sheet = ss.getSheetByName('AZIZ');
+    if (sheet) return sheet;
+  }
+  if (cleanPic.includes('PILAR') || cleanPic.includes('PRATAMA')) {
+    sheet = ss.getSheetByName('PILAR');
+    if (sheet) return sheet;
+  }
+  if (cleanPic.includes('KURDI') || cleanPic.includes('KURNIAWAN')) {
+    sheet = ss.getSheetByName('KURDI');
+    if (sheet) return sheet;
+  }
+  if (cleanPic.includes('IKHMAL') || cleanPic.includes('ARASYI')) {
+    sheet = ss.getSheetByName('IKHMAL');
+    if (sheet) return sheet;
+  }
+  if (cleanPic.includes('ARLI') || cleanPic.includes('YULIANTO')) {
+    sheet = ss.getSheetByName('ARLI');
+    if (sheet) return sheet;
+  }
+  
+  return null;
+}
+
+function fetchPmScheduleFromSheet(picName, targetMonth) {
+  try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    if (!ss) return null;
+    
+    let sheet = findSheetByPicName(ss, picName);
+    if (!sheet) return null;
+    
+    const data = sheet.getDataRange().getValues();
+    const backgrounds = sheet.getDataRange().getBackgrounds();
+    
+    const blocks = detectMonthBlocks(data);
+    if (blocks.length === 0) return [];
+    
+    const monthNum = parseInt(targetMonth, 10) || CONFIG.DEFAULT_MONTH;
+    let matchedBlock = blocks.find(b => b.monthNum === monthNum);
+    
+    if (!matchedBlock) {
+      const monthStr = String(targetMonth || '').toLowerCase();
+      matchedBlock = blocks.find(b => b.monthName.toLowerCase().includes(monthStr));
+    }
+    
+    if (!matchedBlock) {
+      if (monthNum === 8 && blocks.length > 0) {
+        matchedBlock = blocks[0];
+      } else {
+        matchedBlock = blocks[blocks.length - 1];
+      }
+    }
+    
+    return parseScheduleFromBlock(data, backgrounds, matchedBlock);
+  } catch (err) {
+    Logger.log('Error parsing sheet: ' + err.toString());
+    return null;
+  }
+}
+
+function executeReportToSheet(picName, eqNo, kanbanType, actualDay, targetMonth) {
+  try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    if (!ss) return { success: false, error: 'Spreadsheet tidak aktif' };
+    
+    let sheet = findSheetByPicName(ss, picName);
+    if (!sheet) return { success: false, error: 'Sheet PIC tidak ditemukan untuk: ' + picName };
+    
+    const data = sheet.getDataRange().getValues();
+    const blocks = detectMonthBlocks(data);
+    if (blocks.length === 0) return { success: false, error: 'Tabel bulan tidak terdeteksi' };
+    
+    const monthNum = parseInt(targetMonth, 10) || CONFIG.DEFAULT_MONTH;
+    let targetBlock = blocks.find(b => b.monthNum === monthNum);
+    if (!targetBlock) {
+      targetBlock = (monthNum === 8) ? blocks[0] : blocks[blocks.length - 1];
+    }
+    
+    const dayColMap = targetBlock.dayColMap;
+    if (!dayColMap[actualDay]) return { success: false, error: 'Kolom tanggal D' + actualDay + ' tidak ditemukan pada tabel ' + targetBlock.monthName };
+    
+    const targetColIdx = dayColMap[actualDay];
+    
+    let targetActualRowIdx = -1;
+    for (let r = targetBlock.startRow; r <= targetBlock.endRow; r++) {
+      const noVal = parseInt(data[r][0], 10);
+      if (noVal === eqNo) {
+        targetActualRowIdx = r + 1; // Baris Actual berada tepat di bawah baris Plan
+        break;
+      }
+    }
+    
+    if (targetActualRowIdx === -1 || targetActualRowIdx >= data.length) {
+      return { success: false, error: 'Baris mesin #' + eqNo + ' tidak ditemukan pada tabel ' + targetBlock.monthName };
+    }
+    
+    // Bersihkan data tanggal sebelumnya untuk jenis KANBAN yang SAMA pada blok bulan ini
     let previousDay = null;
     Object.keys(dayColMap).forEach(dStr => {
       const d = parseInt(dStr, 10);
       const c = dayColMap[d];
       const cellVal = String(data[targetActualRowIdx][c] || '').trim().toUpperCase();
       
-      // HANYA periksa dan bersihkan jika jenis KANBAN SAMA PERSIS (A dengan A, B dengan B, dst)
-      if (cellVal === kanbanType) {
-        if (d !== actualDay) {
-          previousDay = d;
-          // Hapus nilai dan kembalikan warna cell lama ke normal (kosong)
-          const prevCell = sheet.getRange(targetActualRowIdx + 1, c + 1);
-          prevCell.setValue('');
-          prevCell.setBackground(null);
-        }
+      if (cellVal === kanbanType && d !== actualDay) {
+        previousDay = d;
+        const prevCell = sheet.getRange(targetActualRowIdx + 1, c + 1);
+        prevCell.setValue('');
+        prevCell.setBackground(null);
       }
     });
     
@@ -997,6 +1313,8 @@ function executeReportToSheet(picName, eqNo, kanbanType, actualDay) {
     
     return {
       success: true,
+      monthNum: targetBlock.monthNum,
+      monthName: targetBlock.monthName,
       isUpdated: (previousDay !== null && previousDay !== actualDay),
       previousDay: previousDay,
       newDay: actualDay
@@ -1004,148 +1322,6 @@ function executeReportToSheet(picName, eqNo, kanbanType, actualDay) {
   } catch (err) {
     Logger.log('Error writing report to sheet: ' + err.toString());
     return { success: false, error: err.toString() };
-  }
-}
-
-function fetchPmScheduleFromSheet(picName) {
-  try {
-    const ss = SpreadsheetApp.getActiveSpreadsheet();
-    if (!ss) return null;
-    
-    let sheet = ss.getSheetByName(picName);
-    if (!sheet) {
-      const sheets = ss.getSheets();
-      for (let i = 0; i < sheets.length; i++) {
-        if (sheets[i].getName().toLowerCase().includes(picName.toLowerCase())) {
-          sheet = sheets[i];
-          break;
-        }
-      }
-    }
-    
-    if (!sheet) {
-      sheet = ss.getSheets()[0];
-    }
-    
-    if (!sheet) return null;
-    
-    const data = sheet.getDataRange().getValues();
-    const backgrounds = sheet.getDataRange().getBackgrounds();
-    
-    let headerRowIdx = -1;
-    let dayColMap = {};
-    
-    for (let r = 0; r < Math.min(15, data.length); r++) {
-      for (let c = 0; c < data[r].length; c++) {
-        const val = parseInt(data[r][c], 10);
-        if (!isNaN(val) && val >= 1 && val <= 31) {
-          if (headerRowIdx === -1) headerRowIdx = r;
-          dayColMap[val] = c;
-        }
-      }
-      if (headerRowIdx !== -1) break;
-    }
-    
-    if (headerRowIdx === -1) return [];
-    
-    const schedule = [];
-    let currentEquipment = null;
-    
-    for (let r = headerRowIdx + 1; r < data.length; r++) {
-      const row = data[r];
-      const noVal = parseInt(row[0], 10);
-      const coreEq = String(row[1] || '').trim();
-      const eqName = String(row[2] || '').trim();
-      const area = String(row[3] || '').trim();
-      const noKanban = String(row[4] || '').trim();
-      
-      let rowTag = '';
-      for (let c = 4; c <= 7; c++) {
-        const t = String(row[c] || '').trim().toUpperCase();
-        if (t === 'P' || t === 'PLAN') { rowTag = 'P'; break; }
-        if (t === 'A' || t === 'ACTUAL') { rowTag = 'A'; break; }
-      }
-      
-      const isNewEquipment = !isNaN(noVal) && noVal > 0;
-      
-      if (isNewEquipment) {
-        if (currentEquipment) {
-          schedule.push(currentEquipment);
-        }
-        currentEquipment = {
-          no: noVal,
-          coreEquipment: coreEq,
-          equipmentName: eqName,
-          area: area,
-          noKanban: noKanban,
-          tasks: []
-        };
-      }
-      
-      if (!currentEquipment) continue;
-      
-      const isActualRow = rowTag === 'A' || (!isNewEquipment && (rowTag === 'A' || eqName === '' || noVal === 0 || isNaN(noVal)));
-      
-      if (!isActualRow) {
-        Object.keys(dayColMap).forEach(dayStr => {
-          const day = parseInt(dayStr, 10);
-          const col = dayColMap[day];
-          const cellVal = String(row[col] || '').trim().toUpperCase();
-          
-          if (cellVal === 'A' || cellVal === 'B' || cellVal === 'C' || cellVal === 'D') {
-            currentEquipment.tasks.push({
-              kanbanType: cellVal,
-              planDay: day,
-              done: false
-            });
-          }
-        });
-      } else {
-        Object.keys(dayColMap).forEach(dayStr => {
-          const day = parseInt(dayStr, 10);
-          const col = dayColMap[day];
-          const cellVal = String(row[col] || '').trim().toUpperCase();
-          const bg = backgrounds[r][col] ? backgrounds[r][col].toLowerCase() : '';
-          
-          const isLetterMark = (cellVal === 'A' || cellVal === 'B' || cellVal === 'C' || cellVal === 'D');
-          const isCheckSymbol = (cellVal === '✓' || cellVal === '✔' || cellVal === 'V' || cellVal === 'OK');
-          const isGreen = isGreenColor(bg);
-          
-          if (isLetterMark || isCheckSymbol || isGreen) {
-            let targetTask = null;
-            
-            if (isLetterMark) {
-              targetTask = currentEquipment.tasks.find(t => t.kanbanType === cellVal && t.planDay === day && !t.done);
-              if (!targetTask) {
-                targetTask = currentEquipment.tasks.find(t => t.kanbanType === cellVal && !t.done);
-              }
-            }
-            
-            if (!targetTask) {
-              targetTask = currentEquipment.tasks.find(t => t.planDay === day && !t.done);
-            }
-            
-            if (!targetTask && (isGreen || isCheckSymbol)) {
-              targetTask = currentEquipment.tasks.find(t => !t.done);
-            }
-            
-            if (targetTask) {
-              targetTask.done = true;
-              targetTask.actualDay = day;
-            }
-          }
-        });
-      }
-    }
-    
-    if (currentEquipment) {
-      schedule.push(currentEquipment);
-    }
-    
-    return schedule;
-  } catch (err) {
-    Logger.log('Error parsing sheet: ' + err.toString());
-    return null;
   }
 }
 
@@ -1180,7 +1356,7 @@ function isGreenColor(hex) {
 }
 
 // ============================================================================
-// 6. HELPER TELEGRAM API (MESSAGE SPLIT & ERROR RESILIENCE)
+// 6. HELPER TELEGRAM API & STATE MANAGEMENT
 // ============================================================================
 
 function sendTelegramMessage(chatId, text, inlineKeyboard, replyKeyboard) {
@@ -1274,6 +1450,22 @@ function getUserPic(chatId) {
   return saved || '';
 }
 
+function setUserMonth(chatId, monthNum) {
+  const props = PropertiesService.getScriptProperties();
+  props.setProperty('user_month_' + chatId, String(monthNum));
+}
+
+function getUserMonth(chatId) {
+  const props = PropertiesService.getScriptProperties();
+  const saved = props.getProperty('user_month_' + chatId);
+  return parseInt(saved, 10) || CONFIG.DEFAULT_MONTH;
+}
+
+function getMonthDisplayName(monthNum) {
+  const m = MONTHS_CONFIG[monthNum];
+  return m ? m.name : `Bulan ${monthNum}`;
+}
+
 function saveUserAsAdmin(chatId) {
   const props = PropertiesService.getScriptProperties();
   const admins = getAdminList();
@@ -1303,10 +1495,26 @@ function checkIsAdmin(chatId) {
   return admins.includes(chatId);
 }
 
-function getTodayDayNumber() {
+function getTodayDayNumber(targetMonth) {
   const now = new Date();
+  const currentMonthNum = parseInt(Utilities.formatDate(now, CONFIG.TIMEZONE, 'M'), 10);
+  const targetM = parseInt(targetMonth, 10) || CONFIG.DEFAULT_MONTH;
+  
+  // Jika bulan yang dipilih adalah bulan sekarang
+  if (targetM === currentMonthNum) {
+    const dayStr = Utilities.formatDate(now, CONFIG.TIMEZONE, 'd');
+    return parseInt(dayStr, 10);
+  }
+  
+  // Jika bulan lalu (misal Agustus di saat September), cutoff = total hari
+  if (targetM < currentMonthNum) {
+    const mInfo = MONTHS_CONFIG[targetM];
+    return mInfo ? mInfo.days : 31;
+  }
+  
+  // Jika bulan sekarang atau awal bulan
   const dayStr = Utilities.formatDate(now, CONFIG.TIMEZONE, 'd');
-  return parseInt(dayStr, 10);
+  return Math.min(30, Math.max(1, parseInt(dayStr, 10)));
 }
 
 function escapeHtml(text) {
@@ -1318,9 +1526,12 @@ function escapeHtml(text) {
     .replace(/"/g, '&quot;');
 }
 
-function getMainInlineKeyboard(isAdmin, activePic) {
+function getMainInlineKeyboard(isAdmin, activePic, activeMonth) {
+  const mInfo = MONTHS_CONFIG[activeMonth] || { short: 'September' };
+  const monthBtnLabel = `🗓️ Periode: ${mInfo.short || 'September 2026'}`;
+  const picLabel = activePic ? `👤 PIC: ${activePic}` : `👤 Pilih PIC`;
+  
   if (isAdmin) {
-    // Keyboard Khusus Admin / Supervisor: Mengutamakan Overview Seluruh Line
     return {
       inline_keyboard: [
         [
@@ -1335,13 +1546,12 @@ function getMainInlineKeyboard(isAdmin, activePic) {
           { text: '📝 Input Lapor PM', callback_data: 'cmd_lapor_wizard' }
         ],
         [
-          { text: `👤 Buka / Pantau Sheet (${activePic || 'Pilih Sheet'})`, callback_data: 'cmd_switch_pic' }
+          { text: monthBtnLabel, callback_data: 'cmd_switch_month' },
+          { text: `👤 Sheet: ${activePic || 'Pilih'}`, callback_data: 'cmd_switch_pic' }
         ]
       ]
     };
   } else {
-    // Keyboard PIC Personal
-    const picLabel = activePic ? `👤 PIC: ${activePic}` : `👤 Pilih PIC`;
     return {
       inline_keyboard: [
         [
@@ -1353,7 +1563,8 @@ function getMainInlineKeyboard(isAdmin, activePic) {
           { text: '📈 Progress S-Curve', callback_data: 'cmd_summary' }
         ],
         [
-          { text: `🔄 Ganti PIC (${picLabel})`, callback_data: 'cmd_switch_pic' }
+          { text: monthBtnLabel, callback_data: 'cmd_switch_month' },
+          { text: picLabel, callback_data: 'cmd_switch_pic' }
         ]
       ]
     };
@@ -1366,7 +1577,8 @@ function getPersistentReplyKeyboard(isAdmin) {
       keyboard: [
         ['👑 Admin Overview', '🚨 List PM Delay'],
         ['📅 Jadwal PM Hari Ini', '📈 Summary Progress PM'],
-        ['📝 Input Lapor PM', '👤 Buka / Pantau Sheet']
+        ['📝 Input Lapor PM', '🗓️ Pilih / Ganti Bulan'],
+        ['👤 Buka / Pantau Sheet']
       ],
       resize_keyboard: true,
       one_time_keyboard: false
@@ -1377,7 +1589,7 @@ function getPersistentReplyKeyboard(isAdmin) {
     keyboard: [
       ['📝 Input Lapor PM', '🚨 List PM Delay'],
       ['📅 Jadwal PM Hari Ini', '📈 Summary Progress PM'],
-      ['👤 Pilih / Ganti PIC']
+      ['🗓️ Pilih / Ganti Bulan', '👤 Pilih / Ganti PIC']
     ],
     resize_keyboard: true,
     one_time_keyboard: false
@@ -1393,15 +1605,10 @@ function setupTelegramWebhook() {
   Logger.log("Set Webhook Result: " + res.getContentText());
 }
 
-/**
- * ============================================================================
- * 6. UTILITY PEMBERSIH DUPLIKAT MASSAL (AUTO CLEANUP OLD DUPLICATE ENTRIES)
- * ============================================================================
- * Memindai baris Actual pada seluruh sheet (atau sheet tertentu).
- * Jika ditemukan lebih dari 1 tanggal terisi pada baris Actual suatu mesin:
- * - Menjaga tanggal yang PALING BARU (tanggal terbesar / terakhir).
- * - Menghapus seluruh tanggal yang lebih lama (membersihkan nilai & warna sel ke normal).
- */
+// ============================================================================
+// 7. UTILITY PEMBERSIH DUPLIKAT MASSAL
+// ============================================================================
+
 function onOpen() {
   try {
     const ui = SpreadsheetApp.getUi();
@@ -1416,9 +1623,6 @@ function onOpen() {
   }
 }
 
-/**
- * Fungsi yang aman dijalankan baik dari Menu Google Sheets maupun tombol [▷ Jalankan] di Editor
- */
 function menuCleanDuplicates() {
   const res = autoCleanAllDuplicatePmEntries();
   Logger.log('Hasil Pembersihan: ' + JSON.stringify(res));
@@ -1438,19 +1642,7 @@ function menuCleanDuplicates() {
   return res;
 }
 
-/**
- * Runner khusus untuk dijalankan langsung dari Google Apps Script Editor
- */
-function runCleanDuplicatesFromEditor() {
-  const res = autoCleanAllDuplicatePmEntries();
-  Logger.log('====================================');
-  Logger.log('🧹 HASIL PEMBERSIHAN DUPLIKAT DARI EDITOR:');
-  Logger.log('Total sel tanggal lama yang dibersihkan: ' + res.cleanedCount);
-  Logger.log('Status: ' + (res.success ? 'BERHASIL' : 'GAGAL / ADA ERROR'));
-  Logger.log('====================================');
-}
-
-function autoCleanAllDuplicatePmEntries(targetSheetName) {
+function autoCleanAllDuplicatePmEntries(targetSheetName, targetMonth) {
   try {
     const ss = SpreadsheetApp.getActiveSpreadsheet();
     if (!ss) return { success: false, cleanedCount: 0 };
@@ -1470,82 +1662,61 @@ function autoCleanAllDuplicatePmEntries(targetSheetName) {
       if (!sheet) return;
       
       const data = sheet.getDataRange().getValues();
-      const backgrounds = sheet.getDataRange().getBackgrounds();
+      const blocks = detectMonthBlocks(data);
+      if (blocks.length === 0) return;
       
-      let headerRowIdx = -1;
-      let dayColMap = {};
-      for (let r = 0; r < Math.min(15, data.length); r++) {
-        for (let c = 0; c < data[r].length; c++) {
-          const val = parseInt(data[r][c], 10);
-          if (!isNaN(val) && val >= 1 && val <= 31) {
-            if (headerRowIdx === -1) headerRowIdx = r;
-            dayColMap[val] = c;
-          }
-        }
-        if (headerRowIdx !== -1) break;
-      }
-      
-      if (headerRowIdx === -1) return;
-      
-      for (let r = headerRowIdx + 1; r < data.length; r++) {
-        const row = data[r];
-        const noVal = parseInt(row[0], 10);
+      const targetBlocks = targetMonth 
+        ? blocks.filter(b => b.monthNum === parseInt(targetMonth, 10))
+        : blocks;
         
-        let isActualRow = false;
-        for (let c = 0; c < Math.min(10, row.length); c++) {
-          const cellStr = String(row[c] || '').trim().toUpperCase();
-          if (cellStr === 'ACTUAL' || cellStr === 'A') {
+      targetBlocks.forEach(block => {
+        const dayColMap = block.dayColMap;
+        
+        for (let r = block.startRow; r <= block.endRow; r++) {
+          const row = data[r];
+          const noVal = parseInt(row[0], 10);
+          
+          let isActualRow = false;
+          for (let c = 0; c < Math.min(10, row.length); c++) {
+            const cellStr = String(row[c] || '').trim().toUpperCase();
+            if (cellStr === 'ACTUAL' || cellStr === 'A') {
+              isActualRow = true;
+              break;
+            }
+          }
+          
+          if (!isActualRow && (isNaN(noVal) || noVal === 0 || row[0] === '')) {
             isActualRow = true;
-            break;
+          }
+          
+          if (isActualRow) {
+            const kanbanGroup = { 'A': [], 'B': [], 'C': [], 'D': [] };
+            
+            Object.keys(dayColMap).forEach(dStr => {
+              const day = parseInt(dStr, 10);
+              const col = dayColMap[day];
+              const cellVal = String(row[col] || '').trim().toUpperCase();
+              
+              if (cellVal === 'A' || cellVal === 'B' || cellVal === 'C' || cellVal === 'D') {
+                kanbanGroup[cellVal].push({ day: day, col: col });
+              }
+            });
+            
+            ['A', 'B', 'C', 'D'].forEach(kb => {
+              const list = kanbanGroup[kb];
+              if (list.length > 1) {
+                list.sort((a, b) => a.day - b.day);
+                for (let i = 0; i < list.length - 1; i++) {
+                  const oldEntry = list[i];
+                  sheet.getRange(r + 1, oldEntry.col + 1).setValue('');
+                  sheet.getRange(r + 1, oldEntry.col + 1).setBackground(null);
+                  totalCleaned++;
+                }
+              }
+            });
           }
         }
-        
-        // Alternatif deteksi: jika baris ini berada tepat di bawah baris No mesin
-        if (!isActualRow && (isNaN(noVal) || noVal === 0 || row[0] === '')) {
-          isActualRow = true;
-        }
-        
-        // Hanya proses baris Actual
-        if (isActualRow) {
-          // Kelompokkan entri per jenis KANBAN spesifik (A, B, C, D)
-          const kanbanGroup = {
-            'A': [],
-            'B': [],
-            'C': [],
-            'D': []
-          };
-          
-          Object.keys(dayColMap).forEach(dStr => {
-            const day = parseInt(dStr, 10);
-            const col = dayColMap[day];
-            const cellVal = String(row[col] || '').trim().toUpperCase();
-            
-            if (cellVal === 'A' || cellVal === 'B' || cellVal === 'C' || cellVal === 'D') {
-              kanbanGroup[cellVal].push({ day: day, col: col });
-            }
-          });
-          
-          // Proses per jenis Kanban (A, B, C, D) secara terpisah
-          // Jika dalam 1 mesin ada Kanban A dan B, keduanya tetap ada dan tidak saling menghapus!
-          ['A', 'B', 'C', 'D'].forEach(kb => {
-            const list = kanbanGroup[kb];
-            // Hanya hapus jika ada lebih dari 1 tanggal untuk huruf Kanban yang SAMA
-            if (list.length > 1) {
-              // Urutkan dari tanggal terkecil ke terbesar
-              list.sort((a, b) => a.day - b.day);
-              
-              // Entri terakhir (tanggal paling baru) dipertahankan
-              // Hapus entri-entri tanggal sebelumnya untuk huruf Kanban yang SAMA
-              for (let i = 0; i < list.length - 1; i++) {
-                const oldEntry = list[i];
-                sheet.getRange(r + 1, oldEntry.col + 1).setValue('');
-                sheet.getRange(r + 1, oldEntry.col + 1).setBackground(null);
-                totalCleaned++;
-              }
-            }
-          });
-        }
-      }
+      });
     });
     
     return { success: true, cleanedCount: totalCleaned };
@@ -1554,4 +1725,3 @@ function autoCleanAllDuplicatePmEntries(targetSheetName) {
     return { success: false, error: err.toString(), cleanedCount: 0 };
   }
 }
-
