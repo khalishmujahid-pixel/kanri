@@ -13,6 +13,21 @@ interface ThemeConfig {
 
 const THEMES: ThemeConfig[] = [
   {
+    id: 'safety',
+    label: 'SAFETY',
+    sublabel: 'Bulan K3',
+    dot: '#00e676',
+    dotGlow: 'rgba(0,230,118,0.65)',
+    ring: 'rgba(0,230,118,0.45)',
+    icon: (
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+        <path d="M12 8v8" />
+        <path d="M8 12h8" />
+      </svg>
+    ),
+  },
+  {
     id: 'midnight',
     label: 'MIDNIGHT',
     sublabel: 'F1 Dark',
@@ -82,7 +97,7 @@ export const ThemeSelector: React.FC = () => {
           gap: 6,
           alignItems: 'flex-end',
           overflow: 'hidden',
-          maxHeight: isExpanded ? 200 : 0,
+          maxHeight: isExpanded ? 280 : 0,
           opacity: isExpanded ? 1 : 0,
           transition: 'max-height 0.38s cubic-bezier(0.4,0,0.2,1), opacity 0.28s ease',
           pointerEvents: isExpanded ? 'auto' : 'none',

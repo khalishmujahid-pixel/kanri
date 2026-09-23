@@ -7,9 +7,9 @@ interface IntroScreenProps {
   onStart: () => void;
 }
 
-const LINE_1 = "KANRI MEETING";
-const LINE_2 = "BODY#2 RED";
-const LINE_3 = "AGUSTUS 2026";
+const LINE_1 = "MAINTENANCE";
+const LINE_2 = "DASHBOARD SYSTEM";
+const LINE_3 = "RED SHIFT Body#2";
 
 export const IntroScreen: React.FC<IntroScreenProps> = ({ onStart }) => {
   const [cycleKey, setCycleKey] = useState<number>(0);
@@ -27,10 +27,10 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({ onStart }) => {
   useEffect(() => {
     if (!isTypingVisible) return;
 
-    // Typewrite (~2.4s) + Freeze (5.0s) + Disappear Blur & pause (~1.2s) = 8.6s total per cycle
+    // Typewrite (~2.6s) + Freeze (5.0s) + Disappear Blur & pause (~1.2s) = 8.8s total per cycle
     const cycleTimer = setTimeout(() => {
       setCycleKey(prev => prev + 1);
-    }, 8600);
+    }, 8800);
 
     return () => clearTimeout(cycleTimer);
   }, [cycleKey, isTypingVisible]);
@@ -74,7 +74,19 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({ onStart }) => {
               transition: { duration: 0.75, ease: 'easeInOut' }
             }}
           >
-            {/* Line 1: KANRI MEETING */}
+            {/* Safety Month Edition Badge */}
+            <motion.div
+              className="intro-safety-month-badge"
+              initial={{ opacity: 0, y: -10, scale: 0.9 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              transition={{ duration: 0.45, delay: 0.15 }}
+            >
+              <span className="intro-safety-badge-dot" />
+              <span>BULAN K3 NASIONAL // SAFETY DEFENCE</span>
+              <span className="intro-safety-badge-dot" />
+            </motion.div>
+
+            {/* Line 1: MAINTENANCE */}
             <div className="intro-title-line1">
               {LINE_1.split('').map((char, index) => (
                 <motion.span
@@ -93,7 +105,7 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({ onStart }) => {
               ))}
             </div>
 
-            {/* Line 2: BODY#2 RED */}
+            {/* Line 2: DASHBOARD SYSTEM */}
             <div className="intro-title-line2">
               {LINE_2.split('').map((char, index) => (
                 <motion.span
@@ -103,7 +115,7 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({ onStart }) => {
                   animate={{ opacity: 1, scale: 1, y: 0, filter: 'blur(0px)' }}
                   transition={{
                     duration: 0.16,
-                    delay: 0.95 + index * 0.07,
+                    delay: 0.85 + index * 0.06,
                     ease: [0.175, 0.885, 0.32, 1.275]
                   }}
                 >
@@ -112,7 +124,7 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({ onStart }) => {
               ))}
             </div>
 
-            {/* Line 3: AGUSTUS 2026 */}
+            {/* Line 3: RED SHIFT Body#2 */}
             <div className="intro-title-line3">
               {LINE_3.split('').map((char, index) => (
                 <motion.span
@@ -122,7 +134,7 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({ onStart }) => {
                   animate={{ opacity: 1, scale: 1, y: 0, filter: 'blur(0px)' }}
                   transition={{
                     duration: 0.14,
-                    delay: 1.75 + index * 0.055,
+                    delay: 1.85 + index * 0.05,
                     ease: [0.175, 0.885, 0.32, 1.275]
                   }}
                 >

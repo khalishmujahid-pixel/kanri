@@ -217,3 +217,61 @@
   flex-wrap: wrap;
   justify-content: center;
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   SAFETY MONTH INTRO ENHANCEMENTS
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+@keyframes safetyIntroKenBurns {
+  0% {
+    transform: scale(1.0) translate(0, 0);
+    filter: brightness(0.85) contrast(1.08);
+  }
+  50% {
+    transform: scale(1.05) translate(-0.8%, -0.4%);
+    filter: brightness(0.92) contrast(1.12);
+  }
+  100% {
+    transform: scale(1.02) translate(0.8%, 0.4%);
+    filter: brightness(0.85) contrast(1.08);
+  }
+}
+
+.intro-safety-backdrop {
+  will-change: transform, filter;
+}
+
+.intro-safety-month-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 16px;
+  margin-bottom: 14px;
+  background: rgba(0, 230, 118, 0.12);
+  border: 1px solid rgba(0, 230, 118, 0.45);
+  border-radius: 999px;
+  font-family: var(--font-mono, monospace);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  color: #00e676;
+  text-transform: uppercase;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 0 20px rgba(0, 230, 118, 0.25);
+}
+
+.intro-safety-badge-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #00e676;
+  box-shadow: 0 0 8px #00e676;
+  animation: introDotPulse 1.8s infinite ease-in-out;
+}
+
+@keyframes introDotPulse {
+  0%, 100% { opacity: 0.4; transform: scale(0.8); }
+  50% { opacity: 1; transform: scale(1.2); }
+}
+

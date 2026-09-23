@@ -21,6 +21,7 @@ import { PmSCurveChart } from './PmSCurveChart';
 import { ImprovementViewer } from './improvement/ImprovementViewer';
 import { fetchLivePmSchedule } from '../services/googleSheetsService';
 import { RefreshCw } from 'lucide-react';
+import { useTheme } from '../contexts/ThemeContext';
 
 interface CharacterDetailProps {
   character: Character;
@@ -54,6 +55,8 @@ export const CharacterDetail: React.FC<CharacterDetailProps> = ({
   character,
   onBackToShowroom,
 }) => {
+  const { theme } = useTheme();
+  const isSafetyTheme = theme === 'safety';
   const [activeCategory, setActiveCategory] = useState<CategoryKey>('pm');
 
   // PM document filter state — default to latest doc's year/month
@@ -212,30 +215,32 @@ export const CharacterDetail: React.FC<CharacterDetailProps> = ({
           {/* Left Column: Character Spotlight */}
           <aside className="detail-character-spotlight">
             <div className="spotlight-card">
-              {/* Character Video Auto-Play in Expand Menu */}
-              <video
-                key={character.id}
-                autoPlay
-                loop
-                muted
-                playsInline
-                onCanPlay={() => setSpotlightVideoReady(true)}
-                onError={() => setSpotlightVideoReady(false)}
-                style={{
-                  position: 'absolute',
-                  inset: 0,
-                  width: '100%',
-                  height: '100%',
-                  objectFit: 'cover',
-                  objectPosition: 'center 20%',
-                  zIndex: 1,
-                  pointerEvents: 'none',
-                  opacity: spotlightVideoReady ? 1 : 0,
-                  transition: 'opacity 0.7s ease-in-out',
-                }}
-              >
-                <source src={`/assets/characters/${character.id}.mp4`} type="video/mp4" />
-              </video>
+              {/* Character Video Auto-Play in Expand Menu (only in racing themes) */}
+              {!isSafetyTheme && (
+                <video
+                  key={character.id}
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                  onCanPlay={() => setSpotlightVideoReady(true)}
+                  onError={() => setSpotlightVideoReady(false)}
+                  style={{
+                    position: 'absolute',
+                    inset: 0,
+                    width: '100%',
+                    height: '100%',
+                    objectFit: 'cover',
+                    objectPosition: 'center 20%',
+                    zIndex: 1,
+                    pointerEvents: 'none',
+                    opacity: spotlightVideoReady ? 1 : 0,
+                    transition: 'opacity 0.7s ease-in-out',
+                  }}
+                >
+                  <source src={`/assets/characters/${character.id}.mp4`} type="video/mp4" />
+                </video>
+              )}
 
               {/* Base Photo Fallback Layer */}
               <img

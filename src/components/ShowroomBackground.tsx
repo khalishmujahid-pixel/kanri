@@ -1,7 +1,10 @@
 import React, { useState } from 'react';
+import { useTheme } from '../contexts/ThemeContext';
 
 export const ShowroomBackground: React.FC = () => {
   const [videoLoaded, setVideoLoaded] = useState(false);
+  const { theme } = useTheme();
+  const isSafetyTheme = theme === 'safety';
 
   return (
     <div className="showroom-backdrop" aria-hidden="true">
@@ -29,20 +32,22 @@ export const ShowroomBackground: React.FC = () => {
       {/* Futuristic Center Glow Ambience */}
       <div className="showroom-center-glow" />
 
-      {/* Prominent Glowing Blinking Signboard: PW GARAGE RED ZONE BODY#2 */}
+      {/* Prominent Glowing Blinking Signboard: Dynamic based on theme */}
       <div className="showroom-glowing-sign-container">
         <div className="glowing-sign-badge">
           <span className="sign-indicator-dot" />
-          <span className="sign-category-tag">WELDING MAINTENANCE DEFENCE</span>
+          <span className="sign-category-tag">
+            {isSafetyTheme ? 'BULAN K3 NASIONAL // SAFETY FIRST' : 'WELDING MAINTENANCE DEFENCE'}
+          </span>
           <span className="sign-indicator-dot" />
         </div>
         <h1 className="glowing-neon-title">
-          PW GARAGE RED ZONE BODY#2
+          {isSafetyTheme ? 'SAFETY DEFENCE RED ZONE BODY#2' : 'PW GARAGE RED ZONE BODY#2'}
         </h1>
         <div className="glowing-sign-sub">
-          <span>HIGH VOLTAGE OPERATIONAL DECK</span>
+          <span>{isSafetyTheme ? 'ZERO ACCIDENT TARGET' : 'HIGH VOLTAGE OPERATIONAL DECK'}</span>
           <span className="glowing-sign-bullet">•</span>
-          <span>SHIFT RED TEAM MEMBERS</span>
+          <span>{isSafetyTheme ? 'SHIFT RED SAFETY HEROES' : 'SHIFT RED TEAM MEMBERS'}</span>
         </div>
       </div>
 
@@ -55,7 +60,9 @@ export const ShowroomBackground: React.FC = () => {
       {/* Minimal Wall Identity */}
       <div className="showroom-wall-accents">
         <span className="showroom-wall-code">BODY #2 // RED ZONE FACILITY</span>
-        <span className="showroom-wall-code">DIGITAL SHOWROOM</span>
+        <span className="showroom-wall-code">
+          {isSafetyTheme ? 'SAFETY MONTH SHOWROOM' : 'DIGITAL SHOWROOM'}
+        </span>
       </div>
     </div>
   );

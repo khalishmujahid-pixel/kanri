@@ -62,6 +62,8 @@ export interface Character {
   status: 'ACTIVE' | 'STANDBY' | 'ON_DUTY';
   image: string;
   portrait: string;
+  safetyImage?: string;
+  racingImage?: string;
   summary: string;
   specialization: string;
   categories: {

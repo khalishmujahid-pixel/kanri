@@ -172,6 +172,7 @@ function SkipVideoButton({ onSkip, isMobile }: { onSkip: () => void; isMobile?: 
 
 function AppInner() {
   const { theme } = useTheme();
+  const isSafetyTheme = theme === 'safety';
 
   const characters = INITIAL_CHARACTERS;
   const total = characters.length;
@@ -384,29 +385,62 @@ function AppInner() {
         transition: 'background 0.6s cubic-bezier(0.4,0,0.2,1)',
       }}
     >
-      {/* 1. Intro Screen Video Layer (intro.mp4) — Subtle Opacity for High Text Contrast */}
+      {/* 1. Intro Screen Media Layer — 8K Safety Month Backdrop with Ken-Burns Motion + Video Fallback */}
       {!hasStarted && (
-        <video
-          key="video-intro"
-          autoPlay
-          loop
-          muted
-          playsInline
+        <div
+          key="intro-media-layer"
           style={{
             position: 'absolute',
             inset: 0,
             width: '100%',
             height: '100%',
-            objectFit: 'cover',
-            objectPosition: 'center',
+            overflow: 'hidden',
             zIndex: 1,
             pointerEvents: 'none',
-            opacity: 0.85,
           }}
         >
-          <source src="/assets/videos/intro.mp4" type="video/mp4" />
-          <source src="/assets/videos/background.mp4" type="video/mp4" />
-        </video>
+          <div
+            className="intro-safety-backdrop"
+            style={{
+              position: 'absolute',
+              inset: 0,
+              backgroundImage: 'url(/assets/safety_intro.jpg)',
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+              animation: 'safetyIntroKenBurns 28s ease-in-out infinite alternate',
+              opacity: isSafetyTheme ? 1 : 0.4,
+              transition: 'opacity 0.6s ease',
+            }}
+          />
+          <video
+            key={`video-intro-${theme}`}
+            autoPlay
+            loop
+            muted
+            playsInline
+            style={{
+              position: 'absolute',
+              inset: 0,
+              width: '100%',
+              height: '100%',
+              objectFit: 'cover',
+              objectPosition: 'center',
+              opacity: isSafetyTheme ? 0.6 : 0.85,
+            }}
+          >
+            {isSafetyTheme ? (
+              <>
+                <source src="/assets/videos/safety_intro.mp4" type="video/mp4" />
+                <source src="/assets/videos/intro.mp4" type="video/mp4" />
+              </>
+            ) : (
+              <>
+                <source src="/assets/videos/intro.mp4" type="video/mp4" />
+                <source src="/assets/videos/background.mp4" type="video/mp4" />
+              </>
+            )}
+          </video>
+        </div>
       )}
 
       {/* 2. Transition Cutscene & Dashboard Video Layer (background.mp4) */}
@@ -624,9 +658,9 @@ function AppInner() {
                 background: 'var(--theme-bg-card)',
               }}
             >
-              {/* Character Video — auto-plays only on the active center card.
-                  Sits below the photo (zIndex 1) and fades in once ready. */}
-              {isCenter && (
+              {/* Character Video — auto-plays only on the active center card when in racing theme (midnight).
+                  Disabled in safety theme so the safety hero costume is prominently showcased. */}
+              {isCenter && !isSafetyTheme && (
                 <video
                   ref={activeVideoRef}
                   key={char.id}
@@ -653,8 +687,8 @@ function AppInner() {
                 </video>
               )}
 
-              {/* Character Photo — always rendered, fades out once video is ready on active card.
-                  Stays fully visible on inactive side cards. */}
+              {/* Character Photo — always rendered. Fades out only if video is ready and not in safety theme.
+                  Stays fully visible in safety theme and on side cards. */}
               <img
                 src={char.image}
                 alt={char.name}
@@ -670,7 +704,7 @@ function AppInner() {
                   display: 'block',
                   pointerEvents: 'none',
                   zIndex: 2,
-                  opacity: isCenter && activeVideoReady ? 0 : 1,
+                  opacity: isCenter && activeVideoReady && !isSafetyTheme ? 0 : 1,
                   transition: 'opacity 0.7s ease-in-out',
                 }}
               />

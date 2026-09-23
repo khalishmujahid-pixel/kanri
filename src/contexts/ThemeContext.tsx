@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 
-export type ThemeMode = 'midnight' | 'presentation' | 'aurora';
+export type ThemeMode = 'safety' | 'midnight' | 'presentation' | 'aurora';
 
 interface ThemeContextValue {
   theme: ThemeMode;
@@ -8,7 +8,7 @@ interface ThemeContextValue {
 }
 
 const ThemeContext = createContext<ThemeContextValue>({
-  theme: 'midnight',
+  theme: 'safety',
   setTheme: () => {},
 });
 
@@ -18,9 +18,9 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [theme, setThemeState] = useState<ThemeMode>(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved === 'midnight' || saved === 'presentation' || saved === 'aurora') return saved;
+      if (saved === 'safety' || saved === 'midnight' || saved === 'presentation' || saved === 'aurora') return saved;
     } catch {}
-    return 'midnight';
+    return 'safety';
   });
 
   const setTheme = (t: ThemeMode) => {
